@@ -1,4 +1,4 @@
-# figma-make-app
+# Vistora — Computer-Delivered IELTS Preparation
 
 React + Vite + Tailwind CSS project running inside Figma Make.
 

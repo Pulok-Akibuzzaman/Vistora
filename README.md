@@ -1,9 +1,9 @@
-# 🎓 CSE412 Project — IELTS Listening & Preparation Platform (Vstora)
+# 🎓 CSE412 Project — IELTS Listening & Preparation Platform (Vistora)
 
-[![GitHub Repository](https://img.shields.io/badge/GitHub-Pulok--Akibuzzaman%2FVstora-181717?style=flat&logo=github)](https://github.com/Pulok-Akibuzzaman/Vstora)
-[![Project](https://img.shields.io/badge/Project-Vstora-dc2626)](https://github.com/Pulok-Akibuzzaman/Vstora)
+[![GitHub Repository](https://img.shields.io/badge/GitHub-Pulok--Akibuzzaman%2FVistora-181717?style=flat&logo=github)](https://github.com/Pulok-Akibuzzaman/Vistora)
+[![Project](https://img.shields.io/badge/Project-Vistora-dc2626)](https://github.com/Pulok-Akibuzzaman/Vistora)
 
-> **Official Repository:** [https://github.com/Pulok-Akibuzzaman/Vstora](https://github.com/Pulok-Akibuzzaman/Vstora)
+> **Official Repository:** [https://github.com/Pulok-Akibuzzaman/Vistora](https://github.com/Pulok-Akibuzzaman/Vistora)
 
 A full-stack computer-delivered IELTS preparation system built for **CSE412**. It connects a modern React/Vite front-end with an Express.js backend that directly indexes and streams listening test audio files from the local `Database/` repository using high-performance **HTTP 206 Partial Content Range streaming**, and features dynamic NLP & Puku AI writing evaluation, official test booking feeds, and academic document generation.
 
@@ -62,8 +62,8 @@ Follow these steps when cloning the project from GitHub for the first time:
 ### Step 1: Clone the Repository
 Open your terminal (PowerShell, Command Prompt, or Bash) and clone the repository:
 ```bash
-git clone https://github.com/Pulok-Akibuzzaman/Vstora.git
-cd Vstora
+git clone https://github.com/Pulok-Akibuzzaman/Vistora.git
+cd Vistora
 ```
 
 ### Step 2: Install Dependencies
@@ -281,6 +281,6 @@ f:\EWU\CSE412\Project\
 ---
 
 ## 👨‍💻 Course Information & Project Repository
-- **Official Repository:** [https://github.com/Pulok-Akibuzzaman/Vstora](https://github.com/Pulok-Akibuzzaman/Vstora)
+- **Official Repository:** [https://github.com/Pulok-Akibuzzaman/Vistora](https://github.com/Pulok-Akibuzzaman/Vistora)
 - **Course:** CSE412 — Software Engineering / Systems Project
 - **Institution:** East West University (EWU)

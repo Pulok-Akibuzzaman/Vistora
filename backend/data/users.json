@@ -78,5 +78,20 @@
     "phone": "+880-1911-000000",
     "lastActive": "Just now",
     "createdAt": "2026-06-01T00:00:00.000Z"
+  },
+  {
+    "id": "USR-8209",
+    "name": "Pulok519",
+    "email": "pulok519@gmail.com",
+    "password": "123456",
+    "country": "Bangladesh",
+    "role": "Student",
+    "status": "Active",
+    "targetBand": 7.5,
+    "currentBand": 6.5,
+    "institution": "East West University",
+    "bio": "IELTS candidate preparing for international academic opportunities.",
+    "lastActive": "Just now",
+    "createdAt": "2026-09-26T18:25:08.209Z"
   }
 ]
