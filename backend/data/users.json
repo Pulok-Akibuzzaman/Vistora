@@ -38,7 +38,7 @@
     "password": "password123",
     "country": "Bangladesh",
     "role": "Student",
-    "status": "Invited",
+    "status": "Active",
     "targetBand": 7,
     "currentBand": 6.5,
     "institution": "BRAC University",
