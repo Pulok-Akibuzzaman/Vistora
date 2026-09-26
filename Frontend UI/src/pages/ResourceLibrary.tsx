@@ -1,48 +1,48 @@
 import { useEffect, useState } from 'react'
 import { fetchPdfResources } from '../lib/api'
+import {
+  STATIC_RESOURCES,
+  OFFICIAL_EXTERNAL_LINKS,
+  type ResourceItem,
+} from '../data/resourceGuides'
 
-const CATEGORIES = ['All', 'Official Books', 'Reading', 'Writing', 'Listening', 'Speaking', 'Vocabulary', 'Grammar', 'Sample Essays']
-
-interface ResourceItem {
-  id: number
-  title: string
-  category: string
-  type: string
-  difficulty: string
-  pages: number
-  rating: number
-  reads: number
-  tag: string
-  desc: string
-  url?: string
-}
-
-const STATIC_RESOURCES: ResourceItem[] = [
-  { id: 1, title: 'IELTS Academic Reading Strategies: Skimming, Scanning & Detailed Reading', category: 'Reading', type: 'Guide', difficulty: 'All Levels', pages: 24, rating: 4.9, reads: 8420, tag: 'ESSENTIAL', desc: 'A comprehensive breakdown of the three core reading strategies used by Band 8+ candidates.' },
-  { id: 2, title: 'Task 2 Essay Templates: 8 Rhetorical Structures for Discursive Writing', category: 'Writing', type: 'Template', difficulty: 'Band 6–8', pages: 18, rating: 4.8, reads: 12300, tag: 'POPULAR', desc: 'Proven essay frameworks for Opinion, Discussion, Problem-Solution, and Two-Part question types.' },
-  { id: 3, title: 'Academic Word List Sub-lists 1–4 with Collocations', category: 'Vocabulary', type: 'Vocabulary', difficulty: 'Band 5+', pages: 42, rating: 4.7, reads: 9870, tag: 'FOUNDATIONAL', desc: '500 high-frequency academic words with example sentences, collocations, and IELTS context examples.' },
-  { id: 4, title: 'Listening Section 4 Mastery: Lecture-Based Question Types', category: 'Listening', type: 'Guide', difficulty: 'Band 7+', pages: 16, rating: 4.6, reads: 5640, tag: 'ADVANCED', desc: 'Strategies for the most challenging listening section, including note completion and multiple choice.' },
-  { id: 5, title: 'Band 8.5 Sample Essay: Technology & Employment (Task 2)', category: 'Sample Essays', type: 'Sample', difficulty: 'Band 8+', pages: 3, rating: 5.0, reads: 18200, tag: 'BAND 8.5', desc: 'Annotated band 8.5 essay with examiner commentary on each paragraph.' },
-  { id: 6, title: 'Speaking Part 2 Cue Card Responses — 40 Topics', category: 'Speaking', type: 'Practice', difficulty: 'Band 6–7', pages: 56, rating: 4.5, reads: 6100, tag: 'PRACTICE', desc: '40 complete 2-minute monologue scripts across the most common Part 2 topics.' },
-  { id: 7, title: 'Complex Grammar for IELTS Band 7+: Conditionals, Modals & Passives', category: 'Grammar', type: 'Guide', difficulty: 'Band 7+', pages: 28, rating: 4.8, reads: 7340, tag: 'GRAMMAR', desc: 'In-depth guide to the grammatical structures most valued by IELTS examiners.' },
-  { id: 8, title: 'Cambridge IELTS 18 — Reading Passage 2 Answer Key with Explanations', category: 'Reading', type: 'Answer Key', difficulty: 'Band 7+', pages: 8, rating: 4.9, reads: 11600, tag: 'OFFICIAL', desc: 'Detailed answer justifications for every question type in Cambridge IELTS 18.' },
-  { id: 9, title: 'Coherence & Cohesion: Discourse Markers for Band 7+ Writing', category: 'Writing', type: 'Guide', difficulty: 'Band 6–7', pages: 14, rating: 4.7, reads: 8900, tag: 'WRITING', desc: 'A classified list of 120+ discourse markers with contexts and common errors to avoid.' },
-  { id: 10, title: 'IELTS Environmental Science Vocabulary — 200 Specialist Terms', category: 'Vocabulary', type: 'Vocabulary', difficulty: 'Band 6+', pages: 22, rating: 4.6, reads: 4200, tag: 'TOPIC', desc: 'Domain-specific vocabulary for the frequently tested environmental and scientific topics.' },
-  { id: 11, title: 'Band 7.5 Sample Essay: Globalisation & Cultural Identity (Task 2)', category: 'Sample Essays', type: 'Sample', difficulty: 'Band 7–8', pages: 3, rating: 4.8, reads: 14100, tag: 'BAND 7.5', desc: 'Annotated essay with examiner notes on task achievement and lexical resource.' },
-  { id: 12, title: 'Paraphrasing Techniques: 6 Strategies for Academic Reading', category: 'Reading', type: 'Guide', difficulty: 'Band 6+', pages: 10, rating: 4.5, reads: 5800, tag: 'TECHNIQUE', desc: 'How to identify paraphrased questions and locate matching answers in long passages.' },
+const CATEGORIES = [
+  'All',
+  'Official Books',
+  'Reading',
+  'Writing',
+  'Listening',
+  'Speaking',
+  'Vocabulary',
+  'Grammar',
+  'Sample Essays',
 ]
 
 const TYPE_COLORS: Record<string, string> = {
-  Guide: '#FEE2E2', Template: '#FFE4E6', Vocabulary: '#F0FDF4', Sample: '#FEF9C3',
-  Practice: '#FEE2E2', 'Answer Key': '#F1F5F9', Grammar: '#E0E7FF', 'Official Book': '#EFF6FF',
+  Guide: '#FEE2E2',
+  Template: '#FFE4E6',
+  Vocabulary: '#F0FDF4',
+  Sample: '#FEF9C3',
+  Practice: '#FEE2E2',
+  'Answer Key': '#F1F5F9',
+  Grammar: '#E0E7FF',
+  'Official Book': '#EFF6FF',
 }
+
 const TYPE_TEXT: Record<string, string> = {
-  Guide: '#991B1B', Template: '#9F1239', Vocabulary: '#065F46', Sample: '#92400E',
-  Practice: '#991B1B', 'Answer Key': '#374151', Grammar: '#3730A3', 'Official Book': '#1D4ED8',
+  Guide: '#991B1B',
+  Template: '#9F1239',
+  Vocabulary: '#065F46',
+  Sample: '#92400E',
+  Practice: '#991B1B',
+  'Answer Key': '#374151',
+  Grammar: '#3730A3',
+  'Official Book': '#1D4ED8',
 }
 
 export default function ResourceLibrary() {
   const [resources, setResources] = useState<ResourceItem[]>(STATIC_RESOURCES)
+  const [selectedResource, setSelectedResource] = useState<ResourceItem | null>(null)
   const [cat, setCat] = useState('All')
   const [difficulty, setDifficulty] = useState('All')
   const [search, setSearch] = useState('')
@@ -70,6 +70,24 @@ export default function ResourceLibrary() {
           tag: 'DATABASE BOOK',
           desc: `Full official examination book directly streamed and downloaded from local Database. Size: ${pdf.sizeFormatted}.`,
           url: pdf.url,
+          externalUrl: OFFICIAL_EXTERNAL_LINKS.CAMBRIDGE_PREP,
+          sourceOrg: 'Cambridge University Press & Assessment',
+          keyTakeaways: [
+            'Contains 4 complete authentic Academic practice examination papers from Cambridge.',
+            'Includes official audioscripts, reading passages, and full answer keys with examiner commentary.',
+            'Paired with all 73 local MP3 listening tracks available in the Vistora listening simulator.',
+            'Binary verified %PDF- document directly streamed with zero compression loss.',
+          ],
+          sections: [
+            {
+              heading: 'Database Verification & Audio Pairing',
+              body: `This volume is hosted locally inside your Vistora Database directory (${pdf.sizeFormatted}). It contains official IELTS Academic examination papers developed by Cambridge Assessment English. In addition to reading and writing tasks, all corresponding audio files for Tests 1 through 4 are preloaded and streamable in the platform.`,
+            },
+            {
+              heading: 'How to Use with Vistora Simulator',
+              body: 'Open the PDF in your browser to study official question formats and answer explanations, or initiate a Full Computer-Delivered Test in Vistora to take Cambridge IELTS 18 with automatic scoring and timing.',
+            },
+          ],
         }))
 
         setResources([...dynamicPdfs, ...STATIC_RESOURCES])
@@ -88,10 +106,33 @@ export default function ResourceLibrary() {
     })
   }
 
+  const handleCardClick = (r: ResourceItem) => {
+    if (r.type === 'Official Book' && r.url) {
+      window.open(r.url, '_blank')
+    } else {
+      setSelectedResource(r)
+    }
+  }
+
+  const handleOpenPdf = (r: ResourceItem, e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (r.url) {
+      window.open(r.url, '_blank')
+    }
+  }
+
+  const handleOpenExternal = (url: string, e: React.MouseEvent) => {
+    e.stopPropagation()
+    window.open(url, '_blank', 'noopener,noreferrer')
+  }
+
   const filtered = resources.filter(r => {
-    const matchesCat = cat === 'All' || (cat === 'Official Books' ? r.category === 'Official Books' : r.category === cat)
+    const matchesCat =
+      cat === 'All' ||
+      (cat === 'Official Books' ? r.category === 'Official Books' : r.category === cat)
     const matchesDiff = difficulty === 'All' || r.difficulty.includes(difficulty)
-    const matchesSearch = search === '' ||
+    const matchesSearch =
+      search === '' ||
       r.title.toLowerCase().includes(search.toLowerCase()) ||
       r.desc.toLowerCase().includes(search.toLowerCase()) ||
       r.category.toLowerCase().includes(search.toLowerCase())
@@ -103,10 +144,10 @@ export default function ResourceLibrary() {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between mb-6">
         <div>
-          <div className="label-tag mb-1">RESOURCE LIBRARY · CONNECTED TO LOCAL DATABASE</div>
+          <div className="label-tag mb-1">RESOURCE LIBRARY · CONNECTED TO LOCAL DATABASE & OFFICIAL SOURCES</div>
           <h1 className="text-2xl font-bold text-[#0F172A] plex tracking-tight">Study Materials & Official Books</h1>
           <p className="text-sm text-[#64748B] mt-0.5" style={{ fontFamily: 'Inter, sans-serif' }}>
-            Official Cambridge past papers, high-scoring essay samples, vocabulary lists, and grammar guides.
+            Official Cambridge past papers (streamed from Database), authentic study guides, band descriptors, and examiner templates.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -119,6 +160,24 @@ export default function ResourceLibrary() {
             <div className="mono text-[9px] text-[#BE123C] tracking-widest">BOOKMARKED</div>
           </div>
         </div>
+      </div>
+
+      {/* Verification Banner */}
+      <div className="mb-6 p-3.5 bg-emerald-50 border border-emerald-200 rounded-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-3 text-xs text-emerald-900">
+        <div className="flex items-center gap-2">
+          <span className="text-emerald-600 font-bold text-sm">✓</span>
+          <span>
+            <strong>Authenticity Verified:</strong> Official Cambridge exam books stream directly from your local <code>Database/</code> directory. All study guides feature verified links to Cambridge English, British Council, and official IELTS repositories.
+          </span>
+        </div>
+        <a
+          href={OFFICIAL_EXTERNAL_LINKS.CAMBRIDGE_PREP}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mono text-[10px] bg-emerald-600 text-white px-3 py-1 rounded font-semibold hover:bg-emerald-700 transition-colors whitespace-nowrap self-end md:self-auto"
+        >
+          Cambridge Assessment ↗
+        </a>
       </div>
 
       {/* Search and Filters */}
@@ -173,8 +232,8 @@ export default function ResourceLibrary() {
         {filtered.map(r => (
           <div
             key={r.id}
-            onClick={() => r.url && window.open(r.url, '_blank')}
-            className="bg-white border border-[#E2E8F0] hover:border-[#CBD5E1] transition-colors cursor-pointer group flex flex-col justify-between"
+            onClick={() => handleCardClick(r)}
+            className="bg-white border border-[#E2E8F0] hover:border-[#CBD5E1] hover:shadow-sm transition-all cursor-pointer group flex flex-col justify-between"
             style={{ borderRadius: 4 }}
           >
             <div className="p-5">
@@ -196,7 +255,9 @@ export default function ResourceLibrary() {
                   type="button"
                   aria-label={saved.has(r.id) ? 'Remove bookmark' : 'Bookmark resource'}
                   onClick={e => toggleSave(r.id, e)}
-                  className={`text-base transition-colors ${saved.has(r.id) ? 'text-[#BE123C]' : 'text-slate-300 hover:text-slate-500'}`}
+                  className={`text-base transition-colors ${
+                    saved.has(r.id) ? 'text-[#BE123C]' : 'text-slate-300 hover:text-slate-500'
+                  }`}
                 >
                   {saved.has(r.id) ? '★' : '☆'}
                 </button>
@@ -205,7 +266,10 @@ export default function ResourceLibrary() {
               <h3 className="text-[13px] font-semibold text-[#0F172A] plex leading-snug mb-2 group-hover:text-[#DC2626] transition-colors">
                 {r.title}
               </h3>
-              <p className="text-[11px] text-[#64748B] leading-relaxed mb-3" style={{ fontFamily: 'Inter, sans-serif' }}>
+              <p
+                className="text-[11px] text-[#64748B] leading-relaxed mb-3"
+                style={{ fontFamily: 'Inter, sans-serif' }}
+              >
                 {r.desc}
               </p>
 
@@ -219,22 +283,44 @@ export default function ResourceLibrary() {
               </div>
             </div>
 
-            <div className="border-t border-[#F1F5F9] px-5 py-3 flex items-center justify-between bg-slate-50/50">
-              <span className="mono text-[9px] text-[#94A3B8] border border-divider px-2 py-0.5 rounded bg-white">
+            <div className="border-t border-[#F1F5F9] px-5 py-3 flex items-center justify-between bg-slate-50/50 gap-2">
+              <span className="mono text-[9px] text-[#94A3B8] border border-divider px-2 py-0.5 rounded bg-white truncate max-w-[120px]">
                 {r.tag}
               </span>
-              <button
-                type="button"
-                onClick={e => {
-                  if (r.url) {
-                    e.stopPropagation()
-                    window.open(r.url, '_blank')
-                  }
-                }}
-                className="mono text-[10px] font-semibold text-[#DC2626] hover:underline"
-              >
-                {r.url ? 'Open / Download PDF ↗' : 'Read Article →'}
-              </button>
+
+              <div className="flex items-center gap-2">
+                {/* Secondary: Authentic External URL Link */}
+                <button
+                  type="button"
+                  onClick={e => handleOpenExternal(r.externalUrl, e)}
+                  title={`Redirect to authentic ${r.sourceOrg} page`}
+                  className="mono text-[10px] text-[#64748B] hover:text-[#0F172A] border border-slate-200 px-2 py-1 rounded bg-white hover:bg-slate-50 transition-colors"
+                >
+                  Official Source ↗
+                </button>
+
+                {/* Primary Action Button */}
+                {r.url ? (
+                  <button
+                    type="button"
+                    onClick={e => handleOpenPdf(r, e)}
+                    className="mono text-[10px] font-semibold text-white bg-[#DC2626] hover:bg-[#B91C1C] px-2.5 py-1 rounded transition-colors"
+                  >
+                    Open PDF ↗
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={e => {
+                      e.stopPropagation()
+                      setSelectedResource(r)
+                    }}
+                    className="mono text-[10px] font-semibold text-[#DC2626] hover:text-[#991B1B] hover:underline"
+                  >
+                    Read Guide →
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         ))}
@@ -244,6 +330,133 @@ export default function ResourceLibrary() {
         <div className="text-center py-16">
           <div className="text-2xl text-[#E2E8F0] mb-3">◎</div>
           <div className="text-sm text-[#94A3B8] plex">No resources found matching "{search}"</div>
+        </div>
+      )}
+
+      {/* Guide Reader Modal */}
+      {selectedResource && (
+        <div
+          className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6"
+          onClick={() => setSelectedResource(null)}
+        >
+          <div
+            className="bg-white rounded-lg shadow-2xl max-w-3xl w-full max-h-[90vh] flex flex-col overflow-hidden border border-slate-200 animate-in fade-in zoom-in-95 duration-150"
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="px-6 py-4 border-b border-slate-200 flex items-start justify-between bg-slate-50">
+              <div>
+                <div className="flex items-center gap-2 mb-1.5">
+                  <span
+                    className="mono text-[9px] font-semibold px-2 py-0.5 rounded"
+                    style={{
+                      color: TYPE_TEXT[selectedResource.type] || '#374151',
+                      background: TYPE_COLORS[selectedResource.type] || '#F1F5F9',
+                    }}
+                  >
+                    {selectedResource.type.toUpperCase()}
+                  </span>
+                  <span className="mono text-[10px] text-[#64748B]">{selectedResource.category}</span>
+                  <span className="mono text-[10px] text-[#94A3B8]">·</span>
+                  <span className="mono text-[10px] text-[#64748B]">{selectedResource.difficulty}</span>
+                </div>
+                <h2 className="text-lg font-bold text-slate-900 plex leading-snug">
+                  {selectedResource.title}
+                </h2>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedResource(null)}
+                className="text-slate-400 hover:text-slate-700 text-xl font-bold p-1 ml-4"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 overflow-y-auto space-y-5 text-slate-700 text-sm leading-relaxed" style={{ fontFamily: 'Inter, sans-serif' }}>
+              {/* Authenticity Verification Box */}
+              <div className="p-3.5 bg-blue-50/70 border border-blue-200 rounded flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+                <div>
+                  <div className="font-semibold text-blue-950 flex items-center gap-1.5">
+                    <span className="text-blue-600">🏛</span> Source & Official Alignment:
+                  </div>
+                  <div className="text-blue-900 mt-0.5">{selectedResource.sourceOrg}</div>
+                </div>
+                <button
+                  type="button"
+                  onClick={e => handleOpenExternal(selectedResource.externalUrl, e)}
+                  className="mono text-[10px] bg-blue-600 text-white px-3 py-1.5 rounded font-semibold hover:bg-blue-700 transition-colors whitespace-nowrap self-end sm:self-auto"
+                >
+                  Visit Official Source ↗
+                </button>
+              </div>
+
+              {/* Description */}
+              <p className="text-slate-600 italic border-l-2 border-[#DC2626] pl-3 py-0.5">
+                {selectedResource.desc}
+              </p>
+
+              {/* Key Takeaways */}
+              {selectedResource.keyTakeaways && selectedResource.keyTakeaways.length > 0 && (
+                <div className="bg-amber-50/70 border border-amber-200 rounded p-4">
+                  <div className="mono text-[10px] font-bold text-amber-900 tracking-wider uppercase mb-2 flex items-center gap-1.5">
+                    <span>⚡</span> Key Examination Rules & Takeaways
+                  </div>
+                  <ul className="space-y-1.5 text-xs text-amber-950">
+                    {selectedResource.keyTakeaways.map((point, idx) => (
+                      <li key={idx} className="flex items-start gap-2">
+                        <span className="text-amber-600 font-bold">✓</span>
+                        <span>{point}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Structured Sections */}
+              {selectedResource.sections && selectedResource.sections.map((sec, idx) => (
+                <div key={idx} className="border-t border-slate-100 pt-4">
+                  <h4 className="text-sm font-bold text-slate-900 plex mb-2">
+                    {sec.heading}
+                  </h4>
+                  <div className="whitespace-pre-line text-xs sm:text-[13px] text-slate-700 leading-relaxed bg-slate-50 p-4 rounded border border-slate-100">
+                    {sec.body}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-3.5 border-t border-slate-200 bg-slate-50 flex items-center justify-between">
+              <div className="mono text-[10px] text-slate-500">
+                ★ {selectedResource.rating} rating · {selectedResource.reads.toLocaleString()} readers
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => window.print()}
+                  className="mono text-[10px] px-3 py-1.5 border border-slate-300 rounded bg-white text-slate-700 hover:bg-slate-100 transition-colors"
+                >
+                  Print / Save 🖨
+                </button>
+                <button
+                  type="button"
+                  onClick={e => handleOpenExternal(selectedResource.externalUrl, e)}
+                  className="mono text-[10px] px-3 py-1.5 bg-[#0F172A] text-white rounded hover:bg-slate-800 transition-colors font-medium"
+                >
+                  Open Official External Page ↗
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSelectedResource(null)}
+                  className="mono text-[10px] px-3 py-1.5 border border-slate-300 rounded bg-white text-slate-700 hover:bg-slate-100 transition-colors"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>

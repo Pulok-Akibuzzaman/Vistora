@@ -174,7 +174,14 @@ function ListeningExam({
   const [isMuted, setIsMuted] = useState(false)
   const [audioError, setAudioError] = useState(false)
 
-  const answered = Object.keys(answers).filter(key => Number(key) <= 40 && answers[Number(key)]?.trim()).length
+  const answered = Object.keys(answers).filter(key => {
+    const num = Number(key)
+    if (part !== undefined) {
+      return num >= ((part - 1) * 10 + 1) && num <= (part * 10) && !!answers[num]?.trim()
+    }
+    return num <= 40 && !!answers[num]?.trim()
+  }).length
+  const totalQuestions = part !== undefined ? 10 : 40
   const formatTime = (seconds: number) =>
     `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(Math.floor(seconds % 60)).padStart(2, '0')}`
 
@@ -543,7 +550,7 @@ function ListeningExam({
                 }} className={`h-7 w-7 rounded-sm border font-mono text-xs ${currentQ === id ? 'border-electric bg-white text-electric' : answers[id] ? 'border-success bg-success-soft text-success' : 'border-transparent text-navy'}`}>{id}</button>
               ))}
             </div>
-            <span className="hidden whitespace-nowrap font-mono text-xs text-graphite-mid sm:inline">{answered}/40 answered</span>
+            <span className="hidden whitespace-nowrap font-mono text-xs text-graphite-mid sm:inline">{answered}/{totalQuestions} answered</span>
           </div>
           <div className="flex items-center gap-2">
             <button
@@ -587,7 +594,14 @@ type ReadingExamProps = {
 function ReadingExam({ answers, setAnswers, currentQ, setCurrentQ, timeLeft, part, onFinish }: ReadingExamProps) {
   const passageIndex = currentQ <= 13 ? 0 : currentQ <= 26 ? 1 : 2
   const passage = READING_PASSAGES[passageIndex]
-  const answered = Object.keys(answers).filter(key => answers[Number(key)]?.trim()).length
+  const answered = Object.keys(answers).filter(key => {
+    const num = Number(key)
+    if (part !== undefined) {
+      return num >= passage.range[0] && num <= passage.range[1] && !!answers[num]?.trim()
+    }
+    return !!answers[num]?.trim()
+  }).length
+  const totalQuestions = part !== undefined ? (passage.range[1] - passage.range[0] + 1) : 40
   const formatTime = (seconds: number) =>
     `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`
   const setAnswer = (id: number, value: string) => {
@@ -603,7 +617,7 @@ function ReadingExam({ answers, setAnswers, currentQ, setCurrentQ, timeLeft, par
           <div className="border-r border-divider pr-5 font-plex text-2xl font-bold tracking-tight text-danger">IELTS</div>
           <div>
             <div className="font-plex text-xs font-semibold text-navy">Test taker ID</div>
-            <div className="font-plex text-xs text-graphite-mid">Academic Reading · Test 1</div>
+            <div className="font-plex text-xs text-graphite-mid">Academic Reading · Test 1{part ? ` · Passage ${part}` : ''}</div>
           </div>
         </div>
         <div className="flex items-center gap-5">
@@ -686,7 +700,7 @@ function ReadingExam({ answers, setAnswers, currentQ, setCurrentQ, timeLeft, par
                 }} className={`h-7 w-7 rounded-sm border font-mono text-xs ${currentQ === id ? 'border-electric bg-white text-electric' : answers[id] ? 'border-success bg-success-soft text-success' : 'border-transparent text-navy'}`}>{id}</button>
               ))}
             </div>
-            <span className="hidden whitespace-nowrap font-mono text-xs text-graphite-mid lg:inline">{answered}/40 answered</span>
+            <span className="hidden whitespace-nowrap font-mono text-xs text-graphite-mid lg:inline">{answered}/{totalQuestions} answered</span>
           </div>
           <div className="flex items-center gap-2">
             <button aria-label="Previous reading passage" disabled={passage.part === 1 || part !== undefined} onClick={() => setCurrentQ(READING_PASSAGES[passageIndex - 1].range[0])} className="h-11 w-11 rounded-sm bg-divider font-plex text-xl font-bold text-white disabled:cursor-not-allowed disabled:opacity-40">←</button>
@@ -767,7 +781,7 @@ function WritingExam({ answers, setAnswers, currentTask, setCurrentTask, timeLef
       <header className="flex min-h-14 items-center justify-between border-b border-divider bg-white px-4">
         <div className="flex items-center gap-5">
           <div className="border-r border-divider pr-5 font-plex text-2xl font-bold tracking-tight text-danger">IELTS</div>
-          <div><div className="font-plex text-xs font-semibold text-navy">Test taker ID</div><div className="font-plex text-xs text-graphite-mid">Academic Writing · Test 1</div></div>
+          <div><div className="font-plex text-xs font-semibold text-navy">Test taker ID</div><div className="font-plex text-xs text-graphite-mid">Academic Writing · Test 1{part ? ` · Task ${part}` : ''}</div></div>
         </div>
         <div className="flex items-center gap-5">
           <div className="text-right"><div className={`font-mono text-sm font-semibold ${timeLeft < 300 ? 'text-danger' : 'text-navy'}`}>{formatTime(timeLeft)}</div><div className="font-mono text-xs uppercase text-graphite-light">Time left</div></div>
@@ -959,7 +973,7 @@ function SpeakingExam({ currentPart, setCurrentPart, timeLeft, part, onRecording
       <header className="flex min-h-14 items-center justify-between border-b border-divider bg-white px-4">
         <div className="flex items-center gap-5">
           <div className="border-r border-divider pr-5 font-plex text-2xl font-bold tracking-tight text-danger">IELTS</div>
-          <div><div className="font-plex text-xs font-semibold text-navy">Test taker ID</div><div className="font-plex text-xs text-graphite-mid">Speaking · Test 1</div></div>
+          <div><div className="font-plex text-xs font-semibold text-navy">Test taker ID</div><div className="font-plex text-xs text-graphite-mid">Speaking · Test 1{part ? ` · Part ${part}` : ''}</div></div>
         </div>
         <div className="flex items-center gap-5">
           <div className="text-right"><div className={`font-mono text-sm font-semibold ${timeLeft < 60 ? 'text-danger' : 'text-navy'}`}>{formatTime(timeLeft)}</div><div className="font-mono text-xs uppercase text-graphite-light">Time left</div></div>
@@ -1444,13 +1458,47 @@ export default function PracticeTest() {
           <section className="border border-divider bg-white p-6 md:col-span-2">
             <div className="label-tag">Before you begin</div>
             <h1 className="mt-2 font-plex text-2xl font-bold text-navy">{selectedTest.title}</h1>
-            <p className="mt-3 text-sm leading-6 text-graphite-mid">This mock follows the timing and question structure of the computer-delivered IELTS {isFullTest ? 'Academic' : selectedTest.type} test.</p>
+            <p className="mt-3 text-sm leading-6 text-graphite-mid">This mock follows the timing and question structure of the computer-delivered IELTS {isFullTest ? 'Academic' : selectedTest.type} test{selectedTest.part ? ` (Part ${selectedTest.part})` : ''}.</p>
             <div className="my-6 h-px bg-divider" />
             <h2 className="font-plex text-base font-semibold text-navy">Test instructions</h2>
             <ul className="mt-4 space-y-3 text-sm leading-6 text-graphite">
-              <li className="flex gap-3"><span className="font-mono text-electric">01</span><span>{isFullTest ? 'You will complete Listening, Reading, Writing, and Speaking in sequence.' : isListening ? 'The recording contains four parts and plays once only.' : isWriting ? `You have ${selectedTest.duration} minutes for ${selectedTest.part ? `Writing Task ${selectedTest.part}` : 'both writing tasks'}.` : isSpeaking ? `This ${selectedTest.part ? `part` : 'test'} lasts approximately ${selectedTest.duration} minutes.` : 'You have 60 minutes to answer 40 questions across three passages.'}</span></li>
+              <li className="flex gap-3">
+                <span className="font-mono text-electric">01</span>
+                <span>
+                  {isFullTest
+                    ? 'You will complete Listening, Reading, Writing, and Speaking in sequence (total 85 questions, 174 minutes).'
+                    : isListening
+                    ? (selectedTest.part
+                        ? `You have ${selectedTest.duration} minutes to answer ${selectedTest.questions} questions for Listening Part ${selectedTest.part}. The recording plays once only.`
+                        : `You have ${selectedTest.duration} minutes to answer ${selectedTest.questions} questions across four parts. The recording plays once only.`)
+                    : isWriting
+                    ? (selectedTest.part
+                        ? `You have ${selectedTest.duration} minutes for Writing Task ${selectedTest.part}. Target: at least ${selectedTest.part === 1 ? '150' : '250'} words.`
+                        : `You have ${selectedTest.duration} minutes to complete both writing tasks (Task 1: 150+ words, Task 2: 250+ words).`)
+                    : isSpeaking
+                    ? (selectedTest.part
+                        ? `This section lasts approximately ${selectedTest.duration} minutes for Speaking Part ${selectedTest.part}.`
+                        : `This interview simulation lasts approximately ${selectedTest.duration} minutes across Parts 1, 2, and 3.`)
+                    : (selectedTest.part
+                        ? `You have ${selectedTest.duration} minutes to answer ${selectedTest.questions} questions for Reading Passage ${selectedTest.part}.`
+                        : `You have ${selectedTest.duration} minutes to answer ${selectedTest.questions} questions across three passages.`)}
+                </span>
+              </li>
               <li className="flex gap-3"><span className="font-mono text-electric">02</span><span>Answers are saved automatically as you move through the test.</span></li>
-              <li className="flex gap-3"><span className="font-mono text-electric">03</span><span>{isWriting ? 'Task 1 requires at least 150 words and Task 2 requires at least 250 words.' : isSpeaking ? 'Allow microphone access, record in a quiet room, and answer naturally in full sentences.' : 'Spelling matters. Follow word-limit instructions exactly for completion questions.'}</span></li>
+              <li className="flex gap-3">
+                <span className="font-mono text-electric">03</span>
+                <span>
+                  {isWriting
+                    ? (selectedTest.part === 1
+                        ? 'Task 1 requires at least 150 words (worth 1/3 of the writing score).'
+                        : selectedTest.part === 2
+                        ? 'Task 2 requires at least 250 words (worth 2/3 of the writing score).'
+                        : 'Task 1 requires at least 150 words and Task 2 requires at least 250 words.')
+                    : isSpeaking
+                    ? 'Allow microphone access, record in a quiet room, and answer naturally in full sentences.'
+                    : 'Spelling matters. Follow word-limit instructions exactly for completion questions.'}
+                </span>
+              </li>
               <li className="flex gap-3"><span className="font-mono text-electric">04</span><span>The test submits automatically when the timer reaches zero.</span></li>
             </ul>
             {isFullTest && (
