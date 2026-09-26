@@ -1,0 +1,10 @@
+{
+  "description": "This academic research dashboard offers a structured, data-rich interface for researchers and educators, enhancing data visualization with a modern, technical aesthetic.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
