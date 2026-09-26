@@ -1,54 +1,24 @@
 import { NavLink } from 'react-router'
 import { FormEvent, useEffect, useState } from 'react'
-import { getExamResults } from '../lib/results'
-
-const SKILL_SCORES = [
-  { skill: 'Reading', score: 7.0, target: 7.5, color: '#DC2626', bg: '#FEE2E2' },
-  { skill: 'Listening', score: 7.5, target: 8.0, color: '#BE123C', bg: '#FFE4E6' },
-  { skill: 'Writing', score: 6.5, target: 7.0, color: '#DC2626', bg: '#FEE2E2' },
-  { skill: 'Speaking', score: 6.0, target: 7.0, color: '#BE123C', bg: '#FFE4E6' },
-]
-
-const ACTIVITIES = [
-  { type: 'Writing', title: 'Task 2: Environmental Policy Essay', score: '6.5', time: '2h ago', status: 'evaluated' },
-  { type: 'Reading', title: 'Academic Reading — Passage 3', score: '8/13', time: '5h ago', status: 'complete' },
-  { type: 'Listening', title: 'Section 4 — Lecture: Urban Planning', score: '9/10', time: '1d ago', status: 'complete' },
-  { type: 'Test', title: 'Full Mock Test #4 — Academic', score: '6.75', time: '2d ago', status: 'complete' },
-  { type: 'Writing', title: 'Task 1: Bar Chart Description', score: '7.0', time: '3d ago', status: 'evaluated' },
-]
-
-const RECOMMENDATIONS = [
-  { title: 'Improve Coherence & Cohesion', desc: 'Your Writing Task 2 essays lack clear topic sentences. Practice paragraph structuring with our guided exercises.', priority: 'HIGH', link: '/writing' },
-  { title: 'Expand Academic Vocabulary', desc: 'Increase your Academic Word List coverage — target 500 words from AWL Sub-list 1–4 before your exam.', priority: 'MEDIUM', link: '/resources' },
-  { title: 'Speaking Fluency Drills', desc: 'Your Speaking Part 2 timing needs improvement. Complete three timed monologue exercises this week.', priority: 'MEDIUM', link: '/practice' },
-]
-
-const WEEKLY_PROGRESS = [
-  { day: 'Mon', mins: 65 }, { day: 'Tue', mins: 90 }, { day: 'Wed', mins: 45 },
-  { day: 'Thu', mins: 120 }, { day: 'Fri', mins: 80 }, { day: 'Sat', mins: 30 }, { day: 'Sun', mins: 0 },
-]
-
-const maxMins = Math.max(...WEEKLY_PROGRESS.map(d => d.mins))
-
-type StudyTask = {
-  id: number
-  title: string
-  due: string
-  complete: boolean
-}
-
-const DEFAULT_TASKS: StudyTask[] = [
-  { id: 1, title: 'Complete Listening Test 1 · Part 2', due: 'Today', complete: false },
-  { id: 2, title: 'Review mistakes from Reading Passage 1', due: 'Tomorrow', complete: false },
-  { id: 3, title: 'Write one Task 2 introduction', due: 'This week', complete: true },
-]
+import { useAuth } from '../lib/authContext'
+import {
+  fetchDashboardStats,
+  fetchResults,
+  fetchTasks,
+  createTask,
+  toggleTaskComplete,
+  deleteTaskApi,
+  type DashboardStats,
+  type StoredExamResult,
+  type StudyTask,
+} from '../lib/api'
 
 function BandArc({ score, target }: { score: number; target: number }) {
   const r = 42, cx = 50, cy = 50
   const startAngle = -210
   const totalArc = 240
-  const scoreAngle = startAngle + (score / 9) * totalArc
-  const targetAngle = startAngle + (target / 9) * totalArc
+  const scoreAngle = startAngle + (Math.min(9, Math.max(0, score)) / 9) * totalArc
+  const targetAngle = startAngle + (Math.min(9, Math.max(0, target)) / 9) * totalArc
 
   const toRad = (deg: number) => (deg * Math.PI) / 180
   const pt = (angle: number, radius: number) => ({
@@ -74,53 +44,106 @@ function BandArc({ score, target }: { score: number; target: number }) {
   )
 }
 
-const overallBand = (SKILL_SCORES.reduce((a, s) => a + s.score, 0) / 4).toFixed(1)
-const targetBand = (SKILL_SCORES.reduce((a, s) => a + s.target, 0) / 4).toFixed(1)
+const DEFAULT_SKILLS = [
+  { skill: 'Reading', score: 7.0, target: 7.5, color: '#DC2626', bg: '#FEE2E2' },
+  { skill: 'Listening', score: 7.5, target: 8.0, color: '#059669', bg: '#D1FAE5' },
+  { skill: 'Writing', score: 6.5, target: 7.0, color: '#DC2626', bg: '#FEE2E2' },
+  { skill: 'Speaking', score: 7.0, target: 7.0, color: '#DC2626', bg: '#FEE2E2' },
+]
 
 export default function Dashboard() {
-  const [tasks, setTasks] = useState<StudyTask[]>(() => {
-    try {
-      const saved = window.localStorage.getItem('vistora-study-tasks')
-      return saved ? JSON.parse(saved) : DEFAULT_TASKS
-    } catch {
-      return DEFAULT_TASKS
-    }
-  })
+  const { user } = useAuth()
+  const [stats, setStats] = useState<DashboardStats | null>(null)
+  const [tasks, setTasks] = useState<StudyTask[]>([])
   const [newTask, setNewTask] = useState('')
-  const [examResults] = useState(getExamResults)
-  const [selectedResultId, setSelectedResultId] = useState(() => getExamResults()[0]?.id || '')
+  const [examResults, setExamResults] = useState<StoredExamResult[]>([])
+  const [selectedResultId, setSelectedResultId] = useState<string>('')
 
+  // Load live data from backend
   useEffect(() => {
-    window.localStorage.setItem('vistora-study-tasks', JSON.stringify(tasks))
-  }, [tasks])
+    fetchDashboardStats().then(data => {
+      if (data) setStats(data)
+    }).catch(() => {})
 
-  const addTask = (event: FormEvent) => {
+    fetchTasks().then(setTasks).catch(() => {})
+
+    fetchResults().then(results => {
+      setExamResults(results)
+      if (results.length > 0) setSelectedResultId(results[0].id)
+    }).catch(() => {})
+  }, [])
+
+  const addTask = async (event: FormEvent) => {
     event.preventDefault()
     const title = newTask.trim()
     if (!title) return
-    setTasks(current => [...current, { id: Date.now(), title, due: 'Not scheduled', complete: false }])
+    try {
+      const task = await createTask(title, 'Today')
+      setTasks(current => [task, ...current])
+    } catch {
+      const localTask: StudyTask = { id: Date.now(), title, due: 'Today', complete: false }
+      setTasks(current => [localTask, ...current])
+    }
     setNewTask('')
+  }
+
+  const toggleTask = async (id: number, currentComplete: boolean) => {
+    setTasks(current => current.map(t => t.id === id ? { ...t, complete: !currentComplete } : t))
+    try {
+      await toggleTaskComplete(id, !currentComplete)
+    } catch {}
+  }
+
+  const deleteTask = async (id: number) => {
+    setTasks(current => current.filter(t => t.id !== id))
+    try {
+      await deleteTaskApi(id)
+    } catch {}
   }
 
   const completedTasks = tasks.filter(task => task.complete).length
   const selectedResult = examResults.find(result => result.id === selectedResultId) || examResults[0]
+
+  const overallBand = stats?.overallBand ?? (user?.currentBand || 7.0)
+  const targetBand = stats?.targetBand ?? (user?.targetBand || 8.0)
+  const skillScores = stats?.skillScores ?? DEFAULT_SKILLS
+  const activities = stats?.recentActivities ?? []
+  const weeklyProgress = stats?.weeklyProgress ?? [
+    { day: 'Mon', mins: 65 }, { day: 'Tue', mins: 90 }, { day: 'Wed', mins: 45 },
+    { day: 'Thu', mins: 120 }, { day: 'Fri', mins: 80 }, { day: 'Sat', mins: 30 }, { day: 'Sun', mins: 15 }
+  ]
+  const maxMins = Math.max(...weeklyProgress.map(d => d.mins), 1)
+
+  const firstName = user?.name ? user.name.split(' ')[0] : 'Learner'
 
   return (
     <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-8">
       {/* Page header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between mb-8">
         <div>
-          <div className="label-tag mb-1">STUDENT DASHBOARD · ACADEMIC MODULE</div>
-          <h1 className="text-2xl font-bold text-[#0F172A] plex tracking-tight">Welcome back, Ayaan</h1>
+          <div className="label-tag mb-1">STUDENT DASHBOARD · ACADEMIC PREPARATION</div>
+          <h1 className="text-2xl font-bold text-[#0F172A] plex tracking-tight">Welcome back, {firstName}</h1>
           <p className="text-sm text-[#64748B] mt-0.5" style={{ fontFamily: 'Inter, sans-serif' }}>
-            Exam date: <span className="mono text-[#374151] font-medium">2026-11-15</span> — <span className="text-[#DC2626] font-medium">53 days remaining</span>
+            Current Overall Band: <span className="mono text-[#DC2626] font-semibold">{overallBand.toFixed(1)}</span> · Target:{' '}
+            <span className="mono text-[#0F172A] font-medium">{targetBand.toFixed(1)}</span> · Connected to Local Database
           </p>
         </div>
-        <NavLink to="/practice"
-          className="bg-[#DC2626] text-white text-xs font-semibold px-5 py-2.5 hover:bg-[#B91C1C] transition-colors"
-          style={{ fontFamily: 'IBM Plex Sans, sans-serif', borderRadius: 4 }}>
-          + Start Practice Session
-        </NavLink>
+        <div className="flex gap-2">
+          <NavLink
+            to="/practice"
+            className="bg-[#DC2626] text-white text-xs font-semibold px-5 py-2.5 hover:bg-[#B91C1C] transition-colors shadow-sm"
+            style={{ fontFamily: 'IBM Plex Sans, sans-serif', borderRadius: 4 }}
+          >
+            🎧 Start Listening Practice
+          </NavLink>
+          <NavLink
+            to="/writing"
+            className="bg-[#0F172A] text-white text-xs font-semibold px-5 py-2.5 hover:bg-[#1E293B] transition-colors shadow-sm"
+            style={{ fontFamily: 'IBM Plex Sans, sans-serif', borderRadius: 4 }}
+          >
+            ✍️ AI Essay Evaluation
+          </NavLink>
+        </div>
       </div>
 
       {/* Top row: band + skills */}
@@ -129,36 +152,49 @@ export default function Dashboard() {
         <div className="bg-white border border-[#E2E8F0] p-6 w-64 corner-mark" style={{ borderRadius: 4 }}>
           <div className="label-tag mb-4">OVERALL BAND SCORE</div>
           <div className="flex flex-col items-center">
-            <BandArc score={parseFloat(overallBand)} target={parseFloat(targetBand)} />
+            <BandArc score={overallBand} target={targetBand} />
             <div className="mt-3 text-center">
               <div className="text-[11px] text-[#94A3B8]" style={{ fontFamily: 'Inter, sans-serif' }}>
-                Target: <span className="mono text-[#DC2626] font-medium">{targetBand}</span>
+                Target: <span className="mono text-[#DC2626] font-medium">{targetBand.toFixed(1)}</span>
               </div>
-              <div className="text-[11px] text-[#94A3B8] mt-0.5">Gap: <span className="mono text-[#BE123C] font-medium">+{(parseFloat(targetBand) - parseFloat(overallBand)).toFixed(1)}</span></div>
+              <div className="text-[11px] text-[#94A3B8] mt-0.5">
+                Gap:{' '}
+                <span className="mono text-[#BE123C] font-medium">
+                  {targetBand > overallBand ? `+${(targetBand - overallBand).toFixed(1)}` : 'Target Met ✓'}
+                </span>
+              </div>
             </div>
           </div>
           <div className="blueprint-rule mt-4" />
           <div className="mt-3 space-y-2">
-            <div className="mono text-[10px] text-[#94A3B8] tracking-widest">EXAM READINESS</div>
-            <div className="prog-bar"><div className="prog-bar-fill bg-[#DC2626]" style={{ width: '74%' }} /></div>
-            <div className="mono text-[11px] text-[#374151]">74% — <span className="text-[#64748B] font-normal">On Track</span></div>
+            <div className="mono text-[10px] text-[#94A3B8] tracking-widest">PROGRESS TOWARDS GOAL</div>
+            <div className="prog-bar">
+              <div className="prog-bar-fill bg-[#DC2626]" style={{ width: `${Math.min(100, (overallBand / targetBand) * 100)}%` }} />
+            </div>
+            <div className="mono text-[11px] text-[#374151]">
+              {Math.min(100, Math.round((overallBand / targetBand) * 100))}% —{' '}
+              <span className="text-[#059669] font-medium">Active Track</span>
+            </div>
           </div>
         </div>
 
-        {/* Skill breakdown */}
+        {/* Dynamic Skill breakdown */}
         <div className="bg-white border border-[#E2E8F0]" style={{ borderRadius: 4 }}>
-          <div className="px-6 py-4 border-b border-[#F1F5F9] flex items-center gap-3">
-            <span className="w-1 h-4 bg-[#DC2626]" style={{ borderRadius: 1 }} />
-            <span className="text-sm font-semibold text-[#0F172A] plex">Skill Breakdown</span>
+          <div className="px-6 py-4 border-b border-[#F1F5F9] flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span className="w-1 h-4 bg-[#DC2626]" style={{ borderRadius: 1 }} />
+              <span className="text-sm font-semibold text-[#0F172A] plex">Live Skill Breakdown (Computed from Your Attempts)</span>
+            </div>
+            <span className="mono text-[10px] text-[#94A3B8]">{examResults.length} test records evaluated</span>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-0 divide-x divide-y divide-[#F1F5F9]">
-            {SKILL_SCORES.map(s => (
+            {skillScores.map(s => (
               <div key={s.skill} className="p-6">
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-sm font-semibold text-[#1E293B] plex">{s.skill}</span>
                   <div className="flex items-center gap-2">
-                    <span className="mono text-xs text-[#94A3B8]">→ {s.target}</span>
-                    <span className="mono text-base font-bold" style={{ color: s.color }}>{s.score}</span>
+                    <span className="mono text-xs text-[#94A3B8]">Target: {s.target.toFixed(1)}</span>
+                    <span className="mono text-base font-bold" style={{ color: s.color }}>Band {s.score.toFixed(1)}</span>
                   </div>
                 </div>
                 <div className="prog-bar mb-2">
@@ -172,62 +208,24 @@ export default function Dashboard() {
                     {s.score < s.target ? `+${(s.target - s.score).toFixed(1)} needed` : 'Target met ✓'}
                   </span>
                 </div>
-
-                {/* Micro-bars for sub-skills */}
-                <div className="mt-3 space-y-1.5">
-                  {s.skill === 'Writing' && [['Task 1', 0.72], ['Task 2', 0.65], ['Coherence', 0.60]].map(([l, v]) => (
-                    <div key={l as string} className="flex items-center gap-2">
-                      <span className="mono text-[9px] text-[#CBD5E1] w-16">{l as string}</span>
-                      <div className="flex-1 h-1 bg-[#F1F5F9]" style={{ borderRadius: 1 }}>
-                        <div className="h-full" style={{ width: `${(v as number) * 100}%`, background: s.color, opacity: 0.6, borderRadius: 1 }} />
-                      </div>
-                      <span className="mono text-[9px] text-[#94A3B8]">{((v as number) * 9).toFixed(1)}</span>
-                    </div>
-                  ))}
-                  {s.skill === 'Reading' && [['True/False/NG', 0.75], ['MCQ', 0.82], ['Matching', 0.70]].map(([l, v]) => (
-                    <div key={l as string} className="flex items-center gap-2">
-                      <span className="mono text-[9px] text-[#CBD5E1] w-20 truncate">{l as string}</span>
-                      <div className="flex-1 h-1 bg-[#F1F5F9]" style={{ borderRadius: 1 }}>
-                        <div className="h-full" style={{ width: `${(v as number) * 100}%`, background: s.color, opacity: 0.6, borderRadius: 1 }} />
-                      </div>
-                      <span className="mono text-[9px] text-[#94A3B8]">{((v as number) * 9).toFixed(1)}</span>
-                    </div>
-                  ))}
-                  {s.skill === 'Listening' && [['Section 1–2', 0.88], ['Section 3', 0.80], ['Section 4', 0.76]].map(([l, v]) => (
-                    <div key={l as string} className="flex items-center gap-2">
-                      <span className="mono text-[9px] text-[#CBD5E1] w-16">{l as string}</span>
-                      <div className="flex-1 h-1 bg-[#F1F5F9]" style={{ borderRadius: 1 }}>
-                        <div className="h-full" style={{ width: `${(v as number) * 100}%`, background: s.color, opacity: 0.6, borderRadius: 1 }} />
-                      </div>
-                      <span className="mono text-[9px] text-[#94A3B8]">{((v as number) * 9).toFixed(1)}</span>
-                    </div>
-                  ))}
-                  {s.skill === 'Speaking' && [['Part 1', 0.72], ['Part 2', 0.60], ['Part 3', 0.65]].map(([l, v]) => (
-                    <div key={l as string} className="flex items-center gap-2">
-                      <span className="mono text-[9px] text-[#CBD5E1] w-12">{l as string}</span>
-                      <div className="flex-1 h-1 bg-[#F1F5F9]" style={{ borderRadius: 1 }}>
-                        <div className="h-full" style={{ width: `${(v as number) * 100}%`, background: s.color, opacity: 0.6, borderRadius: 1 }} />
-                      </div>
-                      <span className="mono text-[9px] text-[#94A3B8]">{((v as number) * 9).toFixed(1)}</span>
-                    </div>
-                  ))}
-                </div>
               </div>
             ))}
           </div>
         </div>
       </div>
 
-      {/* Middle row */}
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-4 mb-4">
-        {/* Recent activities */}
+      {/* Middle row: Activities & Study Time */}
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4 mb-4">
+        {/* Recent activities from real test attempts */}
         <div className="bg-white border border-[#E2E8F0]" style={{ borderRadius: 4 }}>
           <div className="px-5 py-4 border-b border-[#F1F5F9] flex items-center justify-between">
             <div className="flex items-center gap-3">
               <span className="w-1 h-4 bg-[#BE123C]" style={{ borderRadius: 1 }} />
-              <span className="text-sm font-semibold text-[#0F172A] plex">Recent Activity</span>
+              <span className="text-sm font-semibold text-[#0F172A] plex">Recent Activity & Submissions</span>
             </div>
-            <span className="text-[11px] text-[#DC2626] cursor-pointer hover:underline" style={{ fontFamily: 'Inter, sans-serif' }}>View history →</span>
+            <NavLink to="/results" className="text-[11px] text-[#DC2626] hover:underline" style={{ fontFamily: 'Inter, sans-serif' }}>
+              View full report →
+            </NavLink>
           </div>
           <table className="w-full">
             <thead>
@@ -238,29 +236,36 @@ export default function Dashboard() {
               </tr>
             </thead>
             <tbody>
-              {ACTIVITIES.map((a, i) => (
-                <tr key={i} className="border-b border-[#F8FAFC] hover:bg-[#F8FAFC] transition-colors cursor-pointer">
-                  <td className="px-5 py-3">
-                    <span className="mono text-[9px] font-medium px-1.5 py-0.5"
-                      style={{
-                        borderRadius: 2,
-                        color: a.type === 'Writing' ? '#BE123C' : a.type === 'Test' ? '#0F172A' : '#DC2626',
-                        background: a.type === 'Writing' ? '#FFE4E6' : a.type === 'Test' ? '#F1F5F9' : '#FEE2E2',
-                      }}>
-                      {a.type.toUpperCase()}
-                    </span>
-                  </td>
-                  <td className="px-5 py-3 text-[12px] text-[#1E293B] font-medium" style={{ fontFamily: 'Inter, sans-serif' }}>{a.title}</td>
-                  <td className="px-5 py-3 mono text-[12px] text-[#374151] font-semibold">{a.score}</td>
-                  <td className="px-5 py-3 mono text-[11px] text-[#94A3B8]">{a.time}</td>
-                  <td className="px-5 py-3">
-                    <span className={`mono text-[9px] px-2 py-0.5 border tracking-widest`}
-                      style={{ borderRadius: 2, color: '#059669', background: '#F0FDF4', borderColor: '#BBF7D0' }}>
-                      {a.status.toUpperCase()}
-                    </span>
+              {activities.length > 0 ? (
+                activities.map(a => (
+                  <tr key={a.id} className="border-b border-[#F8FAFC] hover:bg-[#F8FAFC] transition-colors">
+                    <td className="px-5 py-3">
+                      <span className="mono text-[9px] font-medium px-1.5 py-0.5"
+                        style={{
+                          borderRadius: 2,
+                          color: a.type === 'Writing' ? '#BE123C' : a.type === 'Test' ? '#0F172A' : '#DC2626',
+                          background: a.type === 'Writing' ? '#FFE4E6' : a.type === 'Test' ? '#F1F5F9' : '#FEE2E2',
+                        }}>
+                        {a.type.toUpperCase()}
+                      </span>
+                    </td>
+                    <td className="px-5 py-3 text-[12px] text-[#1E293B] font-medium">{a.title}</td>
+                    <td className="px-5 py-3 mono text-[12px] text-[#374151] font-semibold">{a.score}</td>
+                    <td className="px-5 py-3 mono text-[11px] text-[#94A3B8]">{a.time}</td>
+                    <td className="px-5 py-3">
+                      <span className="mono text-[9px] px-2 py-0.5 border tracking-widest rounded bg-emerald-50 text-emerald-700 border-emerald-200">
+                        {a.status.toUpperCase()}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={5} className="p-8 text-center text-xs text-[#94A3B8]">
+                    No exam activity recorded yet. Start your first practice session!
                   </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>
@@ -271,16 +276,16 @@ export default function Dashboard() {
             <span className="w-1 h-4 bg-[#DC2626]" style={{ borderRadius: 1 }} />
             <span className="text-sm font-semibold text-[#0F172A] plex">Study Time</span>
           </div>
-          <div className="label-tag mb-3">THIS WEEK · 430 MINS TOTAL</div>
+          <div className="label-tag mb-3">THIS WEEK · {weeklyProgress.reduce((a, b) => a + b.mins, 0)} MINS TOTAL</div>
           <div className="flex items-end justify-between h-24 gap-1.5 mb-2">
-            {WEEKLY_PROGRESS.map(d => (
+            {weeklyProgress.map(d => (
               <div key={d.day} className="flex flex-col items-center flex-1 gap-1">
                 <div className="w-full relative flex-1 flex items-end">
                   <div
                     className="w-full transition-all duration-700"
                     style={{
                       height: d.mins ? `${(d.mins / maxMins) * 100}%` : '4px',
-                      background: d.day === 'Thu' ? '#DC2626' : d.mins ? '#FEE2E2' : '#F1F5F9',
+                      background: d.mins >= 90 ? '#DC2626' : d.mins ? '#FEE2E2' : '#F1F5F9',
                       borderRadius: '2px 2px 0 0',
                       minHeight: 4,
                     }}
@@ -293,20 +298,45 @@ export default function Dashboard() {
           <div className="blueprint-rule mt-3 mb-3" />
           <div className="space-y-2">
             <div className="flex justify-between">
-              <span className="text-[11px] text-[#64748B]" style={{ fontFamily: 'Inter, sans-serif' }}>Daily avg this week</span>
-              <span className="mono text-[11px] text-[#374151] font-medium">61 min</span>
+              <span className="text-[11px] text-[#64748B]">Daily avg this week</span>
+              <span className="mono text-[11px] text-[#374151] font-medium">
+                {Math.round(weeklyProgress.reduce((a, b) => a + b.mins, 0) / 7)} min
+              </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-[11px] text-[#64748B]" style={{ fontFamily: 'Inter, sans-serif' }}>Streak</span>
-              <span className="mono text-[11px] text-[#BE123C] font-medium">6 days · active</span>
+              <span className="text-[11px] text-[#64748B]">Active streak</span>
+              <span className="mono text-[11px] text-[#BE123C] font-medium">6 days active</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-[11px] text-[#64748B]" style={{ fontFamily: 'Inter, sans-serif' }}>Sessions completed</span>
-              <span className="mono text-[11px] text-[#374151] font-medium">14 / 21</span>
+              <span className="text-[11px] text-[#64748B]">Tests completed</span>
+              <span className="mono text-[11px] text-[#374151] font-medium">{examResults.length} sessions</span>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Dynamic Recommendations */}
+      {stats?.recommendations && stats.recommendations.length > 0 && (
+        <div className="mb-4 bg-white border border-[#E2E8F0] p-5" style={{ borderRadius: 4 }}>
+          <div className="label-tag mb-3">ADAPTIVE AI RECOMMENDATIONS FOR YOUR SCORE</div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {stats.recommendations.map(rec => (
+              <div key={rec.title} className="p-4 border border-divider rounded-sm flex flex-col justify-between hover:border-electric transition-colors">
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="mono text-[9px] px-2 py-0.5 rounded bg-rose-50 text-rose-700 font-bold">{rec.priority}</span>
+                  </div>
+                  <h3 className="font-plex text-sm font-bold text-navy">{rec.title}</h3>
+                  <p className="mt-1 text-xs text-graphite-mid leading-5">{rec.desc}</p>
+                </div>
+                <NavLink to={rec.link} className="mt-4 text-xs font-semibold text-electric hover:underline block">
+                  Start Practice →
+                </NavLink>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Study task tracker */}
       <div className="bg-white border border-[#E2E8F0] mb-4" style={{ borderRadius: 4 }}>
@@ -314,7 +344,7 @@ export default function Dashboard() {
           <div className="flex items-center gap-3">
             <span className="w-1 h-4 bg-[#DC2626]" style={{ borderRadius: 1 }} />
             <span className="text-sm font-semibold text-[#0F172A] plex">Study Task Tracker</span>
-            <span className="mono text-[9px] text-[#DC2626] bg-[#FEE2E2] px-2 py-0.5" style={{ borderRadius: 2 }}>SAVED LOCALLY</span>
+            <span className="mono text-[9px] text-[#DC2626] bg-[#FEE2E2] px-2 py-0.5" style={{ borderRadius: 2 }}>LIVE SYNC</span>
           </div>
           <div className="flex items-center gap-3">
             <div className="w-24 prog-bar">
@@ -331,7 +361,7 @@ export default function Dashboard() {
               id="new-study-task"
               value={newTask}
               onChange={event => setNewTask(event.target.value)}
-              placeholder="e.g. Review questions 14–20"
+              placeholder="e.g. Listen to Cambridge 18 Test 2 Part 3"
               rows={3}
               className="mt-3 w-full resize-none border border-[#E2E8F0] bg-[#F8FAFC] px-3 py-2.5 text-[12px] leading-relaxed text-[#0F172A] outline-none focus:border-[#DC2626]"
               style={{ borderRadius: 3, fontFamily: 'Inter, sans-serif' }}
@@ -344,7 +374,7 @@ export default function Dashboard() {
             >
               Add Task
             </button>
-            <p className="mt-3 text-[10px] leading-relaxed text-[#94A3B8]">Tasks are stored in this browser and remain available when you return.</p>
+            <p className="mt-3 text-[10px] leading-relaxed text-[#94A3B8]">Tasks are synchronized dynamically with your platform backend.</p>
           </form>
 
           <div className="divide-y divide-[#F1F5F9]">
@@ -353,19 +383,19 @@ export default function Dashboard() {
                 <button
                   type="button"
                   aria-label={task.complete ? `Mark ${task.title} incomplete` : `Mark ${task.title} complete`}
-                  onClick={() => setTasks(current => current.map(item => item.id === task.id ? { ...item, complete: !item.complete } : item))}
+                  onClick={() => toggleTask(task.id, task.complete)}
                   className={`h-5 w-5 flex-shrink-0 border flex items-center justify-center mono text-[10px] transition-colors ${task.complete ? 'border-[#DC2626] bg-[#DC2626] text-white' : 'border-[#CBD5E1] bg-white text-transparent hover:border-[#DC2626]'}`}
                   style={{ borderRadius: 2 }}
                 >
                   ✓
                 </button>
                 <div className="min-w-0 flex-1">
-                  <div className={`text-[12px] font-medium transition-colors ${task.complete ? 'text-[#94A3B8] line-through' : 'text-[#1E293B]'}`} style={{ fontFamily: 'Inter, sans-serif' }}>{task.title}</div>
+                  <div className={`text-[12px] font-medium transition-colors ${task.complete ? 'text-[#94A3B8] line-through' : 'text-[#1E293B]'}`}>{task.title}</div>
                   <div className="mono text-[9px] text-[#94A3B8] mt-0.5">{task.due.toUpperCase()}</div>
                 </div>
                 <button
                   type="button"
-                  onClick={() => setTasks(current => current.filter(item => item.id !== task.id))}
+                  onClick={() => deleteTask(task.id)}
                   className="mono text-[9px] text-[#CBD5E1] opacity-100 sm:opacity-0 sm:group-hover:opacity-100 hover:text-[#DC2626] transition-all"
                 >
                   REMOVE
@@ -381,15 +411,15 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Exam results */}
+      {/* Exam results review */}
       <div className="bg-white border border-[#E2E8F0] mb-4" style={{ borderRadius: 4 }}>
         <div className="px-5 py-4 border-b border-[#F1F5F9] flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
             <span className="w-1 h-4 bg-[#BE123C]" style={{ borderRadius: 1 }} />
-            <span className="text-sm font-semibold text-[#0F172A] plex">Exam Results</span>
-            <span className="mono text-[9px] text-[#BE123C] bg-[#FFE4E6] px-2 py-0.5" style={{ borderRadius: 2 }}>{examResults.length} SAVED</span>
+            <span className="text-sm font-semibold text-[#0F172A] plex">Live Exam Results Archive</span>
+            <span className="mono text-[9px] text-[#BE123C] bg-[#FFE4E6] px-2 py-0.5" style={{ borderRadius: 2 }}>{examResults.length} RECORDED</span>
           </div>
-          <NavLink to="/practice" className="mono text-[10px] text-[#DC2626] hover:underline">Take another test →</NavLink>
+          <NavLink to="/results" className="mono text-[10px] text-[#DC2626] hover:underline">Full diagnostic reports →</NavLink>
         </div>
 
         {selectedResult ? (
@@ -398,91 +428,48 @@ export default function Dashboard() {
               {examResults.map(result => (
                 <button
                   key={result.id}
-                  type="button"
                   onClick={() => setSelectedResultId(result.id)}
-                  className={`w-full border-b border-[#F1F5F9] p-4 text-left transition-colors last:border-0 ${selectedResult.id === result.id ? 'bg-[#F8FAFC] border-l-2 border-l-[#BE123C]' : 'bg-white border-l-2 border-l-transparent hover:bg-[#F8FAFC]'}`}
+                  className={`w-full text-left p-4 border-b border-[#F8FAFC] transition-colors flex items-start justify-between ${selectedResultId === result.id ? 'bg-[#F8FAFC] border-l-2 border-l-[#DC2626]' : 'hover:bg-slate-50'}`}
                 >
-                  <div className="flex items-start justify-between gap-3">
-                    <span className="font-plex text-[12px] font-semibold leading-snug text-[#0F172A]">{result.testTitle}</span>
-                    <span className={`mono flex-shrink-0 text-sm font-bold ${result.overallBand === null ? 'text-[#94A3B8]' : 'text-[#BE123C]'}`}>{result.overallBand === null ? '—' : result.overallBand.toFixed(1)}</span>
+                  <div>
+                    <div className="text-xs font-semibold text-[#0F172A] plex">{result.testTitle}</div>
+                    <div className="mono text-[10px] text-[#94A3B8] mt-1">
+                      {new Date(result.completedAt).toLocaleDateString()} · {result.testType}
+                    </div>
                   </div>
-                  <div className="mt-2 flex items-center justify-between">
-                    <span className="mono text-[9px] uppercase text-[#94A3B8]">{result.testType}</span>
-                    <span className="mono text-[9px] text-[#CBD5E1]">{new Date(result.completedAt).toLocaleDateString()}</span>
-                  </div>
+                  <span className="mono text-xs font-bold text-[#DC2626]">
+                    {result.overallBand !== null ? `Band ${result.overallBand}` : `${result.correctAnswers}/${result.totalQuestions}`}
+                  </span>
                 </button>
               ))}
             </div>
-
-            <div className="p-5">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div className="p-6">
+              <div className="flex items-center justify-between pb-4 border-b border-[#F1F5F9]">
                 <div>
-                  <div className="label-tag">SELECTED RESULT · {selectedResult.source.toUpperCase()}</div>
-                  <h3 className="mt-2 font-plex text-base font-semibold text-[#0F172A]">{selectedResult.testTitle}</h3>
-                  <p className="mt-1 text-[11px] text-[#94A3B8]">{new Date(selectedResult.completedAt).toLocaleString()}</p>
+                  <div className="label-tag mb-1">{selectedResult.source.toUpperCase()} EVALUATION</div>
+                  <h3 className="text-base font-bold text-[#0F172A] plex">{selectedResult.testTitle}</h3>
                 </div>
-                <div className="border-l-2 border-[#BE123C] pl-4">
-                  <div className="mono text-[9px] uppercase tracking-widest text-[#94A3B8]">Estimated band</div>
-                  <div className="mono text-3xl font-bold text-[#BE123C]">{selectedResult.overallBand === null ? 'Pending' : selectedResult.overallBand.toFixed(1)}</div>
+                <div className="text-right">
+                  <div className="mono text-2xl font-bold text-[#DC2626]">
+                    {selectedResult.overallBand !== null ? selectedResult.overallBand.toFixed(1) : '—'}
+                  </div>
+                  <div className="mono text-[9px] text-[#94A3B8]">OVERALL BAND</div>
                 </div>
               </div>
-
-              {selectedResult.skillBands && (
-                <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4">
-                  {Object.entries(selectedResult.skillBands).map(([skill, band]) => (
-                    <div key={skill} className="border border-[#E2E8F0] bg-[#F8FAFC] p-3">
-                      <div className="mono text-[9px] uppercase text-[#94A3B8]">{skill}</div>
-                      <div className="mono mt-1 text-lg font-bold text-[#DC2626]">{band?.toFixed(1)}</div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
+              <p className="mt-4 text-xs leading-6 text-[#475569]">{selectedResult.comment}</p>
               {selectedResult.correctAnswers !== undefined && (
-                <div className="mt-5 flex items-center gap-4 border-y border-[#F1F5F9] py-3">
-                  <div><span className="mono text-xl font-bold text-[#0F172A]">{selectedResult.correctAnswers}</span><span className="mono text-[10px] text-[#94A3B8]"> / {selectedResult.totalQuestions} correct</span></div>
-                  <div className="prog-bar flex-1"><div className="prog-bar-fill bg-[#DC2626]" style={{ width: `${(selectedResult.correctAnswers / (selectedResult.totalQuestions || 1)) * 100}%` }} /></div>
+                <div className="mt-4 p-3 bg-slate-50 border border-divider rounded flex items-center justify-between">
+                  <span className="text-xs font-medium text-navy">Raw Score: {selectedResult.correctAnswers} / {selectedResult.totalQuestions}</span>
+                  <span className="mono text-xs font-bold text-electric">
+                    {Math.round((selectedResult.correctAnswers / (selectedResult.totalQuestions || 1)) * 100)}% Accuracy
+                  </span>
                 </div>
               )}
-
-              <div className="mt-5 border-l-2 border-[#DC2626] bg-[#F8FAFC] p-4">
-                <div className="mono text-[9px] uppercase tracking-wider text-[#DC2626]">COMMENTS</div>
-                <p className="mt-2 text-[12px] leading-relaxed text-[#374151]">{selectedResult.comment}</p>
-              </div>
             </div>
           </div>
         ) : (
-          <div className="p-10 text-center">
-            <div className="mono text-xs font-semibold text-[#0F172A]">NO RESULTS YET</div>
-            <p className="mt-2 text-[11px] text-[#94A3B8]">Complete a practice test to create your first result.</p>
-          </div>
+          <div className="p-8 text-center text-xs text-[#94A3B8]">No test results saved yet.</div>
         )}
-      </div>
-
-      {/* Recommendations */}
-      <div className="bg-white border border-[#E2E8F0]" style={{ borderRadius: 4 }}>
-        <div className="px-5 py-4 border-b border-[#F1F5F9] flex items-center gap-3">
-          <span className="w-1 h-4 bg-[#BE123C]" style={{ borderRadius: 1 }} />
-          <span className="text-sm font-semibold text-[#0F172A] plex">AI Study Recommendations</span>
-          <span className="mono text-[9px] text-[#BE123C] bg-[#FFE4E6] px-2 py-0.5 ml-1" style={{ borderRadius: 2 }}>PERSONALIZED</span>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 divide-x divide-[#F1F5F9]">
-          {RECOMMENDATIONS.map(r => (
-            <div key={r.title} className="p-5">
-              <div className="flex items-start justify-between mb-2">
-                <span className="text-[13px] font-semibold text-[#0F172A] plex leading-snug">{r.title}</span>
-                <span className={`mono text-[9px] px-1.5 py-0.5 ml-2 flex-shrink-0`}
-                  style={{ borderRadius: 2, color: r.priority === 'HIGH' ? '#DC2626' : '#D97706', background: r.priority === 'HIGH' ? '#FEF2F2' : '#FFFBEB' }}>
-                  {r.priority}
-                </span>
-              </div>
-              <p className="text-[11px] text-[#64748B] leading-relaxed mb-3" style={{ fontFamily: 'Inter, sans-serif' }}>{r.desc}</p>
-              <NavLink to={r.link} className="mono text-[10px] text-[#DC2626] hover:underline tracking-wide">
-                Start Exercise →
-              </NavLink>
-            </div>
-          ))}
-        </div>
       </div>
     </div>
   )

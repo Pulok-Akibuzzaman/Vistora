@@ -2,6 +2,7 @@
   "name": "cse412-ielts-project",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "description": "CSE412 IELTS Preparation Platform with Local Audio Streaming Backend",
   "scripts": {
     "setup": "npm --prefix backend install && npm --prefix \"Frontend UI\" install",

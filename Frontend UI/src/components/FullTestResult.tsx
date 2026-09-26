@@ -2,6 +2,8 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { READING_ANSWERS } from '../data/readingTest1'
 import { LISTENING_ANSWERS } from '../data/listeningTest1'
 import { saveExamResult } from '../lib/results'
+import { saveExamResultApi } from '../lib/api'
+import { useAuth } from '../lib/authContext'
 
 type SkillFeedback = {
   band: number
@@ -39,30 +41,45 @@ type FullTestResultProps = {
 const normalize = (value?: string) => value?.trim().toLowerCase().replace(/\s+/g, ' ') || ''
 
 function bandFromListening(raw: number) {
-  if (raw >= 39) return 9
+  if (raw >= 39) return 9.0
   if (raw >= 37) return 8.5
-  if (raw >= 35) return 8
+  if (raw >= 35) return 8.0
   if (raw >= 32) return 7.5
-  if (raw >= 30) return 7
+  if (raw >= 30) return 7.0
   if (raw >= 26) return 6.5
-  if (raw >= 23) return 6
+  if (raw >= 23) return 6.0
   if (raw >= 18) return 5.5
-  if (raw >= 16) return 5
+  if (raw >= 16) return 5.0
   if (raw >= 13) return 4.5
-  return 4
+  if (raw >= 10) return 4.0
+  if (raw >= 8) return 3.5
+  if (raw >= 6) return 3.0
+  if (raw >= 4) return 2.5
+  if (raw >= 3) return 2.0
+  if (raw >= 2) return 1.5
+  if (raw >= 1) return 1.0
+  return 0.0
 }
 
 function bandFromReading(raw: number) {
-  if (raw >= 39) return 9
+  if (raw >= 39) return 9.0
   if (raw >= 37) return 8.5
-  if (raw >= 35) return 8
+  if (raw >= 35) return 8.0
   if (raw >= 33) return 7.5
-  if (raw >= 30) return 7
+  if (raw >= 30) return 7.0
   if (raw >= 27) return 6.5
-  if (raw >= 23) return 6
+  if (raw >= 23) return 6.0
   if (raw >= 19) return 5.5
-  if (raw >= 15) return 5
-  return 4.5
+  if (raw >= 15) return 5.0
+  if (raw >= 13) return 4.5
+  if (raw >= 10) return 4.0
+  if (raw >= 8) return 3.5
+  if (raw >= 6) return 3.0
+  if (raw >= 4) return 2.5
+  if (raw >= 3) return 2.0
+  if (raw >= 2) return 1.5
+  if (raw >= 1) return 1.0
+  return 0.0
 }
 
 function roundOverall(value: number) {
@@ -70,14 +87,19 @@ function roundOverall(value: number) {
 }
 
 function descriptorForBand(band: number) {
-  if (band >= 8) return 'Very Good User'
-  if (band >= 7) return 'Good User'
-  if (band >= 6) return 'Competent User'
-  if (band >= 5) return 'Modest User'
-  return 'Limited User'
+  if (band >= 8.5) return 'Expert User'
+  if (band >= 7.5) return 'Very Good User'
+  if (band >= 6.5) return 'Good User'
+  if (band >= 5.5) return 'Competent User'
+  if (band >= 4.5) return 'Modest User'
+  if (band >= 3.5) return 'Limited User'
+  if (band >= 2.5) return 'Extremely Limited User'
+  if (band >= 1.0) return 'Intermittent User'
+  return 'Did not attempt / Non User'
 }
 
 export default function FullTestResult({ listeningAnswers, readingAnswers, writingAnswers, speakingRecordings, onExit, onRetake }: FullTestResultProps) {
+  const { user } = useAuth()
   const [report, setReport] = useState<AIReport | null>(null)
   const [analysisState, setAnalysisState] = useState<'analysing' | 'complete' | 'fallback'>('analysing')
   const [reviewSkill, setReviewSkill] = useState<'Listening' | 'Reading'>('Listening')
@@ -186,10 +208,12 @@ export default function FullTestResult({ listeningAnswers, readingAnswers, writi
   useEffect(() => {
     if (!report || analysisState === 'analysing' || resultSaved.current) return
     resultSaved.current = true
-    saveExamResult({
+    const resultObj = {
       id: `full-${Date.now()}`,
+      userId: user?.id || 'USR-1048',
+      userName: user?.name || 'Ayaan Rahman',
       testTitle: 'IELTS 21 — Complete Academic Test 1',
-      testType: 'Full Test',
+      testType: 'Full Test' as const,
       completedAt: new Date().toISOString(),
       overallBand: report.overallBand,
       skillBands: {
@@ -199,9 +223,11 @@ export default function FullTestResult({ listeningAnswers, readingAnswers, writi
         Speaking: report.speaking.band,
       },
       comment: report.overallComment,
-      source: analysisState === 'complete' ? 'AI' : 'Automatic',
-    })
-  }, [analysisState, report])
+      source: (analysisState === 'complete' ? 'AI' : 'Automatic') as any,
+    }
+    saveExamResult(resultObj)
+    saveExamResultApi(resultObj).catch(() => {})
+  }, [analysisState, report, user])
 
   if (!report || analysisState === 'analysing') {
     return (

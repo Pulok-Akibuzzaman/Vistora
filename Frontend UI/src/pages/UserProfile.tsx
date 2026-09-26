@@ -1,100 +1,114 @@
+import { useEffect, useState } from 'react'
 import { NavLink } from 'react-router'
-
-const ACHIEVEMENTS = [
-  { icon: 'B7', title: 'First Band 7', desc: 'Achieved Band 7 on a practice test', earned: true, date: '2026-08-14' },
-  { icon: '30', title: '30-Day Streak', desc: 'Studied for 30 consecutive days', earned: true, date: '2026-09-01' },
-  { icon: '50', title: 'Essay Veteran', desc: 'Submitted 50 essays for evaluation', earned: true, date: '2026-09-10' },
-  { icon: 'RS', title: 'Resource Scholar', desc: 'Read 100 study materials', earned: false, progress: 74 },
-  { icon: 'B8', title: 'Band 8 Club', desc: 'Achieve Band 8.0 on any test', earned: false, progress: 85 },
-  { icon: 'CL', title: 'Community Leader', desc: 'Receive 100 upvotes on forum posts', earned: false, progress: 42 },
-]
-
-const HISTORY = [
-  { date: '2026-09-23', activity: 'Writing Evaluation — Task 2: Crime & Punishment', score: '7.5', type: 'Writing' },
-  { date: '2026-09-22', activity: 'Reading Practice — Passage 3: Renewable Energy', score: '8/13', type: 'Reading' },
-  { date: '2026-09-21', activity: 'Full Mock Test #5 — Academic Module', score: '7.25', type: 'Full Test' },
-  { date: '2026-09-20', activity: 'Listening — Section 4: Urban Planning Lecture', score: '9/10', type: 'Listening' },
-  { date: '2026-09-19', activity: 'Writing Evaluation — Task 1: Bar Chart', score: '7.0', type: 'Writing' },
-  { date: '2026-09-18', activity: 'Resource: Academic Word List Sub-list 1', score: '—', type: 'Resource' },
-  { date: '2026-09-17', activity: 'Full Mock Test #4 — Academic Module', score: '6.75', type: 'Full Test' },
-]
-
-const BAND_HISTORY = [
-  { month: 'Apr', score: 5.5 }, { month: 'May', score: 6.0 }, { month: 'Jun', score: 6.0 },
-  { month: 'Jul', score: 6.5 }, { month: 'Aug', score: 6.75 }, { month: 'Sep', score: 6.875 },
-]
-
-function BandProgressChart() {
-  const w = 360, h = 80, pad = { l: 30, r: 16, t: 12, b: 22 }
-  const min = 5, max = 8
-  const xs = BAND_HISTORY.map((_, i) => pad.l + (i / (BAND_HISTORY.length - 1)) * (w - pad.l - pad.r))
-  const ys = BAND_HISTORY.map(d => pad.t + ((max - d.score) / (max - min)) * (h - pad.t - pad.b))
-  const path = xs.map((x, i) => `${i === 0 ? 'M' : 'L'}${x.toFixed(1)},${ys[i].toFixed(1)}`).join(' ')
-  const area = path + ` L${xs[xs.length - 1].toFixed(1)},${(h - pad.b).toFixed(1)} L${xs[0].toFixed(1)},${(h - pad.b).toFixed(1)} Z`
-
-  return (
-    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} className="w-full h-auto">
-      <defs>
-        <linearGradient id="bandGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#BE123C" stopOpacity="0.15" />
-          <stop offset="100%" stopColor="#BE123C" stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      {[5.5, 6, 6.5, 7].map(v => {
-        const y = pad.t + ((max - v) / (max - min)) * (h - pad.t - pad.b)
-        return (
-          <g key={v}>
-            <line x1={pad.l} y1={y} x2={w - pad.r} y2={y} stroke="#F1F5F9" strokeWidth="1" />
-            <text x={pad.l - 4} y={y + 4} textAnchor="end" fontSize="8" fill="#CBD5E1" fontFamily="IBM Plex Mono">{v}</text>
-          </g>
-        )
-      })}
-      <path d={area} fill="url(#bandGrad)" />
-      <path d={path} fill="none" stroke="#BE123C" strokeWidth="2" strokeLinejoin="round" />
-      {xs.map((x, i) => (
-        <g key={i}>
-          <circle cx={x} cy={ys[i]} r="3" fill="#BE123C" />
-          <text x={x} y={h - 4} textAnchor="middle" fontSize="8" fill="#CBD5E1" fontFamily="IBM Plex Mono">{BAND_HISTORY[i].month}</text>
-        </g>
-      ))}
-    </svg>
-  )
-}
+import { useAuth } from '../lib/authContext'
+import { fetchResults, type StoredExamResult } from '../lib/api'
 
 export default function UserProfile() {
+  const { user, updateProfile } = useAuth()
+  const [results, setResults] = useState<StoredExamResult[]>([])
+  const [isEditing, setIsEditing] = useState(false)
+  const [editForm, setEditForm] = useState({
+    name: user?.name || '',
+    country: user?.country || 'Bangladesh',
+    targetBand: user?.targetBand || 8.0,
+    institution: user?.institution || 'East West University',
+    bio: user?.bio || '',
+    phone: user?.phone || '',
+  })
+  const [saving, setSaving] = useState(false)
+
+  useEffect(() => {
+    fetchResults().then(setResults).catch(() => {})
+  }, [])
+
+  useEffect(() => {
+    if (user) {
+      setEditForm({
+        name: user.name || '',
+        country: user.country || 'Bangladesh',
+        targetBand: user.targetBand || 8.0,
+        institution: user.institution || 'East West University',
+        bio: user.bio || '',
+        phone: user.phone || '',
+      })
+    }
+  }, [user])
+
+  const handleSaveProfile = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setSaving(true)
+    try {
+      await updateProfile(editForm)
+      setIsEditing(false)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  // Calculate dynamic stats
+  const testsCompleted = results.filter(r => r.testType !== 'Writing').length
+  const essaysSubmitted = results.filter(r => r.testType === 'Writing').length
+  
+  const scoreAttempts = results.filter(r => typeof r.overallBand === 'number')
+  const calculatedCurrentBand = scoreAttempts.length > 0
+    ? (scoreAttempts.reduce((acc, r) => acc + (r.overallBand || 0), 0) / scoreAttempts.length).toFixed(2)
+    : (user?.currentBand || 7.0).toFixed(2)
+
+  const initials = user?.name
+    ? user.name.split(' ').filter(Boolean).map(n => n[0]).join('').toUpperCase().slice(0, 2)
+    : 'ST'
+
+  // Dynamic band trajectory
+  const bandHistory = scoreAttempts.slice(0, 6).reverse().map((r, i) => ({
+    label: `T${i + 1}`,
+    score: r.overallBand || 6.5,
+  }))
+
+  const minBand = 5.0
+  const maxBand = 9.0
+
   return (
     <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-8">
       {/* Profile header */}
       <div className="bg-white border border-[#E2E8F0] p-6 mb-4 corner-mark" style={{ borderRadius: 4 }}>
         <div className="flex flex-col sm:flex-row items-start gap-5">
-          <div className="w-16 h-16 bg-[#FFE4E6] border-2 border-[#FECDD3] flex items-center justify-center text-[#BE123C] text-xl font-bold" style={{ borderRadius: 5 }}>AR</div>
+          <div className="w-16 h-16 bg-[#FFE4E6] border-2 border-[#FECDD3] flex items-center justify-center text-[#BE123C] text-xl font-bold" style={{ borderRadius: 5 }}>
+            {initials}
+          </div>
           <div className="flex-1">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div>
-                <h1 className="text-xl font-bold text-[#0F172A] plex">Ayaan Rahman</h1>
-                <div className="text-sm text-[#64748B] mt-0.5" style={{ fontFamily: 'Inter, sans-serif' }}>ayaan.rahman@email.com</div>
-                <div className="flex items-center gap-3 mt-2">
-                  <span className="mono text-[10px] text-[#94A3B8] border border-[#E2E8F0] px-2 py-0.5" style={{ borderRadius: 2 }}>Bangladesh</span>
-                  <span className="mono text-[10px] text-[#94A3B8] border border-[#E2E8F0] px-2 py-0.5" style={{ borderRadius: 2 }}>IELTS Academic</span>
-                  <span className="mono text-[10px] text-white bg-[#BE123C] px-2 py-0.5" style={{ borderRadius: 2 }}>STUDENT</span>
+                <h1 className="text-xl font-bold text-[#0F172A] plex">{user?.name}</h1>
+                <div className="text-sm text-[#64748B] mt-0.5" style={{ fontFamily: 'Inter, sans-serif' }}>{user?.email}</div>
+                <div className="flex flex-wrap items-center gap-2 mt-2">
+                  <span className="mono text-[10px] text-[#64748B] border border-[#E2E8F0] px-2 py-0.5" style={{ borderRadius: 2 }}>{user?.country || 'Bangladesh'}</span>
+                  <span className="mono text-[10px] text-[#64748B] border border-[#E2E8F0] px-2 py-0.5" style={{ borderRadius: 2 }}>{user?.institution || 'East West University'}</span>
+                  <span className="mono text-[10px] text-white bg-[#BE123C] px-2 py-0.5 uppercase tracking-wider" style={{ borderRadius: 2 }}>{user?.role || 'STUDENT'}</span>
                 </div>
+                {user?.bio && (
+                  <p className="mt-3 text-xs leading-5 text-[#475569] max-w-2xl">{user.bio}</p>
+                )}
               </div>
-              <button className="border border-[#E2E8F0] text-[#64748B] text-xs px-4 py-2 hover:border-[#CBD5E1] transition-colors" style={{ borderRadius: 3, fontFamily: 'IBM Plex Sans, sans-serif' }}>
-                Edit Profile
+              <button
+                onClick={() => setIsEditing(true)}
+                className="border border-[#E2E8F0] text-[#0F172A] font-semibold text-xs px-4 py-2 hover:bg-slate-50 transition-colors shadow-sm"
+                style={{ borderRadius: 3, fontFamily: 'IBM Plex Sans, sans-serif' }}
+              >
+                ✏️ Edit Profile
               </button>
             </div>
 
             {/* Quick stats */}
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mt-4 pt-4 border-t border-[#F1F5F9]">
               {[
-                ['CURRENT BAND', '6.88'],
-                ['TARGET BAND', '8.0'],
-                ['DAYS ACTIVE', '127'],
-                ['ESSAYS SUBMITTED', '52'],
-                ['TESTS COMPLETED', '18'],
+                ['CURRENT BAND', calculatedCurrentBand],
+                ['TARGET BAND', (user?.targetBand || 8.0).toFixed(1)],
+                ['TESTS COMPLETED', String(testsCompleted)],
+                ['ESSAYS EVALUATED', String(essaysSubmitted)],
+                ['TOTAL ATTEMPTS', String(results.length)],
               ].map(([l, v]) => (
                 <div key={l}>
-                  <div className="mono text-[9px] text-[#CBD5E1] tracking-widest">{l}</div>
+                  <div className="mono text-[9px] text-[#94A3B8] tracking-widest">{l}</div>
                   <div className="mono text-lg font-bold text-[#0F172A] mt-0.5">{v}</div>
                 </div>
               ))}
@@ -103,102 +117,191 @@ export default function UserProfile() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-4">
-        <div className="space-y-4">
-          {/* Band progression */}
-          <div className="bg-white border border-[#E2E8F0] p-5" style={{ borderRadius: 4 }}>
-            <div className="flex items-center gap-3 mb-4">
-              <span className="w-1 h-4 bg-[#BE123C]" style={{ borderRadius: 1 }} />
-              <span className="text-sm font-semibold text-[#0F172A] plex">Band Score Progression</span>
-              <span className="ml-auto mono text-[10px] text-[#94A3B8]">APR — SEP 2026</span>
+      {/* Edit Profile Modal */}
+      {isEditing && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs">
+          <div className="w-full max-w-lg rounded-sm border border-divider bg-white p-6 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-divider pb-3">
+              <h2 className="font-plex text-lg font-bold text-navy">Edit Your Profile</h2>
+              <button onClick={() => setIsEditing(false)} className="text-graphite hover:text-navy text-sm font-mono">✕</button>
             </div>
-            <BandProgressChart />
-            <div className="mt-3 pt-3 border-t border-[#F1F5F9] flex items-center justify-between">
-              <div><div className="mono text-[10px] text-[#94A3B8]">IMPROVEMENT</div><div className="mono font-semibold text-[#059669]">+1.375 bands</div></div>
-              <div className="text-right"><div className="mono text-[10px] text-[#94A3B8]">PROJECTED BY EXAM</div><div className="mono font-semibold text-[#BE123C]">7.5 – 8.0</div></div>
-            </div>
-          </div>
-
-          {/* Learning history */}
-          <div className="bg-white border border-[#E2E8F0]" style={{ borderRadius: 4 }}>
-            <div className="px-5 py-4 border-b border-[#F1F5F9] flex items-center gap-3">
-              <span className="w-1 h-4 bg-[#DC2626]" style={{ borderRadius: 1 }} />
-              <span className="text-sm font-semibold text-[#0F172A] plex">Learning History</span>
-            </div>
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-[#F8FAFC]">
-                  {['DATE', 'ACTIVITY', 'SCORE', 'TYPE'].map(h => (
-                    <th key={h} className="mono text-[9px] text-[#CBD5E1] tracking-widest text-left px-5 py-2.5">{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {HISTORY.map((h, i) => (
-                  <tr key={i} className="border-b border-[#F8FAFC] hover:bg-[#F8FAFC] transition-colors">
-                    <td className="mono text-[11px] text-[#94A3B8] px-5 py-3">{h.date}</td>
-                    <td className="text-[12px] text-[#374151] px-5 py-3" style={{ fontFamily: 'Inter, sans-serif' }}>{h.activity}</td>
-                    <td className="mono text-[12px] text-[#374151] font-semibold px-5 py-3">{h.score}</td>
-                    <td className="px-5 py-3">
-                      <span className="mono text-[9px] px-1.5 py-0.5" style={{
-                        borderRadius: 2,
-                        color: h.type === 'Writing' ? '#BE123C' : h.type === 'Full Test' ? '#0F172A' : h.type === 'Resource' ? '#059669' : '#DC2626',
-                        background: h.type === 'Writing' ? '#FFE4E6' : h.type === 'Full Test' ? '#F1F5F9' : h.type === 'Resource' ? '#F0FDF4' : '#FEE2E2',
-                      }}>{h.type.toUpperCase()}</span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <form onSubmit={handleSaveProfile} className="mt-4 space-y-4">
+              <div>
+                <label className="block font-mono text-xs uppercase text-graphite-light">Full Name</label>
+                <input
+                  value={editForm.name}
+                  onChange={e => setEditForm({ ...editForm, name: e.target.value })}
+                  className="mt-1 w-full rounded-sm border border-divider p-2.5 text-sm text-navy outline-none focus:border-electric"
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-mono text-xs uppercase text-graphite-light">Country</label>
+                  <input
+                    value={editForm.country}
+                    onChange={e => setEditForm({ ...editForm, country: e.target.value })}
+                    className="mt-1 w-full rounded-sm border border-divider p-2.5 text-sm text-navy outline-none focus:border-electric"
+                  />
+                </div>
+                <div>
+                  <label className="block font-mono text-xs uppercase text-graphite-light">Target Band</label>
+                  <select
+                    value={editForm.targetBand}
+                    onChange={e => setEditForm({ ...editForm, targetBand: Number(e.target.value) })}
+                    className="mt-1 w-full rounded-sm border border-divider p-2.5 text-sm text-navy outline-none focus:border-electric bg-white"
+                  >
+                    {[6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0].map(b => (
+                      <option key={b} value={b}>Band {b.toFixed(1)}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label className="block font-mono text-xs uppercase text-graphite-light">Institution / University</label>
+                <input
+                  value={editForm.institution}
+                  onChange={e => setEditForm({ ...editForm, institution: e.target.value })}
+                  className="mt-1 w-full rounded-sm border border-divider p-2.5 text-sm text-navy outline-none focus:border-electric"
+                  placeholder="e.g. East West University"
+                />
+              </div>
+              <div>
+                <label className="block font-mono text-xs uppercase text-graphite-light">Study Goal / Bio</label>
+                <textarea
+                  value={editForm.bio}
+                  onChange={e => setEditForm({ ...editForm, bio: e.target.value })}
+                  rows={3}
+                  className="mt-1 w-full rounded-sm border border-divider p-2.5 text-sm text-navy outline-none focus:border-electric"
+                  placeholder="Share your IELTS target and study objectives..."
+                />
+              </div>
+              <div className="flex justify-end gap-3 pt-3 border-t border-divider">
+                <button
+                  type="button"
+                  onClick={() => setIsEditing(false)}
+                  className="rounded-sm border border-divider px-4 py-2 text-xs font-semibold text-graphite hover:bg-slate-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="rounded-sm bg-electric px-5 py-2 text-xs font-semibold text-white hover:bg-electric-light disabled:opacity-50"
+                >
+                  {saving ? 'Saving...' : 'Save Profile'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
+      )}
 
-        {/* Right column */}
+      {/* Main Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-4">
+        {/* Left column */}
         <div className="space-y-4">
-          {/* Exam info */}
-          <div className="bg-[#0F172A] bg-navy-grid p-5" style={{ borderRadius: 4 }}>
-            <div className="label-tag text-[#475569] mb-4">EXAM REGISTRATION</div>
-            <div className="space-y-3">
-              {[['Test Date', '15 Nov 2026'], ['Location', 'British Council, Dhaka'], ['Test Type', 'IELTS Academic'], ['Days Remaining', '53']].map(([l, v]) => (
-                <div key={l} className="flex items-center justify-between">
-                  <span className="text-[11px] text-[#475569]" style={{ fontFamily: 'Inter, sans-serif' }}>{l}</span>
-                  <span className={`mono text-[11px] font-semibold ${l === 'Days Remaining' ? 'text-[#F87171]' : 'text-white'}`}>{v}</span>
+          {/* Real Activity History */}
+          <div className="bg-white border border-[#E2E8F0]" style={{ borderRadius: 4 }}>
+            <div className="flex items-center justify-between px-5 py-4 border-b border-[#F1F5F9]">
+              <div>
+                <div className="label-tag mb-0.5">EXAM & PRACTICE HISTORY</div>
+                <h2 className="text-sm font-semibold text-[#0F172A] plex">Recent Attempt Records ({results.length})</h2>
+              </div>
+              <NavLink to="/results" className="mono text-[11px] text-[#DC2626] hover:underline">
+                View All Results →
+              </NavLink>
+            </div>
+            <div className="divide-y divide-[#F8FAFC]">
+              {results.slice(0, 6).map(item => (
+                <div key={item.id} className="p-4 flex items-center justify-between hover:bg-slate-50 transition-colors">
+                  <div>
+                    <div className="text-xs font-semibold text-[#0F172A] plex">{item.testTitle}</div>
+                    <div className="mono text-[10px] text-[#94A3B8] mt-1">
+                      {new Date(item.completedAt).toLocaleDateString()} · {item.testType} · {item.source}
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <span className="mono text-xs font-bold px-2 py-0.5 rounded bg-rose-50 text-rose-700 border border-rose-200">
+                      {item.overallBand !== null ? `Band ${item.overallBand}` : `${item.correctAnswers}/${item.totalQuestions}`}
+                    </span>
+                  </div>
                 </div>
               ))}
+              {results.length === 0 && (
+                <div className="p-8 text-center text-sm text-[#94A3B8]">
+                  No attempts recorded yet. <NavLink to="/practice" className="text-[#DC2626] font-semibold underline">Take a test</NavLink> to see your progress here!
+                </div>
+              )}
             </div>
-            <NavLink to="/exam-dates" className="block mt-4 text-center mono text-[10px] text-[#DC2626] border border-[#1E3A5F] py-2 hover:bg-[#1E293B] transition-colors" style={{ borderRadius: 3 }}>
-              View Official Test Dates →
-            </NavLink>
           </div>
 
-          {/* Achievements */}
-          <div className="bg-white border border-[#E2E8F0]" style={{ borderRadius: 4 }}>
-            <div className="px-4 py-4 border-b border-[#F1F5F9] flex items-center gap-2">
-              <span className="w-1 h-4 bg-[#BE123C]" style={{ borderRadius: 1 }} />
-              <span className="text-sm font-semibold text-[#0F172A] plex">Achievements</span>
-              <span className="mono text-[10px] text-[#94A3B8] ml-auto">3/6 earned</span>
-            </div>
-            <div className="p-4 space-y-3">
-              {ACHIEVEMENTS.map(a => (
-                <div key={a.title} className={`flex items-start gap-3 p-3 border ${a.earned ? 'border-[#E2E8F0] bg-[#F8FAFC]' : 'border-dashed border-[#F1F5F9]'}`} style={{ borderRadius: 3, opacity: a.earned ? 1 : 0.7 }}>
-                  <span className={`text-xl ${!a.earned && 'grayscale opacity-40'}`}>{a.icon}</span>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-0.5">
-                      <span className="text-[12px] font-semibold text-[#0F172A] plex">{a.title}</span>
-                      {a.earned && <span className="mono text-[9px] text-white bg-[#059669] px-1.5 py-0.5" style={{ borderRadius: 2 }}>EARNED</span>}
-                    </div>
-                    <span className="text-[10px] text-[#94A3B8]" style={{ fontFamily: 'Inter, sans-serif' }}>{a.desc}</span>
-                    {!a.earned && a.progress && (
-                      <div className="mt-1.5">
-                        <div className="prog-bar"><div className="prog-bar-fill bg-[#BE123C]" style={{ width: `${a.progress}%` }} /></div>
-                        <span className="mono text-[9px] text-[#CBD5E1] mt-0.5 block">{a.progress}%</span>
-                      </div>
-                    )}
-                    {a.earned && <div className="mono text-[9px] text-[#CBD5E1] mt-0.5">{a.date}</div>}
+          {/* IELTS Target & Milestones */}
+          <div className="bg-white border border-[#E2E8F0] p-5" style={{ borderRadius: 4 }}>
+            <div className="label-tag mb-3">STUDY MILESTONES & ACHIEVEMENTS</div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {[
+                { title: 'Baseline Established', desc: 'Completed initial diagnostic assessment', earned: results.length > 0 },
+                { title: 'Listening Specialist', desc: 'Achieved Band 7.5+ in Listening exam', earned: results.some(r => r.testType === 'Listening' && (r.overallBand || 0) >= 7.5) },
+                { title: 'Essay Submitter', desc: 'Submitted at least one writing evaluation', earned: essaysSubmitted > 0 },
+                { title: 'Band 8 Target Club', desc: `Targeting Band ${(user?.targetBand || 8.0).toFixed(1)} for international graduate entry`, earned: true },
+              ].map(ach => (
+                <div key={ach.title} className={`p-3 border rounded-sm flex items-start gap-3 ${ach.earned ? 'border-emerald-200 bg-emerald-50/50' : 'border-slate-200 bg-slate-50 opacity-60'}`}>
+                  <span className="text-lg">{ach.earned ? '🏆' : '🔒'}</span>
+                  <div>
+                    <div className="text-xs font-semibold text-[#0F172A]">{ach.title}</div>
+                    <div className="text-[11px] text-[#64748B] mt-0.5">{ach.desc}</div>
                   </div>
                 </div>
               ))}
             </div>
+          </div>
+        </div>
+
+        {/* Right column: Band Trajectory & Actions */}
+        <div className="space-y-4">
+          {/* Band Progress Chart */}
+          <div className="bg-white border border-[#E2E8F0] p-5" style={{ borderRadius: 4 }}>
+            <div className="label-tag mb-1">SCORE TRAJECTORY</div>
+            <h3 className="text-sm font-semibold text-[#0F172A] plex mb-3">Band Score History</h3>
+            {bandHistory.length > 1 ? (
+              <div className="space-y-2">
+                {bandHistory.map((item, idx) => (
+                  <div key={idx} className="flex items-center gap-3">
+                    <span className="w-8 font-mono text-[10px] text-[#94A3B8]">{item.label}</span>
+                    <div className="flex-1 bg-slate-100 h-3 rounded overflow-hidden">
+                      <div
+                        className="bg-rose-600 h-full rounded transition-all duration-500"
+                        style={{ width: `${((item.score - minBand) / (maxBand - minBand)) * 100}%` }}
+                      />
+                    </div>
+                    <span className="font-mono text-xs font-bold text-[#0F172A] w-8 text-right">{item.score.toFixed(1)}</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="py-6 text-center text-xs text-[#94A3B8]">
+                Take 2 or more tests to plot your live score trajectory chart.
+              </div>
+            )}
+            <div className="mt-4 pt-3 border-t border-[#F1F5F9] flex justify-between items-center text-xs">
+              <span className="text-[#64748B]">Target Band:</span>
+              <span className="font-mono font-bold text-rose-600">{user?.targetBand?.toFixed(1) || '8.0'}</span>
+            </div>
+          </div>
+
+          {/* Quick Shortcuts */}
+          <div className="bg-white border border-[#E2E8F0] p-5 space-y-2.5" style={{ borderRadius: 4 }}>
+            <div className="label-tag mb-2">QUICK ACTIONS</div>
+            <NavLink to="/practice" className="block w-full py-2.5 px-3 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold text-center rounded transition-colors">
+              🎧 Start Cambridge Listening Test
+            </NavLink>
+            <NavLink to="/writing" className="block w-full py-2.5 px-3 bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold text-center rounded transition-colors">
+              ✍️ AI Writing Evaluation
+            </NavLink>
+            <NavLink to="/documents" className="block w-full py-2.5 px-3 border border-divider hover:bg-slate-50 text-navy text-xs font-semibold text-center rounded transition-colors">
+              📄 Generate SOP / CV
+            </NavLink>
           </div>
         </div>
       </div>

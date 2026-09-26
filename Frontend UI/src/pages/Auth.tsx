@@ -1,16 +1,19 @@
 import { FormEvent, useState } from 'react'
 import { NavLink, useLocation, useNavigate } from 'react-router'
+import { useAuth } from '../lib/authContext'
 
 type AuthMode = 'login' | 'signup'
 
 export default function Auth({ mode }: { mode: AuthMode }) {
   const navigate = useNavigate()
   const location = useLocation()
+  const { login, signup } = useAuth()
   const [form, setForm] = useState({ name: '', email: '', password: '', confirmPassword: '' })
   const [error, setError] = useState('')
+  const [submitting, setSubmitting] = useState(false)
   const isSignup = mode === 'signup'
 
-  const submit = (event: FormEvent) => {
+  const submit = async (event: FormEvent) => {
     event.preventDefault()
     setError('')
     if (!form.email.trim() || form.password.length < 6) {
@@ -26,13 +29,20 @@ export default function Auth({ mode }: { mode: AuthMode }) {
       return
     }
 
-    window.localStorage.setItem('vistora-auth-user', JSON.stringify({
-      name: isSignup ? form.name.trim() : 'Ayaan Rahman',
-      email: form.email.trim(),
-      role: 'Student',
-    }))
-    const destination = (location.state as { from?: string } | null)?.from || '/dashboard'
-    navigate(destination, { replace: true })
+    setSubmitting(true)
+    try {
+      if (isSignup) {
+        await signup(form.name.trim(), form.email.trim(), form.password)
+      } else {
+        await login(form.email.trim(), form.password)
+      }
+      const destination = (location.state as { from?: string } | null)?.from || '/dashboard'
+      navigate(destination, { replace: true })
+    } catch (err: any) {
+      setError(err?.message || 'Authentication failed. Please check your credentials.')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -61,7 +71,7 @@ export default function Auth({ mode }: { mode: AuthMode }) {
             {isSignup && (
               <label className="block">
                 <span className="font-mono text-xs uppercase tracking-wider text-graphite-light">Full name</span>
-                <input autoComplete="name" value={form.name} onChange={event => setForm(current => ({ ...current, name: event.target.value }))} className="mt-2 w-full rounded-sm border border-divider bg-white px-4 py-3 text-sm text-navy outline-none focus:border-electric" placeholder="Ayaan Rahman" />
+                <input autoComplete="name" value={form.name} onChange={event => setForm(current => ({ ...current, name: event.target.value }))} className="mt-2 w-full rounded-sm border border-divider bg-white px-4 py-3 text-sm text-navy outline-none focus:border-electric" placeholder="Your Name" />
               </label>
             )}
             <label className="block">
@@ -79,8 +89,8 @@ export default function Auth({ mode }: { mode: AuthMode }) {
               </label>
             )}
             {error && <div role="alert" className="border-l-2 border-danger bg-danger/5 p-3 text-sm text-danger">{error}</div>}
-            <button type="submit" className="w-full rounded-card bg-electric px-5 py-3.5 font-plex text-sm font-semibold text-white transition-colors hover:bg-electric-light">
-              {isSignup ? 'Create account' : 'Sign in'}
+            <button type="submit" disabled={submitting} className="w-full rounded-card bg-electric px-5 py-3.5 font-plex text-sm font-semibold text-white transition-colors hover:bg-electric-light disabled:opacity-50">
+              {submitting ? 'Please wait...' : isSignup ? 'Create account' : 'Sign in'}
             </button>
           </form>
 
@@ -90,7 +100,7 @@ export default function Auth({ mode }: { mode: AuthMode }) {
               {isSignup ? 'Sign in' : 'Create an account'}
             </NavLink>
           </div>
-          <p className="mt-5 text-center font-mono text-xs leading-5 text-graphite-light">Demo authentication is stored in this browser. Connect your production identity provider before launch.</p>
+          <p className="mt-5 text-center font-mono text-xs leading-5 text-graphite-light">Full-stack account authentication connected to your local backend server.</p>
         </div>
       </section>
     </main>

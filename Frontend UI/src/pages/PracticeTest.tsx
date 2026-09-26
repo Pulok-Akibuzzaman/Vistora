@@ -3,7 +3,9 @@ import { READING_ANSWERS, READING_PASSAGES } from '../data/readingTest1'
 import { LISTENING_ANSWERS } from '../data/listeningTest1'
 import FullTestResult from '../components/FullTestResult'
 import { saveExamResult } from '../lib/results'
-import { checkBackendHealth, getStreamUrl, type BackendHealth } from '../lib/api'
+import { checkBackendHealth, getStreamUrl, saveExamResultApi, type BackendHealth } from '../lib/api'
+import { useAuth } from '../lib/authContext'
+import { NavLink } from 'react-router'
 
 type TestType = 'Reading' | 'Listening' | 'Writing' | 'Speaking' | 'Full Test'
 
@@ -1031,6 +1033,7 @@ function SpeakingExam({ currentPart, setCurrentPart, timeLeft, part, onRecording
 }
 
 export default function PracticeTest() {
+  const { user } = useAuth()
   const [stage, setStage] = useState<'select' | 'instructions' | 'test' | 'result'>('select')
   const [filter, setFilter] = useState<(typeof FILTERS)[number]>('All')
   const [selectedTest, setSelectedTest] = useState(TESTS[0])
@@ -1086,31 +1089,45 @@ export default function PracticeTest() {
   }, 0), [answers])
 
   const listeningBand = (raw: number) => {
-    if (raw >= 39) return 9
+    if (raw >= 39) return 9.0
     if (raw >= 37) return 8.5
-    if (raw >= 35) return 8
+    if (raw >= 35) return 8.0
     if (raw >= 32) return 7.5
-    if (raw >= 30) return 7
+    if (raw >= 30) return 7.0
     if (raw >= 26) return 6.5
-    if (raw >= 23) return 6
+    if (raw >= 23) return 6.0
     if (raw >= 18) return 5.5
-    if (raw >= 16) return 5
+    if (raw >= 16) return 5.0
     if (raw >= 13) return 4.5
-    if (raw >= 10) return 4
-    return 3.5
+    if (raw >= 10) return 4.0
+    if (raw >= 8) return 3.5
+    if (raw >= 6) return 3.0
+    if (raw >= 4) return 2.5
+    if (raw >= 3) return 2.0
+    if (raw >= 2) return 1.5
+    if (raw >= 1) return 1.0
+    return 0.0
   }
 
   const readingBand = (raw: number) => {
-    if (raw >= 39) return 9
+    if (raw >= 39) return 9.0
     if (raw >= 37) return 8.5
-    if (raw >= 35) return 8
+    if (raw >= 35) return 8.0
     if (raw >= 33) return 7.5
-    if (raw >= 30) return 7
+    if (raw >= 30) return 7.0
     if (raw >= 27) return 6.5
-    if (raw >= 23) return 6
+    if (raw >= 23) return 6.0
     if (raw >= 19) return 5.5
-    if (raw >= 15) return 5
-    return 4.5
+    if (raw >= 15) return 5.0
+    if (raw >= 13) return 4.5
+    if (raw >= 10) return 4.0
+    if (raw >= 8) return 3.5
+    if (raw >= 6) return 3.0
+    if (raw >= 4) return 2.5
+    if (raw >= 3) return 2.0
+    if (raw >= 2) return 1.5
+    if (raw >= 1) return 1.0
+    return 0.0
   }
 
   useEffect(() => {
@@ -1135,18 +1152,25 @@ export default function PracticeTest() {
           ? 'Writing response submitted. Connect the Gemini evaluation endpoint for criterion-level comments and a band estimate.'
           : 'Speaking practice submitted. Connect Gemini audio evaluation for transcript, pronunciation, and fluency comments.'
 
-    saveExamResult({
+    const resultRecord = {
       id: `${selectedTest.id}-${Date.now()}`,
+      userId: user?.id || 'USR-1048',
+      userName: user?.name || 'Ayaan Rahman',
       testTitle: selectedTest.title,
       testType: selectedTest.type,
       completedAt: new Date().toISOString(),
       overallBand,
+      skillBands: overallBand ? { [selectedTest.type]: overallBand } : {},
       correctAnswers,
       totalQuestions: isObjective ? selectedTest.questions : undefined,
+      userAnswers: answers,
       comment,
-      source: isObjective ? 'Automatic' : 'Pending AI',
-    })
-  }, [listeningScore, readingScore, selectedTest, stage, timeLeft])
+      source: (isObjective ? 'Automatic' : 'Pending AI') as any,
+    }
+
+    saveExamResult(resultRecord as any)
+    saveExamResultApi(resultRecord as any).catch(() => {})
+  }, [listeningScore, readingScore, selectedTest, stage, timeLeft, user, answers])
 
   const advanceFullTest = () => {
     const currentIndex = FULL_TEST_ORDER.indexOf(fullModule)
@@ -1307,8 +1331,15 @@ export default function PracticeTest() {
             ))}
           </div>
           <div className="mt-8 flex flex-wrap gap-3">
-            <button onClick={resetTest} className="rounded-card bg-electric px-6 py-3 font-plex text-sm font-semibold text-white transition-colors hover:bg-electric-light">Return to test centre</button>
-            <button onClick={() => setStage('instructions')} className="rounded-card border border-divider bg-white px-6 py-3 font-plex text-sm font-semibold text-navy transition-colors hover:border-graphite-light">Retake test</button>
+            <NavLink to="/results" className="rounded-card bg-electric px-6 py-3 font-plex text-sm font-semibold text-white transition-colors hover:bg-electric-light">
+              View Detailed Diagnostic Report →
+            </NavLink>
+            <button onClick={resetTest} className="rounded-card border border-divider bg-white px-6 py-3 font-plex text-sm font-semibold text-navy transition-colors hover:border-graphite-light">
+              Return to test centre
+            </button>
+            <button onClick={() => setStage('instructions')} className="rounded-card border border-divider bg-white px-6 py-3 font-plex text-sm font-semibold text-navy transition-colors hover:border-graphite-light">
+              Retake test
+            </button>
           </div>
         </section>
       </main>

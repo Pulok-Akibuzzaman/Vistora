@@ -1,5 +1,6 @@
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router'
 import { useEffect, useState } from 'react'
+import { useAuth } from '../lib/authContext'
 
 const NAV = [
   { to: '/dashboard', label: 'Dashboard' },
@@ -43,22 +44,24 @@ const FOOTER_LINKS = [
 export default function Layout() {
   const location = useLocation()
   const navigate = useNavigate()
+  const { user, isAuthenticated, logout } = useAuth()
   const isLanding = location.pathname === '/'
   const isAuthPage = location.pathname === '/login' || location.pathname === '/signup'
   const isPublicPage = isLanding || isAuthPage
   const [mobileOpen, setMobileOpen] = useState(false)
   const [accountOpen, setAccountOpen] = useState(false)
-  const [isAuthenticated, setIsAuthenticated] = useState(() => Boolean(window.localStorage.getItem('vistora-auth-user')))
+
+  const initials = user?.name
+    ? user.name.split(' ').filter(Boolean).map(n => n[0]).join('').toUpperCase().slice(0, 2)
+    : 'ST'
 
   useEffect(() => {
     setMobileOpen(false)
     setAccountOpen(false)
-    setIsAuthenticated(Boolean(window.localStorage.getItem('vistora-auth-user')))
   }, [location.pathname])
 
   const signOut = () => {
-    window.localStorage.removeItem('vistora-auth-user')
-    setIsAuthenticated(false)
+    logout()
     navigate('/')
   }
 
@@ -129,26 +132,35 @@ export default function Layout() {
                     className="flex items-center gap-2 border border-transparent p-1 transition-colors hover:border-[#E2E8F0]"
                     style={{ borderRadius: 4 }}
                   >
-                    <span className="w-8 h-8 bg-[#FFE4E6] border border-[#FECDD3] flex items-center justify-center text-[#BE123C] text-xs font-bold" style={{ borderRadius: 4 }}>AR</span>
+                    <span className="w-8 h-8 bg-[#FFE4E6] border border-[#FECDD3] flex items-center justify-center text-[#BE123C] text-xs font-bold" style={{ borderRadius: 4 }}>
+                      {initials}
+                    </span>
                     <span className="hidden xl:block text-left">
-                      <span className="block text-[10px] font-semibold text-[#0F172A]">Ayaan Rahman</span>
-                      <span className="block mono text-[8px] uppercase tracking-wider text-[#94A3B8]">Student account</span>
+                      <span className="block text-[10px] font-semibold text-[#0F172A]">{user?.name || 'My Account'}</span>
+                      <span className="block mono text-[8px] uppercase tracking-wider text-[#94A3B8]">{user?.role || 'Student'} account</span>
                     </span>
                     <span className="mono text-[9px] text-[#94A3B8]">⌄</span>
                   </button>
                   {accountOpen && (
-                    <div className="absolute right-0 top-full mt-2 w-64 border border-[#E2E8F0] bg-white p-2 shadow-xl" style={{ borderRadius: 4 }}>
+                    <div className="absolute right-0 top-full mt-2 w-64 border border-[#E2E8F0] bg-white p-2 shadow-xl z-50" style={{ borderRadius: 4 }}>
                       <div className="border-b border-[#F1F5F9] px-3 py-2">
-                        <div className="text-xs font-semibold text-[#0F172A]">Account options</div>
-                        <div className="mt-0.5 text-[10px] text-[#94A3B8]">Choose a workspace or manage your account.</div>
+                        <div className="text-xs font-semibold text-[#0F172A]">{user?.name}</div>
+                        <div className="mt-0.5 text-[10px] text-[#94A3B8] truncate">{user?.email}</div>
                       </div>
                       <NavLink to="/profile" className="mt-1 flex items-center justify-between px-3 py-2.5 text-xs text-[#374151] hover:bg-[#F8FAFC]">
-                        <span>Student profile</span><span className="mono text-[9px] text-[#DC2626]">STUDENT</span>
+                        <span>Profile & Settings</span><span className="mono text-[9px] text-[#DC2626] uppercase">{user?.role || 'STUDENT'}</span>
                       </NavLink>
-                      <NavLink to="/admin" className="flex items-center justify-between px-3 py-2.5 text-xs text-[#374151] hover:bg-[#F8FAFC]">
-                        <span>Admin console</span><span className="mono text-[9px] text-[#BE123C]">ADMIN</span>
+                      <NavLink to="/dashboard" className="flex items-center justify-between px-3 py-2.5 text-xs text-[#374151] hover:bg-[#F8FAFC]">
+                        <span>Dashboard</span><span className="mono text-[9px] text-[#059669]">BAND {user?.currentBand || 7.0}</span>
                       </NavLink>
-                      <button type="button" onClick={signOut} className="mt-1 block w-full border-t border-[#F1F5F9] px-3 py-2.5 text-left text-xs font-medium text-[#DC2626] hover:bg-[#FEF2F2]">Sign out</button>
+                      {user?.role === 'Admin' && (
+                        <NavLink to="/admin" className="flex items-center justify-between px-3 py-2.5 text-xs text-[#374151] hover:bg-[#F8FAFC]">
+                          <span>Admin console</span><span className="mono text-[9px] text-[#BE123C]">ADMIN</span>
+                        </NavLink>
+                      )}
+                      <button type="button" onClick={signOut} className="mt-1 block w-full border-t border-[#F1F5F9] px-3 py-2.5 text-left text-xs font-medium text-[#DC2626] hover:bg-[#FEF2F2]">
+                        Sign out
+                      </button>
                     </div>
                   )}
                 </div>
@@ -187,7 +199,9 @@ export default function Layout() {
                     <NavLink key={item.to} to={item.to} className={({ isActive }) => `border-l-2 px-3 py-3 text-xs font-medium uppercase tracking-wider ${isActive ? 'border-[#DC2626] bg-[#FEE2E2] text-[#DC2626]' : 'border-transparent text-[#64748B]'}`}>{item.label}</NavLink>
                   ))}
                   <NavLink to="/profile" className="border-l-2 border-transparent px-3 py-3 text-xs font-medium uppercase tracking-wider text-[#64748B]">Profile</NavLink>
-                  <NavLink to="/admin" className="border-l-2 border-transparent px-3 py-3 text-xs font-medium uppercase tracking-wider text-[#BE123C]">Admin console</NavLink>
+                  {user?.role === 'Admin' && (
+                    <NavLink to="/admin" className="border-l-2 border-transparent px-3 py-3 text-xs font-medium uppercase tracking-wider text-[#BE123C]">Admin console</NavLink>
+                  )}
                   <button type="button" onClick={signOut} className="mt-2 border border-[#E2E8F0] px-3 py-3 text-center text-xs font-semibold uppercase tracking-wider text-[#0F172A]" style={{ borderRadius: 3 }}>Sign out</button>
                 </>
               )}
@@ -224,7 +238,7 @@ export default function Layout() {
           <div className="blueprint-rule mb-4" />
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <span className="mono text-[10px] text-[#334155]">© 2026 VISTORA AI · ALL RIGHTS RESERVED</span>
-            <span className="mono text-[10px] text-[#334155]">IELTS PREPARATION PLATFORM · v2.4.1</span>
+            <span className="mono text-[10px] text-[#334155]">IELTS PREPARATION PLATFORM · CSE412 EAST WEST UNIVERSITY</span>
           </div>
         </div>
       </footer>
