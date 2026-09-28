@@ -1066,6 +1066,7 @@ export default function PracticeTest() {
   const [fullCompleted, setFullCompleted] = useState<FullTestModule[]>([])
   const [fullAttempt, setFullAttempt] = useState<FullTestAttempt>(emptyFullAttempt)
   const savedResultKey = useRef('')
+  const [resultFilter, setResultFilter] = useState<'all' | 'incorrect' | 'correct'>('all')
 
   useEffect(() => {
     checkBackendHealth().then(status => {
@@ -1255,6 +1256,7 @@ export default function PracticeTest() {
     setStage('select')
     setAnswers({})
     setCurrentQ(1)
+    setResultFilter('all')
   }
 
   if (stage === 'result') {
@@ -1319,6 +1321,42 @@ export default function PracticeTest() {
     const projectedReadingScore = Math.round((readingScore / selectedTest.questions) * 40)
     const displayedBand = isListening ? listeningBand(projectedListeningScore) : readingBand(projectedReadingScore)
     const correctAnswers = isListening ? listeningScore : readingScore
+
+    const readingQuestions = selectedTest.type === 'Reading'
+      ? selectedTest.part !== undefined
+        ? READING_PASSAGES[selectedTest.part - 1]?.questions || []
+        : READING_PASSAGES.flatMap(p => p.questions)
+      : []
+
+    const isAnswerCorrect = (userAns: string | undefined, accepted: string[]) => {
+      if (!userAns || !userAns.trim()) return false
+      const norm = userAns.trim().toLowerCase().replace(/\s+/g, ' ')
+      return accepted.some(v => v.trim().toLowerCase().replace(/\s+/g, ' ') === norm)
+    }
+
+    const questionReviewItems = readingQuestions.map(q => {
+      const userAns = answers[q.id]?.trim() || ''
+      const accepted = READING_ANSWERS[q.id] || []
+      const correct = isAnswerCorrect(userAns, accepted)
+      const unanswered = !userAns
+      return {
+        id: q.id,
+        prompt: q.prompt,
+        userAns,
+        accepted,
+        correct,
+        unanswered,
+        explanation: q.explanation,
+        passageReference: q.passageReference,
+      }
+    })
+
+    const filteredReviewItems = questionReviewItems.filter(item => {
+      if (resultFilter === 'incorrect') return !item.correct
+      if (resultFilter === 'correct') return item.correct
+      return true
+    })
+
     return (
       <main className="mx-auto max-w-4xl px-6 py-12">
         <section className="corner-mark border border-divider bg-surface p-8">
@@ -1357,6 +1395,149 @@ export default function PracticeTest() {
             </button>
           </div>
         </section>
+
+        {/* Detailed Question Review & Diagnostics */}
+        {selectedTest.type === 'Reading' && questionReviewItems.length > 0 && (
+          <section className="mt-8 border border-divider bg-surface p-6 sm:p-8">
+            <div className="flex flex-col gap-4 border-b border-divider pb-5 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <div className="label-tag">DIAGNOSTIC REVIEW</div>
+                <h2 className="mt-2 font-plex text-2xl font-bold text-ink">Answer Review & Passage Evidence</h2>
+                <p className="mt-1 text-sm text-graphite-mid">
+                  Review which answers were correct, why incorrect responses were wrong, and the exact passage excerpts used as evidence.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => setResultFilter('all')}
+                  className={`rounded-sm border px-3 py-1.5 font-mono text-xs font-semibold transition-colors ${
+                    resultFilter === 'all'
+                      ? 'border-navy bg-navy text-white'
+                      : 'border-divider bg-surface text-graphite hover:border-graphite-light'
+                  }`}
+                >
+                  All Questions ({questionReviewItems.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setResultFilter('incorrect')}
+                  className={`rounded-sm border px-3 py-1.5 font-mono text-xs font-semibold transition-colors ${
+                    resultFilter === 'incorrect'
+                      ? 'border-rose-600 bg-rose-600 text-white'
+                      : 'border-rose-200 bg-rose-50 text-rose-700 hover:border-rose-300'
+                  }`}
+                >
+                  Mistakes ({questionReviewItems.filter(item => !item.correct).length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setResultFilter('correct')}
+                  className={`rounded-sm border px-3 py-1.5 font-mono text-xs font-semibold transition-colors ${
+                    resultFilter === 'correct'
+                      ? 'border-emerald-600 bg-emerald-600 text-white'
+                      : 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:border-emerald-300'
+                  }`}
+                >
+                  Correct ({questionReviewItems.filter(item => item.correct).length})
+                </button>
+              </div>
+            </div>
+
+            <div className="mt-6 space-y-6">
+              {filteredReviewItems.length === 0 ? (
+                <div className="py-12 text-center text-sm text-graphite-mid">
+                  {resultFilter === 'incorrect' ? '🎉 Great job! You have no incorrect answers.' : 'No questions match this filter.'}
+                </div>
+              ) : (
+                filteredReviewItems.map(item => (
+                  <article
+                    key={item.id}
+                    className={`rounded-sm border p-5 sm:p-6 transition-all ${
+                      item.correct
+                        ? 'border-emerald-200 bg-surface border-l-4 border-l-emerald-600'
+                        : item.unanswered
+                          ? 'border-amber-200 bg-surface border-l-4 border-l-amber-500'
+                          : 'border-rose-200 bg-surface border-l-4 border-l-rose-600'
+                    }`}
+                  >
+                    <div className="flex flex-wrap items-center justify-between gap-3 border-b border-divider pb-3">
+                      <div className="flex items-center gap-3">
+                        <span className="flex h-7 w-7 items-center justify-center rounded-sm bg-surface-2 font-mono text-xs font-bold text-ink">
+                          {item.id}
+                        </span>
+                        <span className="font-mono text-xs uppercase tracking-wider text-graphite-light">
+                          Question {item.id}
+                        </span>
+                      </div>
+                      <span
+                        className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-mono text-xs font-semibold ${
+                          item.correct
+                            ? 'border border-emerald-200 bg-emerald-50 text-emerald-700'
+                            : item.unanswered
+                              ? 'border border-amber-200 bg-amber-50 text-amber-700'
+                              : 'border border-rose-200 bg-rose-50 text-rose-700'
+                        }`}
+                      >
+                        {item.correct ? '✓ Correct' : item.unanswered ? '○ Unanswered' : '✕ Incorrect'}
+                      </span>
+                    </div>
+
+                    <div className="mt-3 font-plex text-sm font-semibold leading-6 text-ink">
+                      {item.prompt}
+                    </div>
+
+                    <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                      <div
+                        className={`rounded-sm border p-3 ${
+                          item.correct ? 'border-emerald-200 bg-emerald-50/30' : 'border-rose-200 bg-rose-50/30'
+                        }`}
+                      >
+                        <div className="font-mono text-[11px] uppercase tracking-wider text-graphite-light">Your Response</div>
+                        <div
+                          className={`mt-1 font-mono text-sm font-bold ${
+                            item.correct ? 'text-emerald-700' : 'text-rose-600'
+                          }`}
+                        >
+                          {item.userAns || <span className="font-normal italic text-graphite-light">(No answer given)</span>}
+                        </div>
+                      </div>
+
+                      <div className="rounded-sm border border-emerald-300 bg-emerald-50/50 p-3">
+                        <div className="font-mono text-[11px] uppercase tracking-wider text-emerald-800">Correct Answer</div>
+                        <div className="mt-1 font-mono text-sm font-bold text-emerald-800">
+                          {item.accepted.join(' / ')}
+                        </div>
+                      </div>
+                    </div>
+
+                    {item.explanation && (
+                      <div className="mt-4 rounded-sm border border-divider bg-surface-2 p-4">
+                        <div className="flex items-center gap-1.5 font-mono text-xs font-bold uppercase tracking-wider text-ink">
+                          <span>💡 Why wrong / right</span>
+                        </div>
+                        <p className="mt-1.5 font-plex text-sm leading-6 text-graphite">
+                          {item.explanation}
+                        </p>
+                      </div>
+                    )}
+
+                    {item.passageReference && (
+                      <div className="mt-3 rounded-sm border border-sky-100 bg-sky-50/40 p-4">
+                        <div className="flex items-center gap-1.5 font-mono text-xs font-bold uppercase tracking-wider text-sky-800">
+                          <span>📖 Part of the passage taken from</span>
+                        </div>
+                        <blockquote className="mt-1.5 border-l-2 border-sky-400 pl-3 font-plex text-sm italic leading-6 text-sky-950">
+                          {item.passageReference}
+                        </blockquote>
+                      </div>
+                    )}
+                  </article>
+                ))
+              )}
+            </div>
+          </section>
+        )}
       </main>
     )
   }

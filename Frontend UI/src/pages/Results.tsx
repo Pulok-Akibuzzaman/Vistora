@@ -2,10 +2,50 @@ import { useEffect, useMemo, useState } from 'react'
 import { NavLink } from 'react-router'
 import { fetchResults, deleteExamResultApi, type StoredExamResult } from '../lib/api'
 import { useAuth } from '../lib/authContext'
+import { READING_ANSWERS, READING_PASSAGES } from '../data/readingTest1'
 
 const FILTERS = ['All', 'Full Test', 'Reading', 'Listening', 'Writing', 'Speaking'] as const
 
 function ResultDetail({ result, userName }: { result: StoredExamResult; userName: string }) {
+  const [filterType, setFilterType] = useState<'all' | 'incorrect' | 'correct'>('all')
+
+  const readingQuestions = useMemo(() => {
+    if (!result.userAnswers) return []
+    const isPart1 = result.testTitle.includes('Part 1')
+    const isPart2 = result.testTitle.includes('Part 2')
+    const isPart3 = result.testTitle.includes('Part 3')
+    if (isPart1) return READING_PASSAGES[0]?.questions || []
+    if (isPart2) return READING_PASSAGES[1]?.questions || []
+    if (isPart3) return READING_PASSAGES[2]?.questions || []
+    return READING_PASSAGES.flatMap(p => p.questions)
+  }, [result.testTitle, result.userAnswers])
+
+  const reviewItems = useMemo(() => {
+    if (!result.userAnswers || readingQuestions.length === 0) return []
+    return readingQuestions.map(q => {
+      const userAns = result.userAnswers ? (result.userAnswers[q.id] || result.userAnswers[String(q.id)] || '') : ''
+      const accepted = READING_ANSWERS[q.id] || []
+      const norm = userAns.trim().toLowerCase().replace(/\s+/g, ' ')
+      const correct = accepted.some(val => val.trim().toLowerCase().replace(/\s+/g, ' ') === norm)
+      return {
+        id: q.id,
+        prompt: q.prompt,
+        userAns: userAns.trim(),
+        accepted,
+        correct,
+        unanswered: !userAns.trim(),
+        explanation: q.explanation,
+        passageReference: q.passageReference,
+      }
+    })
+  }, [readingQuestions, result.userAnswers])
+
+  const filteredItems = useMemo(() => {
+    if (filterType === 'incorrect') return reviewItems.filter(item => !item.correct)
+    if (filterType === 'correct') return reviewItems.filter(item => item.correct)
+    return reviewItems
+  }, [filterType, reviewItems])
+
   const descriptor = result.overallBand === null
     ? 'Awaiting AI evaluation'
     : result.overallBand >= 8
@@ -75,6 +115,148 @@ function ResultDetail({ result, userName }: { result: StoredExamResult; userName
                 {Math.round((result.correctAnswers / (result.totalQuestions || 1)) * 100)}% accuracy
               </div>
             </div>
+          </div>
+        </section>
+      )}
+
+      {reviewItems.length > 0 && (
+        <section className="mt-4 border border-divider bg-surface p-6">
+          <div className="flex flex-col gap-4 border-b border-divider pb-5 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <div className="label-tag">DIAGNOSTIC REVIEW</div>
+              <h2 className="mt-2 font-plex text-xl font-bold text-ink">Answer Review & Passage Evidence</h2>
+              <p className="mt-1 text-sm text-graphite-mid">
+                Compare your responses against correct answers, with explanations and exact passage excerpts.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => setFilterType('all')}
+                className={`rounded-sm border px-3 py-1.5 font-mono text-xs font-semibold transition-colors ${
+                  filterType === 'all'
+                    ? 'border-navy bg-navy text-white'
+                    : 'border-divider bg-surface text-graphite hover:border-graphite-light'
+                }`}
+              >
+                All ({reviewItems.length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setFilterType('incorrect')}
+                className={`rounded-sm border px-3 py-1.5 font-mono text-xs font-semibold transition-colors ${
+                  filterType === 'incorrect'
+                    ? 'border-rose-600 bg-rose-600 text-white'
+                    : 'border-rose-200 bg-rose-50 text-rose-700 hover:border-rose-300'
+                }`}
+              >
+                Mistakes ({reviewItems.filter(item => !item.correct).length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setFilterType('correct')}
+                className={`rounded-sm border px-3 py-1.5 font-mono text-xs font-semibold transition-colors ${
+                  filterType === 'correct'
+                    ? 'border-emerald-600 bg-emerald-600 text-white'
+                    : 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:border-emerald-300'
+                }`}
+              >
+                Correct ({reviewItems.filter(item => item.correct).length})
+              </button>
+            </div>
+          </div>
+
+          <div className="mt-6 space-y-5">
+            {filteredItems.length === 0 ? (
+              <div className="py-8 text-center text-sm text-graphite-mid">
+                {filterType === 'incorrect' ? '🎉 Great job! You have no incorrect answers.' : 'No questions match this filter.'}
+              </div>
+            ) : (
+              filteredItems.map(item => (
+                <article
+                  key={item.id}
+                  className={`rounded-sm border p-5 transition-all ${
+                    item.correct
+                      ? 'border-emerald-200 bg-surface border-l-4 border-l-emerald-600'
+                      : item.unanswered
+                        ? 'border-amber-200 bg-surface border-l-4 border-l-amber-500'
+                        : 'border-rose-200 bg-surface border-l-4 border-l-rose-600'
+                  }`}
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-3 border-b border-divider pb-3">
+                    <div className="flex items-center gap-3">
+                      <span className="flex h-7 w-7 items-center justify-center rounded-sm bg-surface-2 font-mono text-xs font-bold text-ink">
+                        {item.id}
+                      </span>
+                      <span className="font-mono text-xs uppercase tracking-wider text-graphite-light">
+                        Question {item.id}
+                      </span>
+                    </div>
+                    <span
+                      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-mono text-xs font-semibold ${
+                        item.correct
+                          ? 'border border-emerald-200 bg-emerald-50 text-emerald-700'
+                          : item.unanswered
+                            ? 'border border-amber-200 bg-amber-50 text-amber-700'
+                            : 'border border-rose-200 bg-rose-50 text-rose-700'
+                      }`}
+                    >
+                      {item.correct ? '✓ Correct' : item.unanswered ? '○ Unanswered' : '✕ Incorrect'}
+                    </span>
+                  </div>
+
+                  <div className="mt-3 font-plex text-sm font-semibold leading-6 text-ink">
+                    {item.prompt}
+                  </div>
+
+                  <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                    <div
+                      className={`rounded-sm border p-3 ${
+                        item.correct ? 'border-emerald-200 bg-emerald-50/30' : 'border-rose-200 bg-rose-50/30'
+                      }`}
+                    >
+                      <div className="font-mono text-[11px] uppercase tracking-wider text-graphite-light">Your Response</div>
+                      <div
+                        className={`mt-1 font-mono text-sm font-bold ${
+                          item.correct ? 'text-emerald-700' : 'text-rose-600'
+                        }`}
+                      >
+                        {item.userAns || <span className="font-normal italic text-graphite-light">(No answer given)</span>}
+                      </div>
+                    </div>
+
+                    <div className="rounded-sm border border-emerald-300 bg-emerald-50/50 p-3">
+                      <div className="font-mono text-[11px] uppercase tracking-wider text-emerald-800">Correct Answer</div>
+                      <div className="mt-1 font-mono text-sm font-bold text-emerald-800">
+                        {item.accepted.join(' / ')}
+                      </div>
+                    </div>
+                  </div>
+
+                  {item.explanation && (
+                    <div className="mt-4 rounded-sm border border-divider bg-surface-2 p-4">
+                      <div className="flex items-center gap-1.5 font-mono text-xs font-bold uppercase tracking-wider text-ink">
+                        <span>💡 Why wrong / right</span>
+                      </div>
+                      <p className="mt-1.5 font-plex text-sm leading-6 text-graphite">
+                        {item.explanation}
+                      </p>
+                    </div>
+                  )}
+
+                  {item.passageReference && (
+                    <div className="mt-3 rounded-sm border border-sky-100 bg-sky-50/40 p-4">
+                      <div className="flex items-center gap-1.5 font-mono text-xs font-bold uppercase tracking-wider text-sky-800">
+                        <span>📖 Part of the passage taken from</span>
+                      </div>
+                      <blockquote className="mt-1.5 border-l-2 border-sky-400 pl-3 font-plex text-sm italic leading-6 text-sky-950">
+                        {item.passageReference}
+                      </blockquote>
+                    </div>
+                  )}
+                </article>
+              ))
+            )}
           </div>
         </section>
       )}
