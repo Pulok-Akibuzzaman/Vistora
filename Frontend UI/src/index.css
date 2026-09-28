@@ -1,28 +1,19 @@
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap');
 @import 'tailwindcss';
 
+/* Dark theme is switched with data-theme="dark" on <html> (see src/lib/theme.ts) */
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
+/* Colors that stay the same in both themes */
 @theme {
-  --color-paper: #FAFAF7;
-  --color-paper-dark: #F4F4F0;
-  --color-navy: #0F172A;
-  --color-navy-mid: #1E293B;
-  --color-navy-light: #334155;
   --color-electric: #DC2626;
   --color-electric-light: #EF4444;
-  --color-electric-dim: #FEE2E2;
   --color-violet: #BE123C;
   --color-violet-light: #E11D48;
-  --color-violet-dim: #FFE4E6;
-  --color-graphite: #374151;
-  --color-graphite-mid: #6B7280;
-  --color-graphite-light: #9CA3AF;
   --color-slate-50: #F8FAFC;
-  --color-divider: #E2E8F0;
   --color-danger: #DC2626;
   --color-warning: #D97706;
-  --color-warning-soft: #FFFBEB;
   --color-success: #059669;
-  --color-success-soft: #ECFDF5;
 
   --font-sans: 'Inter', 'IBM Plex Sans', system-ui, sans-serif;
   --font-plex: 'IBM Plex Sans', 'Inter', system-ui, sans-serif;
@@ -33,19 +24,206 @@
   --radius-md: 5px;
 }
 
+/*
+ * Themeable colors. Each utility reads var(--t-*) and falls back to the light value,
+ * so dark mode only overrides --t-*, and `.theme-fixed` resets them to `initial`
+ * (which restores the light fallback) for areas that look the same in both themes.
+ */
+@theme inline {
+  --color-paper: var(--t-paper, #FAFAF7);
+  --color-paper-dark: var(--t-paper-dark, #F4F4F0);
+  --color-surface: var(--t-surface, #FFFFFF);
+  --color-surface-2: var(--t-surface-2, #F8FAFC);
+  --color-surface-3: var(--t-surface-3, #F1F5F9);
+  --color-divider: var(--t-divider, #E2E8F0);
+  --color-divider-soft: var(--t-divider-soft, #F1F5F9);
+  --color-divider-faint: var(--t-divider-faint, #F8FAFC);
+  --color-line-strong: var(--t-line-strong, #CBD5E1);
+  --color-line-ink: var(--t-line-ink, #0F172A);
+  --color-rose-line: var(--t-rose-line, #FECDD3);
+  --color-navy: var(--t-navy, #0F172A);
+  --color-navy-mid: var(--t-navy-mid, #1E293B);
+  --color-navy-light: var(--t-navy-light, #334155);
+  --color-ink: var(--t-ink, #0F172A);
+  --color-ink-2: var(--t-ink-2, #1E293B);
+  --color-ink-3: var(--t-ink-3, #334155);
+  --color-ink-4: var(--t-ink-4, #475569);
+  --color-graphite: var(--t-graphite, #374151);
+  --color-graphite-mid: var(--t-graphite-mid, #6B7280);
+  --color-graphite-light: var(--t-graphite-light, #9CA3AF);
+  --color-muted: var(--t-muted, #64748B);
+  --color-subtle: var(--t-subtle, #94A3B8);
+  --color-faint: var(--t-faint, #CBD5E1);
+  --color-faint-2: var(--t-faint-2, #E2E8F0);
+  --color-accent: var(--t-accent, #DC2626);
+  --color-accent-2: var(--t-accent-2, #BE123C);
+  --color-accent-strong: var(--t-accent-strong, #991B1B);
+  --color-positive: var(--t-positive, #059669);
+  --color-positive-strong: var(--t-positive-strong, #065F46);
+  --color-caution: var(--t-caution, #D97706);
+  --color-caution-strong: var(--t-caution-strong, #92400E);
+  --color-electric-dim: var(--t-electric-dim, #FEE2E2);
+  --color-electric-soft: var(--t-electric-soft, #FEF2F2);
+  --color-violet-dim: var(--t-violet-dim, #FFE4E6);
+  --color-success-soft: var(--t-success-soft, #ECFDF5);
+  --color-warning-soft: var(--t-warning-soft, #FFFBEB);
+  --color-success-muted: var(--t-success-muted, #D1FAE5);
+  --color-yellow-soft: var(--t-yellow-soft, #FEF9C3);
+  --color-indigo-soft: var(--t-indigo-soft, #E0E7FF);
+  --color-blue-soft: var(--t-blue-soft, #EFF6FF);
+  --color-rose-strong: var(--t-rose-strong, #9F1239);
+  --color-indigo-strong: var(--t-indigo-strong, #3730A3);
+  --color-blue-strong: var(--t-blue-strong, #1D4ED8);
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --t-paper: #0B1120;
+  --t-paper-dark: #0E1627;
+  --t-surface: #111A2B;
+  --t-surface-2: #152036;
+  --t-surface-3: #1A263C;
+  --t-divider: #243147;
+  --t-divider-soft: #1C283D;
+  --t-divider-faint: #182338;
+  --t-line-strong: #3A4862;
+  --t-line-ink: #94A3B8;
+  --t-rose-line: rgba(251, 113, 133, 0.35);
+  --t-navy: #2A3851;
+  --t-navy-mid: #34445F;
+  --t-navy-light: #475872;
+  --t-ink: #E8EDF5;
+  --t-ink-2: #DCE3ED;
+  --t-ink-3: #C3CDDA;
+  --t-ink-4: #A9B5C5;
+  --t-graphite: #C3CBD6;
+  --t-graphite-mid: #9AA3B1;
+  --t-graphite-light: #7F8898;
+  --t-muted: #94A2B6;
+  --t-subtle: #7C8AA0;
+  --t-faint: #56647B;
+  --t-faint-2: #334157;
+  --t-accent: #F87171;
+  --t-accent-2: #FB7185;
+  --t-accent-strong: #FCA5A5;
+  --t-positive: #34D399;
+  --t-positive-strong: #6EE7B7;
+  --t-caution: #FBBF24;
+  --t-caution-strong: #FCD34D;
+  --t-electric-dim: rgba(239, 68, 68, 0.16);
+  --t-electric-soft: rgba(239, 68, 68, 0.09);
+  --t-violet-dim: rgba(244, 63, 94, 0.16);
+  --t-success-soft: rgba(16, 185, 129, 0.13);
+  --t-warning-soft: rgba(245, 158, 11, 0.12);
+  --t-success-muted: rgba(16, 185, 129, 0.2);
+  --t-yellow-soft: rgba(234, 179, 8, 0.14);
+  --t-indigo-soft: rgba(99, 102, 241, 0.18);
+  --t-blue-soft: rgba(59, 130, 246, 0.12);
+  --t-rose-strong: #FDA4AF;
+  --t-indigo-strong: #A5B4FC;
+  --t-blue-strong: #93C5FD;
+  --t-grid-major: rgba(148, 163, 184, 0.06);
+  --t-grid-minor: rgba(148, 163, 184, 0.025);
+  --t-card-shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.25);
+
+  /* Tailwind palette badges: light tints become translucent, dark text becomes light */
+  --color-emerald-50: rgba(16, 185, 129, 0.10);
+  --color-emerald-100: rgba(16, 185, 129, 0.16);
+  --color-emerald-200: rgba(16, 185, 129, 0.32);
+  --color-emerald-800: #6EE7B7;
+  --color-emerald-900: #A7F3D0;
+  --color-emerald-950: #D1FAE5;
+  --color-amber-50: rgba(245, 158, 11, 0.10);
+  --color-amber-100: rgba(245, 158, 11, 0.16);
+  --color-amber-200: rgba(245, 158, 11, 0.32);
+  --color-amber-800: #FCD34D;
+  --color-amber-900: #FDE68A;
+  --color-amber-950: #FEF3C7;
+  --color-blue-50: rgba(59, 130, 246, 0.10);
+  --color-blue-100: rgba(59, 130, 246, 0.16);
+  --color-blue-200: rgba(59, 130, 246, 0.32);
+  --color-blue-800: #93C5FD;
+  --color-blue-900: #BFDBFE;
+  --color-blue-950: #DBEAFE;
+  --color-rose-50: rgba(244, 63, 94, 0.10);
+  --color-rose-100: rgba(244, 63, 94, 0.16);
+  --color-rose-200: rgba(244, 63, 94, 0.32);
+  --color-rose-800: #FDA4AF;
+  --color-rose-900: #FECDD3;
+  --color-rose-950: #FFE4E6;
+  --color-purple-50: rgba(168, 85, 247, 0.10);
+  --color-purple-100: rgba(168, 85, 247, 0.16);
+  --color-purple-200: rgba(168, 85, 247, 0.32);
+  --color-purple-800: #D8B4FE;
+  --color-purple-900: #E9D5FF;
+  --color-purple-950: #F3E8FF;
+}
+
+/* Always-dark areas (hero, footer, exam chrome) keep their original colors in dark mode */
+.theme-fixed {
+  --t-grid-major: initial;
+  --t-grid-minor: initial;
+  --t-card-shadow: initial;
+  --t-paper-dark: initial;
+  --t-surface: initial;
+  --t-surface-2: initial;
+  --t-surface-3: initial;
+  --t-divider: initial;
+  --t-divider-soft: initial;
+  --t-divider-faint: initial;
+  --t-line-strong: initial;
+  --t-line-ink: initial;
+  --t-rose-line: initial;
+  --t-navy: initial;
+  --t-navy-mid: initial;
+  --t-navy-light: initial;
+  --t-ink: initial;
+  --t-ink-2: initial;
+  --t-ink-3: initial;
+  --t-ink-4: initial;
+  --t-graphite: initial;
+  --t-graphite-mid: initial;
+  --t-graphite-light: initial;
+  --t-muted: initial;
+  --t-subtle: initial;
+  --t-faint: initial;
+  --t-faint-2: initial;
+  --t-accent: initial;
+  --t-accent-2: initial;
+  --t-accent-strong: initial;
+  --t-positive: initial;
+  --t-positive-strong: initial;
+  --t-caution: initial;
+  --t-caution-strong: initial;
+  --t-electric-dim: initial;
+  --t-electric-soft: initial;
+  --t-violet-dim: initial;
+  --t-success-soft: initial;
+  --t-warning-soft: initial;
+  --t-success-muted: initial;
+  --t-yellow-soft: initial;
+  --t-indigo-soft: initial;
+  --t-blue-soft: initial;
+  --t-rose-strong: initial;
+  --t-indigo-strong: initial;
+  --t-blue-strong: initial;
+}
+
+:root { color-scheme: light; }
+
 html { scroll-behavior: smooth; }
 
 body {
   font-family: 'Inter', 'IBM Plex Sans', system-ui, sans-serif;
-  background-color: #FAFAF7;
-  color: #0F172A;
+  background-color: var(--t-paper, #FAFAF7);
+  color: var(--t-ink, #0F172A);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
 
 ::selection {
-  background: #FEE2E2;
-  color: #0F172A;
+  background: var(--t-electric-dim, #FEE2E2);
+  color: var(--t-ink, #0F172A);
 }
 
 button,
@@ -79,12 +257,12 @@ select {
 
 /* Paper grid background */
 .bg-paper-grid {
-  background-color: #FAFAF7;
+  background-color: var(--t-paper, #FAFAF7);
   background-image:
-    linear-gradient(rgba(148,163,184,0.13) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(148,163,184,0.13) 1px, transparent 1px),
-    linear-gradient(rgba(148,163,184,0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(148,163,184,0.05) 1px, transparent 1px);
+    linear-gradient(var(--t-grid-major, rgba(148,163,184,0.13)) 1px, transparent 1px),
+    linear-gradient(90deg, var(--t-grid-major, rgba(148,163,184,0.13)) 1px, transparent 1px),
+    linear-gradient(var(--t-grid-minor, rgba(148,163,184,0.05)) 1px, transparent 1px),
+    linear-gradient(90deg, var(--t-grid-minor, rgba(148,163,184,0.05)) 1px, transparent 1px);
   background-size: 60px 60px, 60px 60px, 12px 12px, 12px 12px;
   background-position: -1px -1px;
 }
@@ -112,7 +290,7 @@ select {
 /* Blueprint corner marks */
 .corner-mark {
   position: relative;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 8px 24px rgba(15, 23, 42, 0.035);
+  box-shadow: var(--t-card-shadow, 0 1px 2px rgba(15, 23, 42, 0.04), 0 8px 24px rgba(15, 23, 42, 0.035));
 }
 .corner-mark::before, .corner-mark::after {
   content: ''; position: absolute;
@@ -127,8 +305,8 @@ select {
 /* Scrollbar */
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 2px; }
-::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+::-webkit-scrollbar-thumb { background: var(--t-line-strong, #CBD5E1); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: var(--t-subtle, #94A3B8); }
 
 /* Mono helper */
 .mono { font-family: 'IBM Plex Mono', monospace; }
@@ -137,7 +315,7 @@ select {
 /* Blueprint divider */
 .blueprint-rule {
   height: 1px;
-  background: linear-gradient(90deg, transparent, #CBD5E1 20%, #CBD5E1 80%, transparent);
+  background: linear-gradient(90deg, transparent, var(--t-line-strong, #CBD5E1) 20%, var(--t-line-strong, #CBD5E1) 80%, transparent);
 }
 
 /* Prose label */
@@ -146,13 +324,13 @@ select {
   font-family: 'IBM Plex Mono', monospace;
   font-size: 10px; font-weight: 500;
   letter-spacing: 0.12em; text-transform: uppercase;
-  color: #94A3B8;
+  color: var(--t-subtle, #94A3B8);
 }
 
 /* Progress bar */
 .prog-bar {
   height: 4px;
-  background: #E2E8F0;
+  background: var(--t-divider, #E2E8F0);
   border-radius: 2px;
   overflow: hidden;
 }
@@ -184,7 +362,7 @@ select {
 .anim-spin { animation: spin-slow 1.2s linear infinite; }
 
 .skeleton {
-  background: linear-gradient(90deg, #F1F5F9 25%, #E2E8F0 50%, #F1F5F9 75%);
+  background: linear-gradient(90deg, var(--t-surface-3, #F1F5F9) 25%, var(--t-divider, #E2E8F0) 50%, var(--t-surface-3, #F1F5F9) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.4s infinite;
 }

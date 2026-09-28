@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { generateDocumentApi } from '../lib/api'
 import { useAuth } from '../lib/authContext'
+import { themeText } from '../lib/theme'
 
 type DocType = 'cv' | 'sop' | 'ps' | 'cl'
 
@@ -109,8 +110,8 @@ export default function DocGenerator() {
   return (
     <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-8">
       <div className="label-tag mb-1">AI DOCUMENT GENERATOR · VISTORA</div>
-      <h1 className="text-2xl font-bold text-[#0F172A] plex tracking-tight mb-1">Application Document Generator</h1>
-      <p className="text-sm text-[#64748B] mb-6" style={{ fontFamily: 'Inter, sans-serif' }}>
+      <h1 className="text-2xl font-bold text-ink plex tracking-tight mb-1">Application Document Generator</h1>
+      <p className="text-sm text-muted mb-6" style={{ fontFamily: 'Inter, sans-serif' }}>
         Generate custom, professionally structured academic and career documents tailored to your profile.
       </p>
 
@@ -126,15 +127,15 @@ export default function DocGenerator() {
               setError('')
             }}
             className={`text-left p-4 border-2 transition-all ${
-              docType === d.id ? 'border-[#DC2626] bg-[#FEF2F2]' : 'border-[#E2E8F0] bg-white hover:border-[#CBD5E1]'
+              docType === d.id ? 'border-[#DC2626] bg-electric-soft' : 'border-divider bg-surface hover:border-line-strong'
             }`}
             style={{ borderRadius: 4 }}
           >
-            <span className="text-lg mb-2 block" style={{ color: docType === d.id ? '#DC2626' : '#94A3B8' }}>
+            <span className="text-lg mb-2 block" style={{ color: themeText(docType === d.id ? '#DC2626' : '#94A3B8') }}>
               {d.icon}
             </span>
-            <div className="text-[13px] font-semibold text-[#0F172A] plex mb-0.5">{d.label}</div>
-            <div className="text-[11px] text-[#94A3B8]" style={{ fontFamily: 'Inter, sans-serif' }}>
+            <div className="text-[13px] font-semibold text-ink plex mb-0.5">{d.label}</div>
+            <div className="text-[11px] text-subtle" style={{ fontFamily: 'Inter, sans-serif' }}>
               {d.desc}
             </div>
           </button>
@@ -143,31 +144,31 @@ export default function DocGenerator() {
 
       <div className="grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-4">
         {/* Form */}
-        <div className="bg-white border border-[#E2E8F0]" style={{ borderRadius: 4 }}>
-          <div className="px-5 py-4 border-b border-[#F1F5F9] flex items-center justify-between">
+        <div className="bg-surface border border-divider" style={{ borderRadius: 4 }}>
+          <div className="px-5 py-4 border-b border-divider-soft flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="w-1 h-4 bg-[#DC2626]" style={{ borderRadius: 1 }} />
-              <span className="text-sm font-semibold text-[#0F172A] plex">Input Your Details</span>
+              <span className="text-sm font-semibold text-ink plex">Input Your Details</span>
             </div>
-            <span className="mono text-[9px] text-[#DC2626] bg-rose-50 px-2 py-0.5 rounded">DYNAMIC AI</span>
+            <span className="mono text-[9px] text-accent bg-rose-50 px-2 py-0.5 rounded">DYNAMIC AI</span>
           </div>
           <div className="p-5 space-y-4">
             {fields.map(f => (
               <div key={f.key}>
-                <label className="mono text-[10px] text-[#94A3B8] tracking-widest block mb-1.5">{f.label.toUpperCase()}</label>
+                <label className="mono text-[10px] text-subtle tracking-widest block mb-1.5">{f.label.toUpperCase()}</label>
                 {f.type === 'textarea' ? (
                   <textarea
                     value={form[f.key] || ''}
                     onChange={e => setForm(p => ({ ...p, [f.key]: e.target.value }))}
                     placeholder={`Enter your ${f.label.toLowerCase()}...`}
-                    className="w-full border border-[#E2E8F0] focus:border-[#DC2626] px-3 py-2 text-[12px] text-[#374151] outline-none resize-none transition-colors bg-[#FAFAF7]"
+                    className="w-full border border-divider focus:border-[#DC2626] px-3 py-2 text-[12px] text-graphite outline-none resize-none transition-colors bg-paper"
                     style={{ borderRadius: 3, fontFamily: 'Inter, sans-serif', minHeight: 72 }}
                   />
                 ) : f.type === 'select' ? (
                   <select
                     value={form[f.key] || ''}
                     onChange={e => setForm(p => ({ ...p, [f.key]: e.target.value }))}
-                    className="w-full border border-[#E2E8F0] focus:border-[#DC2626] px-3 py-2 text-[12px] text-[#374151] outline-none bg-[#FAFAF7]"
+                    className="w-full border border-divider focus:border-[#DC2626] px-3 py-2 text-[12px] text-graphite outline-none bg-paper"
                     style={{ borderRadius: 3, fontFamily: 'Inter, sans-serif' }}
                   >
                     <option value="">Select...</option>
@@ -183,7 +184,7 @@ export default function DocGenerator() {
                     value={form[f.key] || ''}
                     onChange={e => setForm(p => ({ ...p, [f.key]: e.target.value }))}
                     placeholder={f.key === 'name' ? (user?.name || 'Your Name') : `Enter ${f.label.toLowerCase()}...`}
-                    className="w-full border border-[#E2E8F0] focus:border-[#DC2626] px-3 py-2 text-[12px] text-[#374151] outline-none bg-[#FAFAF7] transition-colors"
+                    className="w-full border border-divider focus:border-[#DC2626] px-3 py-2 text-[12px] text-graphite outline-none bg-paper transition-colors"
                     style={{ borderRadius: 3, fontFamily: 'Inter, sans-serif' }}
                   />
                 )}
@@ -207,27 +208,27 @@ export default function DocGenerator() {
                 `⚡ Generate ${DOC_TYPES.find(d => d.id === docType)?.label}`
               )}
             </button>
-            <p className="text-[10px] leading-relaxed text-[#94A3B8]">
+            <p className="text-[10px] leading-relaxed text-subtle">
               Documents are generated dynamically from your personal parameters via our structured backend engine.
             </p>
           </div>
         </div>
 
         {/* Preview */}
-        <div className="bg-white border border-[#E2E8F0] flex flex-col" style={{ borderRadius: 4 }}>
-          <div className="px-5 py-4 border-b border-[#F1F5F9] flex items-center justify-between flex-shrink-0">
+        <div className="bg-surface border border-divider flex flex-col" style={{ borderRadius: 4 }}>
+          <div className="px-5 py-4 border-b border-divider-soft flex items-center justify-between flex-shrink-0">
             <div className="flex items-center gap-2">
               <span className="w-1 h-4 bg-[#BE123C]" style={{ borderRadius: 1 }} />
-              <span className="text-sm font-semibold text-[#0F172A] plex">Live Document Preview</span>
+              <span className="text-sm font-semibold text-ink plex">Live Document Preview</span>
             </div>
             {generated && (
               <div className="flex items-center gap-2">
-                <span className="mono text-[9px] px-2 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded">
+                <span className="mono text-[9px] px-2 py-1 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded">
                   ⚡ {docSource || 'GENERATED'}
                 </span>
                 <button
                   onClick={copyDocument}
-                  className="mono text-[10px] text-[#64748B] border border-[#E2E8F0] px-3 py-1.5 hover:border-[#CBD5E1] transition-colors rounded"
+                  className="mono text-[10px] text-muted border border-divider px-3 py-1.5 hover:border-line-strong transition-colors rounded"
                 >
                   {copied ? '✓ Copied!' : 'Copy Text'}
                 </button>
@@ -239,7 +240,7 @@ export default function DocGenerator() {
                 </button>
                 <button
                   onClick={() => window.print()}
-                  className="mono text-[10px] text-white bg-[#0F172A] px-3 py-1.5 hover:bg-[#1E293B] transition-colors rounded"
+                  className="mono text-[10px] text-white bg-navy px-3 py-1.5 hover:bg-navy-mid transition-colors rounded"
                 >
                   Print / PDF
                 </button>
@@ -249,25 +250,25 @@ export default function DocGenerator() {
 
           {!generated ? (
             <div className="flex-1 flex flex-col items-center justify-center text-center p-12">
-              <div className="w-14 h-14 bg-[#FFE4E6] flex items-center justify-center mb-4" style={{ borderRadius: 4 }}>
-                <span className="text-[#BE123C] text-2xl">▣</span>
+              <div className="w-14 h-14 bg-violet-dim flex items-center justify-center mb-4" style={{ borderRadius: 4 }}>
+                <span className="text-accent-2 text-2xl">▣</span>
               </div>
-              <div className="text-sm font-semibold text-[#0F172A] plex mb-2">Your Document Will Appear Here</div>
-              <p className="text-[11px] text-[#94A3B8] max-w-sm" style={{ fontFamily: 'Inter, sans-serif' }}>
+              <div className="text-sm font-semibold text-ink plex mb-2">Your Document Will Appear Here</div>
+              <p className="text-[11px] text-subtle max-w-sm" style={{ fontFamily: 'Inter, sans-serif' }}>
                 Fill in your details on the left and click generate. Vistora will construct a tailored academic document ready for submission.
               </p>
             </div>
           ) : (
             <div className="flex-1 overflow-y-auto p-8">
               {error && (
-                <div className="mb-5 border-l-2 border-[#D97706] bg-[#FFFBEB] p-3 text-[11px] leading-relaxed text-[#92400E]">
+                <div className="mb-5 border-l-2 border-[#D97706] bg-warning-soft p-3 text-[11px] leading-relaxed text-caution-strong">
                   {error}
                 </div>
               )}
               <textarea
                 value={generatedText}
                 onChange={e => setGeneratedText(e.target.value)}
-                className="w-full text-[12px] text-[#374151] leading-[1.8] font-mono outline-none border border-slate-100 p-4 rounded bg-slate-50/50 resize-y"
+                className="w-full text-[12px] text-graphite leading-[1.8] font-mono outline-none border border-divider-soft p-4 rounded bg-surface-2/50 resize-y"
                 style={{ fontFamily: 'IBM Plex Mono, monospace', minHeight: 480 }}
               />
             </div>

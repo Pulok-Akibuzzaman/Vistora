@@ -80,12 +80,12 @@ export default function AdminDashboard() {
       <div className="flex flex-col gap-4 border-b border-divider pb-6 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <div className="label-tag mb-2">ADMIN CONSOLE · PLATFORM CONTROL</div>
-          <h1 className="font-plex text-2xl font-bold tracking-tight text-navy">Workspace Administration</h1>
+          <h1 className="font-plex text-2xl font-bold tracking-tight text-ink">Workspace Administration</h1>
           <p className="mt-1 text-sm text-graphite-mid">Manage learners, staff access, exam modules, and platform activity.</p>
         </div>
         <div className="border-l-2 border-violet pl-3">
           <div className="font-mono text-xs uppercase tracking-wider text-graphite-light">Signed in as</div>
-          <div className="font-plex text-sm font-semibold text-navy">{currentAdmin?.name || 'Administrator'}</div>
+          <div className="font-plex text-sm font-semibold text-ink">{currentAdmin?.name || 'Administrator'}</div>
         </div>
       </div>
 
@@ -97,10 +97,10 @@ export default function AdminDashboard() {
           ['Tests completed', String(resultsCount), 'Across all modules'],
           ['Indexed audio files', String(totalAudioTracks), `Cambridge Books ${availableBooks} online`],
         ].map(([label, value, detail], index) => (
-          <div key={label} className="corner-mark border border-divider bg-white p-5">
+          <div key={label} className="corner-mark border border-divider bg-surface p-5">
             <div className={`mb-4 h-1 w-8 ${index % 2 ? 'bg-violet' : 'bg-electric'}`} />
             <div className="font-mono text-xs uppercase tracking-wider text-graphite-light">{label}</div>
-            <div className="mt-1 font-mono text-2xl font-bold text-navy">{value}</div>
+            <div className="mt-1 font-mono text-2xl font-bold text-ink">{value}</div>
             <div className="mt-2 text-xs text-graphite-mid">{detail}</div>
           </div>
         ))}
@@ -109,10 +109,10 @@ export default function AdminDashboard() {
       {/* Invite User Modal */}
       {inviteOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs">
-          <div className="w-full max-w-md rounded-sm border border-divider bg-white p-6 shadow-2xl">
+          <div className="w-full max-w-md rounded-sm border border-divider bg-surface p-6 shadow-2xl">
             <div className="flex items-center justify-between border-b border-divider pb-3">
-              <h2 className="font-plex text-lg font-bold text-navy">Invite / Create Platform User</h2>
-              <button onClick={() => setInviteOpen(false)} className="text-graphite hover:text-navy text-sm font-mono">✕</button>
+              <h2 className="font-plex text-lg font-bold text-ink">Invite / Create Platform User</h2>
+              <button onClick={() => setInviteOpen(false)} className="text-graphite hover:text-ink text-sm font-mono">✕</button>
             </div>
             <form onSubmit={handleInviteUser} className="mt-4 space-y-4">
               <div>
@@ -121,7 +121,7 @@ export default function AdminDashboard() {
                   value={newUserName}
                   onChange={e => setNewUserName(e.target.value)}
                   placeholder="e.g. Farhan Chowdhury"
-                  className="mt-1 w-full rounded-sm border border-divider p-2.5 text-sm text-navy outline-none focus:border-electric"
+                  className="mt-1 w-full rounded-sm border border-divider p-2.5 text-sm text-ink outline-none focus:border-electric"
                   required
                 />
               </div>
@@ -132,7 +132,7 @@ export default function AdminDashboard() {
                   value={newUserEmail}
                   onChange={e => setNewUserEmail(e.target.value)}
                   placeholder="e.g. farhan@email.com"
-                  className="mt-1 w-full rounded-sm border border-divider p-2.5 text-sm text-navy outline-none focus:border-electric"
+                  className="mt-1 w-full rounded-sm border border-divider p-2.5 text-sm text-ink outline-none focus:border-electric"
                   required
                 />
               </div>
@@ -142,7 +142,7 @@ export default function AdminDashboard() {
                   <input
                     value={newUserCountry}
                     onChange={e => setNewUserCountry(e.target.value)}
-                    className="mt-1 w-full rounded-sm border border-divider p-2.5 text-sm text-navy outline-none focus:border-electric"
+                    className="mt-1 w-full rounded-sm border border-divider p-2.5 text-sm text-ink outline-none focus:border-electric"
                   />
                 </div>
                 <div>
@@ -150,7 +150,7 @@ export default function AdminDashboard() {
                   <select
                     value={newUserRole}
                     onChange={e => setNewUserRole(e.target.value as any)}
-                    className="mt-1 w-full rounded-sm border border-divider p-2.5 text-sm text-navy outline-none focus:border-electric bg-white"
+                    className="mt-1 w-full rounded-sm border border-divider p-2.5 text-sm text-ink outline-none focus:border-electric bg-surface"
                   >
                     <option value="Student">Student</option>
                     <option value="Instructor">Instructor</option>
@@ -159,7 +159,7 @@ export default function AdminDashboard() {
                 </div>
               </div>
               {inviteError && (
-                <div className="p-2.5 bg-rose-50 border border-rose-200 text-xs text-rose-700 rounded">
+                <div className="p-2.5 bg-rose-50 border border-rose-200 text-xs text-rose-800 rounded">
                   {inviteError}
                 </div>
               )}
@@ -167,7 +167,7 @@ export default function AdminDashboard() {
                 <button
                   type="button"
                   onClick={() => setInviteOpen(false)}
-                  className="rounded-sm border border-divider px-4 py-2 text-xs font-semibold text-graphite hover:bg-slate-50"
+                  className="rounded-sm border border-divider px-4 py-2 text-xs font-semibold text-graphite hover:bg-surface-2"
                 >
                   Cancel
                 </button>
@@ -186,11 +186,11 @@ export default function AdminDashboard() {
 
       {/* Main Grid: User Table & Audio Catalog Overview */}
       <div className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-[1fr_360px]">
-        <section className="border border-divider bg-white">
+        <section className="border border-divider bg-surface">
           <div className="border-b border-divider p-5">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div>
-                <h2 className="font-plex text-sm font-semibold text-navy">Platform User Accounts</h2>
+                <h2 className="font-plex text-sm font-semibold text-ink">Platform User Accounts</h2>
                 <p className="mt-1 text-xs text-graphite-light">{filteredUsers.length} accounts matching filters</p>
               </div>
               <div className="flex flex-col gap-2 sm:flex-row">
@@ -198,12 +198,12 @@ export default function AdminDashboard() {
                   value={query}
                   onChange={event => setQuery(event.target.value)}
                   placeholder="Search by name, email, country..."
-                  className="rounded-sm border border-divider bg-slate-50 px-3 py-2 text-xs text-navy outline-none focus:border-electric"
+                  className="rounded-sm border border-divider bg-surface-2 px-3 py-2 text-xs text-ink outline-none focus:border-electric"
                 />
                 <select
                   value={role}
                   onChange={event => setRole(event.target.value as any)}
-                  className="rounded-sm border border-divider bg-white px-3 py-2 font-mono text-xs text-graphite"
+                  className="rounded-sm border border-divider bg-surface px-3 py-2 font-mono text-xs text-graphite"
                 >
                   <option value="All">All Roles</option>
                   <option value="Student">Student</option>
@@ -221,7 +221,7 @@ export default function AdminDashboard() {
           </div>
           <table className="w-full">
             <thead>
-              <tr className="border-b border-divider bg-slate-50">
+              <tr className="border-b border-divider bg-surface-2">
                 {['USER', 'ROLE', 'STATUS', 'TARGET BAND', 'ACTION'].map(label => (
                   <th key={label} className="px-5 py-3 text-left font-mono text-xs font-medium tracking-wider text-graphite-light">
                     {label}
@@ -231,14 +231,14 @@ export default function AdminDashboard() {
             </thead>
             <tbody className="divide-y divide-divider">
               {filteredUsers.map(user => (
-                <tr key={user.id} className="hover:bg-slate-50 transition-colors">
+                <tr key={user.id} className="hover:bg-surface-2 transition-colors">
                   <td className="px-5 py-4">
-                    <div className="font-plex text-xs font-semibold text-navy">{user.name}</div>
+                    <div className="font-plex text-xs font-semibold text-ink">{user.name}</div>
                     <div className="font-mono text-[11px] text-graphite-light">{user.email} · {user.country}</div>
                   </td>
                   <td className="px-5 py-4">
                     <span className={`font-mono text-[10px] px-2 py-0.5 rounded font-bold ${
-                      user.role === 'Admin' ? 'bg-purple-100 text-purple-800' : user.role === 'Instructor' ? 'bg-blue-100 text-blue-800' : 'bg-slate-100 text-slate-800'
+                      user.role === 'Admin' ? 'bg-purple-100 text-purple-800' : user.role === 'Instructor' ? 'bg-blue-100 text-blue-800' : 'bg-surface-3 text-ink-2'
                     }`}>
                       {user.role}
                     </span>
@@ -250,7 +250,7 @@ export default function AdminDashboard() {
                       {user.status}
                     </span>
                   </td>
-                  <td className="px-5 py-4 font-mono text-xs text-navy">
+                  <td className="px-5 py-4 font-mono text-xs text-ink">
                     Band {user.targetBand ? user.targetBand.toFixed(1) : '7.5'}
                   </td>
                   <td className="px-5 py-4">
@@ -274,19 +274,19 @@ export default function AdminDashboard() {
         </section>
 
         {/* Right: Audio Database Modules */}
-        <section className="border border-divider bg-white p-5 space-y-4">
+        <section className="border border-divider bg-surface p-5 space-y-4">
           <div className="border-b border-divider pb-3">
             <div className="label-tag mb-1">LOCAL REPOSITORY CATALOG</div>
-            <h2 className="font-plex text-sm font-semibold text-navy">Connected Audio Modules</h2>
+            <h2 className="font-plex text-sm font-semibold text-ink">Connected Audio Modules</h2>
           </div>
           <div className="space-y-3">
             {catalog && Object.keys(catalog.books).map(bookKey => {
               const book = catalog.books[bookKey]
               const testCount = Object.keys(book.tests).length
               return (
-                <div key={bookKey} className="p-3 bg-slate-50 border border-slate-200 rounded">
+                <div key={bookKey} className="p-3 bg-surface-2 border border-divider rounded">
                   <div className="flex items-center justify-between">
-                    <span className="font-bold text-xs text-navy">{book.title}</span>
+                    <span className="font-bold text-xs text-ink">{book.title}</span>
                     <span className="mono text-[9px] px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold">ONLINE</span>
                   </div>
                   <div className="mt-1 font-mono text-[11px] text-graphite-light">

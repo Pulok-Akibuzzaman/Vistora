@@ -55,7 +55,8 @@ export function CountUp({ value, from = 0, delay = 0, duration = 1600 }: { value
   const [ref, inView] = useInView<HTMLSpanElement>(0.5, '0px')
   const match = value.match(/^(\D*)([\d,]*\.?\d+)(.*)$/)
   const target = match ? Number(match[2].replace(/,/g, '')) : 0
-  const [current, setCurrent] = useState(from)
+  // Reduced-motion visitors see the final value straight away, even before it scrolls into view
+  const [current, setCurrent] = useState(() => (prefersReducedMotion() ? target : from))
 
   useEffect(() => {
     if (!match || !inView) return

@@ -232,9 +232,9 @@ export default function FullTestResult({ listeningAnswers, readingAnswers, writi
   if (!report || analysisState === 'analysing') {
     return (
       <main className="mx-auto flex min-h-[70vh] max-w-3xl items-center justify-center px-6 py-12">
-        <section className="w-full border border-divider bg-white p-10 text-center">
+        <section className="w-full border border-divider bg-surface p-10 text-center">
           <div className="mx-auto h-10 w-10 animate-spin rounded-full border-2 border-electric-dim border-t-electric" />
-          <h1 className="mt-6 font-plex text-xl font-bold text-navy">Generating your AI result</h1>
+          <h1 className="mt-6 font-plex text-xl font-bold text-ink">Generating your AI result</h1>
           <p className="mt-2 text-sm text-graphite-mid">Scoring objective answers and analysing Writing and Speaking performance.</p>
         </section>
       </main>
@@ -252,49 +252,49 @@ export default function FullTestResult({ listeningAnswers, readingAnswers, writi
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
-      <section className="corner-mark border border-divider bg-white p-6 sm:p-8">
+      <section className="corner-mark border border-divider bg-surface p-6 sm:p-8">
         <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <div className="label-tag">IELTS 21 · Academic Test 1 · AI Practice Report</div>
-            <h1 className="mt-3 font-plex text-3xl font-bold text-navy">Ayaan Rahman</h1>
+            <h1 className="mt-3 font-plex text-3xl font-bold text-ink">Ayaan Rahman</h1>
             <div className="mt-2 font-mono text-xs text-graphite-light">BRITISH COUNCIL DHAKA · PRACTICE ATTEMPT · {new Date().toLocaleDateString()}</div>
           </div>
           <div className="flex items-center gap-5">
-            <div className="flex h-24 w-24 items-center justify-center rounded-full border-8 border-violet-dim font-mono text-3xl font-bold text-violet">{report.overallBand.toFixed(1)}</div>
-            <div><div className="font-mono text-xs uppercase tracking-wider text-graphite-light">Overall band</div><div className="mt-1 font-plex text-lg font-semibold text-navy">{report.descriptor}</div></div>
+            <div className="flex h-24 w-24 items-center justify-center rounded-full border-8 border-violet-dim font-mono text-3xl font-bold text-accent-2">{report.overallBand.toFixed(1)}</div>
+            <div><div className="font-mono text-xs uppercase tracking-wider text-graphite-light">Overall band</div><div className="mt-1 font-plex text-lg font-semibold text-ink">{report.descriptor}</div></div>
           </div>
         </div>
-        <div className="mt-7 border-l-2 border-violet bg-violet-dim p-5 text-sm leading-6 text-navy">{report.overallComment}</div>
-        {analysisState === 'fallback' && <div className="mt-3 font-mono text-xs text-warning">LOCAL PREVIEW · CONNECT VITE_EVALUATION_API_URL FOR GEMINI ANALYSIS</div>}
+        <div className="mt-7 border-l-2 border-violet bg-violet-dim p-5 text-sm leading-6 text-ink">{report.overallComment}</div>
+        {analysisState === 'fallback' && <div className="mt-3 font-mono text-xs text-caution">LOCAL PREVIEW · CONNECT VITE_EVALUATION_API_URL FOR GEMINI ANALYSIS</div>}
       </section>
 
       <section className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
         {skillCards.map(([name, feedback]) => (
-          <div key={name} className="border border-divider bg-white p-5">
+          <div key={name} className="border border-divider bg-surface p-5">
             <div className="font-mono text-xs uppercase tracking-wider text-graphite-light">{name}</div>
-            <div className="mt-2 font-mono text-3xl font-bold text-electric">{feedback.band.toFixed(1)}</div>
+            <div className="mt-2 font-mono text-3xl font-bold text-accent">{feedback.band.toFixed(1)}</div>
             <div className="mt-3 h-1 bg-divider"><div className="h-full bg-electric" style={{ width: `${(feedback.band / 9) * 100}%` }} /></div>
           </div>
         ))}
       </section>
 
-      <section className="mt-4 border border-divider bg-white">
-        <div className="border-b border-divider px-6 py-5"><h2 className="font-plex text-lg font-bold text-navy">Your scores explained</h2></div>
+      <section className="mt-4 border border-divider bg-surface">
+        <div className="border-b border-divider px-6 py-5"><h2 className="font-plex text-lg font-bold text-ink">Your scores explained</h2></div>
         <div className="divide-y divide-divider">
           {skillCards.map(([name, feedback]) => (
             <article key={name} className="p-6">
-              <div className="flex items-center justify-between"><h3 className="font-plex text-base font-semibold text-navy">{name}</h3><span className="font-mono text-lg font-bold text-violet">{feedback.band.toFixed(1)}</span></div>
+              <div className="flex items-center justify-between"><h3 className="font-plex text-base font-semibold text-ink">{name}</h3><span className="font-mono text-lg font-bold text-accent-2">{feedback.band.toFixed(1)}</span></div>
               <p className="mt-3 text-sm leading-6 text-graphite">{feedback.summary}</p>
               <div className="mt-5 grid gap-5 md:grid-cols-2">
-                <div><div className="font-mono text-xs uppercase tracking-wider text-success">What went well</div><ul className="mt-2 space-y-2">{feedback.strengths.map(item => <li key={item} className="text-sm leading-5 text-graphite">— {item}</li>)}</ul></div>
-                <div><div className="font-mono text-xs uppercase tracking-wider text-warning">How to improve</div><ul className="mt-2 space-y-2">{feedback.improvements.map(item => <li key={item} className="text-sm leading-5 text-graphite">— {item}</li>)}</ul></div>
+                <div><div className="font-mono text-xs uppercase tracking-wider text-positive">What went well</div><ul className="mt-2 space-y-2">{feedback.strengths.map(item => <li key={item} className="text-sm leading-5 text-graphite">— {item}</li>)}</ul></div>
+                <div><div className="font-mono text-xs uppercase tracking-wider text-caution">How to improve</div><ul className="mt-2 space-y-2">{feedback.improvements.map(item => <li key={item} className="text-sm leading-5 text-graphite">— {item}</li>)}</ul></div>
               </div>
               {'criteria' in feedback && (
                 <div className="mt-5 grid grid-cols-2 gap-2 lg:grid-cols-4">
                   {Object.entries(feedback.criteria).map(([criterion, value]) => (
-                    <div key={criterion} className="border border-divider bg-slate-50 p-3">
+                    <div key={criterion} className="border border-divider bg-surface-2 p-3">
                       <div className="font-mono text-xs uppercase leading-4 text-graphite-light">{criterion}</div>
-                      <div className="mt-1 font-mono text-lg font-bold text-violet">{value.toFixed(1)}</div>
+                      <div className="mt-1 font-mono text-lg font-bold text-accent-2">{value.toFixed(1)}</div>
                     </div>
                   ))}
                 </div>
@@ -314,27 +314,27 @@ export default function FullTestResult({ listeningAnswers, readingAnswers, writi
         </div>
       </section>
 
-      <section className="mt-4 border border-divider bg-white">
+      <section className="mt-4 border border-divider bg-surface">
         <div className="flex flex-col gap-4 border-b border-divider px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
-          <div><h2 className="font-plex text-lg font-bold text-navy">Answer review</h2><p className="mt-1 text-xs text-graphite-light">Compare every response with the stored answer key.</p></div>
+          <div><h2 className="font-plex text-lg font-bold text-ink">Answer review</h2><p className="mt-1 text-xs text-graphite-light">Compare every response with the stored answer key.</p></div>
           <div className="flex gap-2">
-            {(['Listening', 'Reading'] as const).map(skill => <button key={skill} onClick={() => setReviewSkill(skill)} className={`rounded-sm border px-3 py-2 font-mono text-xs ${reviewSkill === skill ? 'border-navy bg-navy text-white' : 'border-divider text-graphite'}`}>{skill}</button>)}
-            <button onClick={() => setMistakesOnly(value => !value)} className={`rounded-sm border px-3 py-2 font-mono text-xs ${mistakesOnly ? 'border-violet bg-violet-dim text-violet' : 'border-divider text-graphite'}`}>{mistakesOnly ? 'Mistakes only' : 'All answers'}</button>
+            {(['Listening', 'Reading'] as const).map(skill => <button key={skill} onClick={() => setReviewSkill(skill)} className={`rounded-sm border px-3 py-2 font-mono text-xs ${reviewSkill === skill ? 'border-line-ink bg-navy text-white' : 'border-divider text-graphite'}`}>{skill}</button>)}
+            <button onClick={() => setMistakesOnly(value => !value)} className={`rounded-sm border px-3 py-2 font-mono text-xs ${mistakesOnly ? 'border-violet bg-violet-dim text-accent-2' : 'border-divider text-graphite'}`}>{mistakesOnly ? 'Mistakes only' : 'All answers'}</button>
           </div>
         </div>
         <div className="divide-y divide-divider">
           {visibleReview.length ? visibleReview.map(item => (
             <div key={item.id} className="grid gap-3 px-6 py-4 sm:grid-cols-[70px_1fr_1fr_auto] sm:items-center">
-              <div className="font-mono text-xs font-semibold text-navy">Q{item.id}</div>
-              <div><div className="font-mono text-xs uppercase text-graphite-light">Your answer</div><div className={`mt-1 text-sm ${item.correct ? 'text-success' : 'text-danger'}`}>{item.response || 'Unanswered'}</div></div>
-              <div><div className="font-mono text-xs uppercase text-graphite-light">Correct answer</div><div className="mt-1 text-sm font-semibold text-navy">{item.accepted.join(' / ')}</div></div>
-              <span className={`rounded-sm px-2 py-1 font-mono text-xs ${item.correct ? 'bg-success-soft text-success' : 'bg-warning-soft text-warning'}`}>{item.correct ? 'Correct' : 'Review'}</span>
+              <div className="font-mono text-xs font-semibold text-ink">Q{item.id}</div>
+              <div><div className="font-mono text-xs uppercase text-graphite-light">Your answer</div><div className={`mt-1 text-sm ${item.correct ? 'text-positive' : 'text-accent'}`}>{item.response || 'Unanswered'}</div></div>
+              <div><div className="font-mono text-xs uppercase text-graphite-light">Correct answer</div><div className="mt-1 text-sm font-semibold text-ink">{item.accepted.join(' / ')}</div></div>
+              <span className={`rounded-sm px-2 py-1 font-mono text-xs ${item.correct ? 'bg-success-soft text-positive' : 'bg-warning-soft text-caution'}`}>{item.correct ? 'Correct' : 'Review'}</span>
             </div>
-          )) : <div className="p-8 text-center text-sm text-success">No mistakes in this section.</div>}
+          )) : <div className="p-8 text-center text-sm text-positive">No mistakes in this section.</div>}
         </div>
       </section>
 
-      <section className="mt-4 border border-divider bg-navy p-6 text-white">
+      <section className="theme-fixed mt-4 border border-divider bg-navy p-6 text-white">
         <div className="font-mono text-xs uppercase tracking-widest text-electric-light">Personalised next steps</div>
         <div className="mt-5 grid gap-3 md:grid-cols-2">
           {report.studyPlan.map((item, index) => <div key={item} className="flex gap-3 border border-navy-light p-4"><span className="font-mono text-xs text-electric-light">0{index + 1}</span><span className="text-sm leading-5 text-slate-50">{item}</span></div>)}
@@ -343,8 +343,8 @@ export default function FullTestResult({ listeningAnswers, readingAnswers, writi
 
       <div className="mt-6 flex flex-wrap gap-3">
         <button onClick={onExit} className="rounded-card bg-electric px-6 py-3 font-plex text-sm font-semibold text-white">Return to test centre</button>
-        <button onClick={onRetake} className="rounded-card border border-divider bg-white px-6 py-3 font-plex text-sm font-semibold text-navy">Retake full test</button>
-        <button onClick={() => window.print()} className="rounded-card border border-divider bg-white px-6 py-3 font-plex text-sm font-semibold text-navy">Print or save PDF</button>
+        <button onClick={onRetake} className="rounded-card border border-divider bg-surface px-6 py-3 font-plex text-sm font-semibold text-ink">Retake full test</button>
+        <button onClick={() => window.print()} className="rounded-card border border-divider bg-surface px-6 py-3 font-plex text-sm font-semibold text-ink">Print or save PDF</button>
       </div>
     </main>
   )

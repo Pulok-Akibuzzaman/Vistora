@@ -83,9 +83,9 @@ export default function WritingEval() {
   }
 
   const BandPill = ({ label, score }: { label: string; score: number }) => (
-    <div className="bg-[#F8FAFC] border border-[#E2E8F0] p-3 text-center" style={{ borderRadius: 3 }}>
-      <div className="mono text-[9px] text-[#94A3B8] tracking-widest mb-1">{label}</div>
-      <div className={`mono text-xl font-bold ${score >= 7.5 ? 'text-[#059669]' : score >= 6.5 ? 'text-[#DC2626]' : 'text-[#D97706]'}`}>
+    <div className="bg-surface-2 border border-divider p-3 text-center" style={{ borderRadius: 3 }}>
+      <div className="mono text-[9px] text-subtle tracking-widest mb-1">{label}</div>
+      <div className={`mono text-xl font-bold ${score >= 7.5 ? 'text-positive' : score >= 6.5 ? 'text-accent' : 'text-caution'}`}>
         {score.toFixed(1)}
       </div>
     </div>
@@ -94,8 +94,8 @@ export default function WritingEval() {
   return (
     <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-8">
       <div className="label-tag mb-1">AI WRITING EVALUATION · IELTS ACADEMIC</div>
-      <h1 className="text-2xl font-bold text-[#0F172A] plex tracking-tight mb-1">Live Essay Evaluation & Scoring</h1>
-      <p className="text-sm text-[#64748B] mb-6" style={{ fontFamily: 'Inter, sans-serif' }}>
+      <h1 className="text-2xl font-bold text-ink plex tracking-tight mb-1">Live Essay Evaluation & Scoring</h1>
+      <p className="text-sm text-muted mb-6" style={{ fontFamily: 'Inter, sans-serif' }}>
         Submit any IELTS essay for real-time lexical analysis, grammatical diagnostic feedback, and official band score prediction.
       </p>
 
@@ -103,7 +103,7 @@ export default function WritingEval() {
         {/* Left: submission */}
         <div className="space-y-4">
           {/* Task selector */}
-          <div className="bg-white border border-[#E2E8F0] p-4" style={{ borderRadius: 4 }}>
+          <div className="bg-surface border border-divider p-4" style={{ borderRadius: 4 }}>
             <div className="label-tag mb-3">TASK TYPE</div>
             <div className="flex gap-2">
               {(['1', '2'] as const).map(t => (
@@ -112,8 +112,8 @@ export default function WritingEval() {
                   onClick={() => handleTaskChange(t)}
                   className={`flex-1 py-2.5 text-xs font-semibold border-2 transition-all ${
                     task === t
-                      ? 'bg-[#0F172A] border-[#0F172A] text-white'
-                      : 'bg-white border-[#E2E8F0] text-[#64748B] hover:border-[#CBD5E1]'
+                      ? 'bg-navy border-line-ink text-white'
+                      : 'bg-surface border-divider text-muted hover:border-line-strong'
                   }`}
                   style={{ borderRadius: 3, fontFamily: 'IBM Plex Sans, sans-serif' }}
                 >
@@ -124,16 +124,16 @@ export default function WritingEval() {
           </div>
 
           {/* Essay prompt */}
-          <div className="bg-[#F8FAFC] border border-[#E2E8F0] p-4" style={{ borderRadius: 4 }}>
+          <div className="bg-surface-2 border border-divider p-4" style={{ borderRadius: 4 }}>
             <div className="label-tag mb-2">QUESTION PROMPT</div>
-            <p className="text-[12px] text-[#374151] leading-relaxed" style={{ fontFamily: 'Inter, sans-serif' }}>
+            <p className="text-[12px] text-graphite leading-relaxed" style={{ fontFamily: 'Inter, sans-serif' }}>
               {promptText}
             </p>
           </div>
 
           {/* Textarea */}
-          <div className="bg-white border border-[#E2E8F0]" style={{ borderRadius: 4 }}>
-            <div className="flex items-center justify-between px-4 py-3 border-b border-[#F1F5F9]">
+          <div className="bg-surface border border-divider" style={{ borderRadius: 4 }}>
+            <div className="flex items-center justify-between px-4 py-3 border-b border-divider-soft">
               <div className="label-tag">YOUR ESSAY</div>
               <div className="flex items-center gap-3">
                 <span
@@ -143,7 +143,7 @@ export default function WritingEval() {
                 >
                   {wordCount} words
                 </span>
-                <span className="mono text-[10px] text-[#94A3B8]">Required: {minWords}+</span>
+                <span className="mono text-[10px] text-subtle">Required: {minWords}+</span>
               </div>
             </div>
             <textarea
@@ -152,14 +152,14 @@ export default function WritingEval() {
                 setEssay(e.target.value)
                 setSaved(false)
               }}
-              className="w-full p-4 text-[13px] text-[#374151] leading-[1.8] outline-none resize-none bg-transparent"
+              className="w-full p-4 text-[13px] text-graphite leading-[1.8] outline-none resize-none bg-transparent"
               style={{ fontFamily: 'Inter, sans-serif', minHeight: 400 }}
               placeholder="Type or paste your essay here..."
             />
           </div>
 
           {error && (
-            <div className="p-3 bg-rose-50 border border-rose-200 text-xs text-rose-700 rounded">
+            <div className="p-3 bg-rose-50 border border-rose-200 text-xs text-rose-800 rounded">
               ⚠️ {error}
             </div>
           )}
@@ -185,36 +185,36 @@ export default function WritingEval() {
 
         {/* Right: feedback */}
         {!feedback ? (
-          <div className="bg-white border border-[#E2E8F0] p-8 flex flex-col items-center justify-center text-center" style={{ borderRadius: 4 }}>
-            <div className="w-14 h-14 bg-[#FEE2E2] flex items-center justify-center mb-4" style={{ borderRadius: 4 }}>
-              <span className="text-[#DC2626] text-2xl">✦</span>
+          <div className="bg-surface border border-divider p-8 flex flex-col items-center justify-center text-center" style={{ borderRadius: 4 }}>
+            <div className="w-14 h-14 bg-electric-dim flex items-center justify-center mb-4" style={{ borderRadius: 4 }}>
+              <span className="text-accent text-2xl">✦</span>
             </div>
-            <div className="text-sm font-semibold text-[#0F172A] plex mb-2">Dynamic AI Evaluation Ready</div>
-            <p className="text-[12px] text-[#64748B] leading-relaxed" style={{ fontFamily: 'Inter, sans-serif' }}>
+            <div className="text-sm font-semibold text-ink plex mb-2">Dynamic AI Evaluation Ready</div>
+            <p className="text-[12px] text-muted leading-relaxed" style={{ fontFamily: 'Inter, sans-serif' }}>
               Press <strong>"Evaluate Essay with AI"</strong> to compute real Task Achievement, Coherence & Cohesion, Lexical Resource, and Grammatical Accuracy band scores.
             </p>
           </div>
         ) : (
           <div className="space-y-4">
             {/* Band score summary */}
-            <div className="bg-white border border-[#E2E8F0] p-5 corner-mark" style={{ borderRadius: 4 }}>
+            <div className="bg-surface border border-divider p-5 corner-mark" style={{ borderRadius: 4 }}>
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
                     <span className="label-tag">OFFICIAL BAND PREDICTION</span>
                     {feedback.aiEngine && (
-                      <span className="text-[10px] font-mono font-semibold bg-rose-50 text-[#DC2626] border border-rose-200 px-2 py-0.5 rounded">
+                      <span className="text-[10px] font-mono font-semibold bg-rose-50 text-accent border border-rose-200 px-2 py-0.5 rounded">
                         ⚡ {feedback.aiEngine}
                       </span>
                     )}
                   </div>
-                  <h2 className="text-sm font-bold text-[#0F172A] plex">Diagnostic Summary</h2>
+                  <h2 className="text-sm font-bold text-ink plex">Diagnostic Summary</h2>
                 </div>
                 <div className="text-right">
-                  <div className={`mono text-3xl font-bold ${feedback.band >= 7.5 ? 'text-[#059669]' : feedback.band >= 6.5 ? 'text-[#DC2626]' : 'text-[#D97706]'}`}>
+                  <div className={`mono text-3xl font-bold ${feedback.band >= 7.5 ? 'text-positive' : feedback.band >= 6.5 ? 'text-accent' : 'text-caution'}`}>
                     {feedback.band.toFixed(1)}
                   </div>
-                  <div className="mono text-[8px] text-[#94A3B8]">OVERALL BAND</div>
+                  <div className="mono text-[8px] text-subtle">OVERALL BAND</div>
                 </div>
               </div>
 
@@ -226,37 +226,37 @@ export default function WritingEval() {
                 <BandPill label="GRAMMAR" score={feedback.gra} />
               </div>
 
-              <p className="text-xs text-[#374151] leading-relaxed border-t border-[#F1F5F9] pt-3">
+              <p className="text-xs text-graphite leading-relaxed border-t border-divider-soft pt-3">
                 {feedback.summary}
               </p>
 
               {feedback.criteriaFeedback && (
-                <div className="mt-3 pt-3 border-t border-[#F1F5F9] space-y-2">
+                <div className="mt-3 pt-3 border-t border-divider-soft space-y-2">
                   {feedback.criteriaFeedback.ta && (
-                    <div className="text-[11px] text-[#475569] bg-[#F8FAFC] p-2 rounded border border-[#E2E8F0]">
-                      <strong className="text-[#0F172A]">Task Response:</strong> {feedback.criteriaFeedback.ta}
+                    <div className="text-[11px] text-ink-4 bg-surface-2 p-2 rounded border border-divider">
+                      <strong className="text-ink">Task Response:</strong> {feedback.criteriaFeedback.ta}
                     </div>
                   )}
                   {feedback.criteriaFeedback.cc && (
-                    <div className="text-[11px] text-[#475569] bg-[#F8FAFC] p-2 rounded border border-[#E2E8F0]">
-                      <strong className="text-[#0F172A]">Coherence & Cohesion:</strong> {feedback.criteriaFeedback.cc}
+                    <div className="text-[11px] text-ink-4 bg-surface-2 p-2 rounded border border-divider">
+                      <strong className="text-ink">Coherence & Cohesion:</strong> {feedback.criteriaFeedback.cc}
                     </div>
                   )}
                   {feedback.criteriaFeedback.lr && (
-                    <div className="text-[11px] text-[#475569] bg-[#F8FAFC] p-2 rounded border border-[#E2E8F0]">
-                      <strong className="text-[#0F172A]">Lexical Resource:</strong> {feedback.criteriaFeedback.lr}
+                    <div className="text-[11px] text-ink-4 bg-surface-2 p-2 rounded border border-divider">
+                      <strong className="text-ink">Lexical Resource:</strong> {feedback.criteriaFeedback.lr}
                     </div>
                   )}
                   {feedback.criteriaFeedback.gra && (
-                    <div className="text-[11px] text-[#475569] bg-[#F8FAFC] p-2 rounded border border-[#E2E8F0]">
-                      <strong className="text-[#0F172A]">Grammar & Accuracy:</strong> {feedback.criteriaFeedback.gra}
+                    <div className="text-[11px] text-ink-4 bg-surface-2 p-2 rounded border border-divider">
+                      <strong className="text-ink">Grammar & Accuracy:</strong> {feedback.criteriaFeedback.gra}
                     </div>
                   )}
                 </div>
               )}
 
               {/* Save result button */}
-              <div className="mt-4 pt-3 border-t border-[#F1F5F9]">
+              <div className="mt-4 pt-3 border-t border-divider-soft">
                 {saved ? (
                   <div className="p-2 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs text-center font-medium rounded">
                     ✓ Saved to your Dashboard and Profile records!
@@ -273,49 +273,49 @@ export default function WritingEval() {
             </div>
 
             {/* Detected Academic Vocabulary */}
-            <div className="bg-white border border-[#E2E8F0] p-5" style={{ borderRadius: 4 }}>
+            <div className="bg-surface border border-divider p-5" style={{ borderRadius: 4 }}>
               <div className="label-tag mb-2">LEXICAL RESOURCE ANALYSIS</div>
-              <div className="text-xs text-[#374151] mb-2 font-medium">
+              <div className="text-xs text-graphite mb-2 font-medium">
                 Academic Word List Terms: <span className="font-bold text-rose-600">{feedback.academicWordCount}</span> detected
               </div>
               {feedback.detectedAcademicWords?.length > 0 && (
                 <div className="flex flex-wrap gap-1.5 mb-3">
                   {feedback.detectedAcademicWords.map(w => (
-                    <span key={w} className="mono text-[10px] px-2 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200">
+                    <span key={w} className="mono text-[10px] px-2 py-0.5 rounded bg-surface-3 text-ink-3 border border-divider">
                       {w}
                     </span>
                   ))}
                 </div>
               )}
               {feedback.vocab?.map((v, i) => (
-                <div key={i} className="mt-2 p-2.5 bg-slate-50 border border-slate-200 rounded text-xs">
-                  <div className="font-bold text-navy flex items-center justify-between">
+                <div key={i} className="mt-2 p-2.5 bg-surface-2 border border-divider rounded text-xs">
+                  <div className="font-bold text-ink flex items-center justify-between">
                     <span>Word: "{v.word}"</span>
                     <span className="mono text-[9px] text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">{v.level}</span>
                   </div>
-                  <div className="text-[11px] text-[#475569] mt-1">Upgrade: <span className="font-semibold text-rose-600">{v.suggestion}</span></div>
+                  <div className="text-[11px] text-ink-4 mt-1">Upgrade: <span className="font-semibold text-rose-600">{v.suggestion}</span></div>
                 </div>
               ))}
             </div>
 
             {/* Grammar & Stylistic feedback */}
-            <div className="bg-white border border-[#E2E8F0] p-5" style={{ borderRadius: 4 }}>
+            <div className="bg-surface border border-divider p-5" style={{ borderRadius: 4 }}>
               <div className="label-tag mb-2">GRAMMAR & STYLE INSIGHTS</div>
               <div className="space-y-2">
                 {feedback.grammar?.map((g, i) => (
-                  <div key={i} className="p-2.5 bg-slate-50 border border-slate-200 rounded text-xs">
-                    <div className="font-semibold text-navy">{g.text}</div>
-                    <div className="text-[11px] text-[#64748B] mt-0.5">{g.issue}</div>
-                    {g.fix && <div className="text-[11px] text-emerald-700 font-medium mt-1">Tip: {g.fix}</div>}
+                  <div key={i} className="p-2.5 bg-surface-2 border border-divider rounded text-xs">
+                    <div className="font-semibold text-ink">{g.text}</div>
+                    <div className="text-[11px] text-muted mt-0.5">{g.issue}</div>
+                    {g.fix && <div className="text-[11px] text-emerald-800 font-medium mt-1">Tip: {g.fix}</div>}
                   </div>
                 ))}
               </div>
             </div>
 
             {/* Actionable Next Steps */}
-            <div className="bg-white border border-[#E2E8F0] p-5" style={{ borderRadius: 4 }}>
+            <div className="bg-surface border border-divider p-5" style={{ borderRadius: 4 }}>
               <div className="label-tag mb-2">HOW TO BOOST YOUR BAND</div>
-              <ul className="space-y-1.5 text-xs text-[#374151]">
+              <ul className="space-y-1.5 text-xs text-graphite">
                 {feedback.improvements?.map((imp, i) => (
                   <li key={i} className="flex items-start gap-2">
                     <span className="text-rose-600 font-bold">•</span>

@@ -18,11 +18,11 @@ function ResultDetail({ result, userName }: { result: StoredExamResult; userName
 
   return (
     <div>
-      <section className="corner-mark border border-divider bg-white p-6 sm:p-8">
+      <section className="corner-mark border border-divider bg-surface p-6 sm:p-8">
         <div className="flex flex-col gap-7 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <div className="label-tag">PRACTICE REPORT · {result.source.toUpperCase()}</div>
-            <h1 className="mt-3 font-plex text-2xl font-bold text-navy">{result.testTitle}</h1>
+            <h1 className="mt-3 font-plex text-2xl font-bold text-ink">{result.testTitle}</h1>
             <div className="mt-2 font-mono text-xs text-graphite-light">
               {userName.toUpperCase()} · IELTS PREPARATION · {new Date(result.completedAt).toLocaleString()}
             </div>
@@ -33,19 +33,19 @@ function ResultDetail({ result, userName }: { result: StoredExamResult; userName
             </div>
             <div>
               <div className="font-mono text-xs uppercase tracking-wider text-graphite-light">Overall band</div>
-              <div className="mt-1 font-plex text-base font-semibold text-navy">{descriptor}</div>
+              <div className="mt-1 font-plex text-base font-semibold text-ink">{descriptor}</div>
             </div>
           </div>
         </div>
-        <div className="mt-7 border-l-2 border-rose-500 bg-rose-50/50 p-5 text-sm leading-6 text-navy">{result.comment}</div>
+        <div className="mt-7 border-l-2 border-rose-500 bg-rose-50/50 p-5 text-sm leading-6 text-ink">{result.comment}</div>
       </section>
 
       {result.skillBands && Object.keys(result.skillBands).length > 0 && (
         <section className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
           {Object.entries(result.skillBands).map(([skill, band]) => (
-            <div key={skill} className="border border-divider bg-white p-5">
+            <div key={skill} className="border border-divider bg-surface p-5">
               <div className="font-mono text-xs uppercase tracking-wider text-graphite-light">{skill}</div>
-              <div className="mt-2 font-mono text-3xl font-bold text-electric">{band?.toFixed(1)}</div>
+              <div className="mt-2 font-mono text-3xl font-bold text-accent">{band?.toFixed(1)}</div>
               <div className="mt-3 h-1 bg-divider">
                 <div className="h-full bg-electric" style={{ width: `${((band || 0) / 9) * 100}%` }} />
               </div>
@@ -55,12 +55,12 @@ function ResultDetail({ result, userName }: { result: StoredExamResult; userName
       )}
 
       {result.correctAnswers !== undefined && (
-        <section className="mt-4 border border-divider bg-white p-6">
+        <section className="mt-4 border border-divider bg-surface p-6">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <div className="font-mono text-xs uppercase tracking-wider text-graphite-light">Objective score</div>
               <div className="mt-1">
-                <span className="font-mono text-3xl font-bold text-navy">{result.correctAnswers}</span>
+                <span className="font-mono text-3xl font-bold text-ink">{result.correctAnswers}</span>
                 <span className="font-mono text-sm text-graphite-light"> / {result.totalQuestions}</span>
               </div>
             </div>
@@ -79,13 +79,13 @@ function ResultDetail({ result, userName }: { result: StoredExamResult; userName
         </section>
       )}
 
-      <section className="mt-4 border border-divider bg-white">
+      <section className="mt-4 border border-divider bg-surface">
         <div className="border-b border-divider px-6 py-5">
-          <h2 className="font-plex text-lg font-bold text-navy">Score explanation</h2>
+          <h2 className="font-plex text-lg font-bold text-ink">Score explanation</h2>
         </div>
         <div className="grid gap-0 md:grid-cols-2">
           <div className="border-b border-divider p-6 md:border-b-0 md:border-r">
-            <div className="font-mono text-xs uppercase tracking-wider text-success">What went well</div>
+            <div className="font-mono text-xs uppercase tracking-wider text-positive">What went well</div>
             <ul className="mt-4 space-y-3 text-sm leading-6 text-graphite">
               <li>— The completed sections demonstrate an effective understanding of the test format.</li>
               <li>— Responses were submitted within the selected timed conditions.</li>
@@ -95,7 +95,7 @@ function ResultDetail({ result, userName }: { result: StoredExamResult; userName
             </ul>
           </div>
           <div className="p-6">
-            <div className="font-mono text-xs uppercase tracking-wider text-warning">How to improve</div>
+            <div className="font-mono text-xs uppercase tracking-wider text-caution">How to improve</div>
             <ul className="mt-4 space-y-3 text-sm leading-6 text-graphite">
               <li>— Review every incorrect or incomplete response before starting another mock test.</li>
               <li>— Practise the weakest skill under shorter, focused timed sessions.</li>
@@ -105,7 +105,7 @@ function ResultDetail({ result, userName }: { result: StoredExamResult; userName
         </div>
       </section>
 
-      <section className="mt-4 border border-divider bg-navy p-6 text-white">
+      <section className="theme-fixed mt-4 border border-divider bg-navy p-6 text-white">
         <div className="font-mono text-xs uppercase tracking-widest text-electric-light">Recommended next steps</div>
         <div className="mt-5 grid gap-3 md:grid-cols-3">
           {['Review mistakes and source evidence', 'Complete one focused skill session', 'Retake after three days of review'].map(
@@ -123,7 +123,7 @@ function ResultDetail({ result, userName }: { result: StoredExamResult; userName
         <NavLink to="/practice" className="rounded-card bg-electric px-6 py-3 font-plex text-sm font-semibold text-white">
           Take another test
         </NavLink>
-        <button onClick={() => window.print()} className="rounded-card border border-divider bg-white px-6 py-3 font-plex text-sm font-semibold text-navy">
+        <button onClick={() => window.print()} className="rounded-card border border-divider bg-surface px-6 py-3 font-plex text-sm font-semibold text-ink">
           Print or save PDF
         </button>
       </div>
@@ -165,7 +165,7 @@ export default function Results() {
     <main className="mx-auto max-w-[1400px] px-4 py-8 sm:px-6">
       <div className="border-b border-divider pb-6">
         <div className="label-tag">RESULTS CENTRE · {currentUserName.toUpperCase()}</div>
-        <h1 className="mt-2 font-plex text-3xl font-bold tracking-tight text-navy">Exam results and feedback</h1>
+        <h1 className="mt-2 font-plex text-3xl font-bold tracking-tight text-ink">Exam results and feedback</h1>
         <p className="mt-2 max-w-2xl text-sm leading-6 text-graphite-mid">
           Review full-test and individual-skill results, examiner comments, and personalized next steps.
         </p>
@@ -175,7 +175,7 @@ export default function Results() {
               key={item}
               onClick={() => setFilter(item)}
               className={`rounded-sm border px-3 py-2 font-mono text-xs uppercase tracking-wide transition-colors ${
-                filter === item ? 'border-navy bg-navy text-white' : 'border-divider bg-white text-graphite-mid hover:border-slate-400'
+                filter === item ? 'border-line-ink bg-navy text-white' : 'border-divider bg-surface text-graphite-mid hover:border-slate-400'
               }`}
             >
               {item}
@@ -185,13 +185,13 @@ export default function Results() {
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-4 xl:grid-cols-[340px_1fr]">
-        <aside className="h-fit border border-divider bg-white">
+        <aside className="h-fit border border-divider bg-surface">
           <div className="border-b border-divider px-5 py-4 flex items-center justify-between">
             <div>
-              <div className="font-plex text-sm font-semibold text-navy">Saved attempts</div>
+              <div className="font-plex text-sm font-semibold text-ink">Saved attempts</div>
               <div className="mt-1 font-mono text-xs text-graphite-light">{filteredResults.length} results recorded</div>
             </div>
-            <NavLink to="/practice" className="mono text-[10px] text-electric hover:underline">+ New Test</NavLink>
+            <NavLink to="/practice" className="mono text-[10px] text-accent hover:underline">+ New Test</NavLink>
           </div>
           <div className="divide-y divide-divider max-h-[700px] overflow-y-auto">
             {filteredResults.map(result => (
@@ -199,12 +199,12 @@ export default function Results() {
                 key={result.id}
                 onClick={() => setSelectedId(result.id)}
                 className={`w-full border-l-2 p-4 text-left transition-colors cursor-pointer group flex items-start justify-between gap-2 ${
-                  selectedResult?.id === result.id ? 'border-l-rose-600 bg-rose-50/40' : 'border-l-transparent hover:bg-slate-50'
+                  selectedResult?.id === result.id ? 'border-l-rose-600 bg-rose-50/40' : 'border-l-transparent hover:bg-surface-2'
                 }`}
               >
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2">
-                    <span className="font-plex text-xs font-semibold leading-5 text-navy truncate block">
+                    <span className="font-plex text-xs font-semibold leading-5 text-ink truncate block">
                       {result.testTitle}
                     </span>
                     <span className="font-mono text-sm font-bold text-rose-600 flex-shrink-0">
@@ -220,7 +220,7 @@ export default function Results() {
                   type="button"
                   title="Delete record"
                   onClick={e => handleDelete(result.id, e)}
-                  className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-rose-600 text-xs px-1"
+                  className="opacity-0 group-hover:opacity-100 text-subtle hover:text-rose-600 text-xs px-1"
                 >
                   ✕
                 </button>
@@ -237,8 +237,8 @@ export default function Results() {
         {selectedResult ? (
           <ResultDetail result={selectedResult} userName={currentUserName} />
         ) : (
-          <section className="border border-divider bg-white p-10 text-center">
-            <h2 className="font-plex text-lg font-semibold text-navy">No result selected</h2>
+          <section className="border border-divider bg-surface p-10 text-center">
+            <h2 className="font-plex text-lg font-semibold text-ink">No result selected</h2>
             <p className="mt-2 text-sm text-graphite-mid">Complete a test to generate your first diagnostic report.</p>
           </section>
         )}

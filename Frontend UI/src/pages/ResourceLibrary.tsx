@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { fetchPdfResources } from '../lib/api'
+import { themeBg, themeText } from '../lib/theme'
 import {
   STATIC_RESOURCES,
   OFFICIAL_EXTERNAL_LINKS,
@@ -145,19 +146,19 @@ export default function ResourceLibrary() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between mb-6">
         <div>
           <div className="label-tag mb-1">RESOURCE LIBRARY · CONNECTED TO LOCAL DATABASE & OFFICIAL SOURCES</div>
-          <h1 className="text-2xl font-bold text-[#0F172A] plex tracking-tight">Study Materials & Official Books</h1>
-          <p className="text-sm text-[#64748B] mt-0.5" style={{ fontFamily: 'Inter, sans-serif' }}>
+          <h1 className="text-2xl font-bold text-ink plex tracking-tight">Study Materials & Official Books</h1>
+          <p className="text-sm text-muted mt-0.5" style={{ fontFamily: 'Inter, sans-serif' }}>
             Official Cambridge past papers (streamed from Database), authentic study guides, band descriptors, and examiner templates.
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <div className="bg-[#FEE2E2] border border-[#FCA5A5] px-4 py-2 text-center" style={{ borderRadius: 3 }}>
-            <div className="mono text-base font-bold text-[#DC2626]">{resources.length}+</div>
+          <div className="bg-electric-dim border border-[#FCA5A5] px-4 py-2 text-center" style={{ borderRadius: 3 }}>
+            <div className="mono text-base font-bold text-accent">{resources.length}+</div>
             <div className="mono text-[9px] text-[#EF4444] tracking-widest">RESOURCES</div>
           </div>
-          <div className="bg-[#FFE4E6] border border-[#FECDD3] px-4 py-2 text-center" style={{ borderRadius: 3 }}>
-            <div className="mono text-base font-bold text-[#BE123C]">{saved.size}</div>
-            <div className="mono text-[9px] text-[#BE123C] tracking-widest">BOOKMARKED</div>
+          <div className="bg-violet-dim border border-rose-line px-4 py-2 text-center" style={{ borderRadius: 3 }}>
+            <div className="mono text-base font-bold text-accent-2">{saved.size}</div>
+            <div className="mono text-[9px] text-accent-2 tracking-widest">BOOKMARKED</div>
           </div>
         </div>
       </div>
@@ -183,20 +184,20 @@ export default function ResourceLibrary() {
       {/* Search and Filters */}
       <div className="flex flex-col sm:flex-row gap-3 mb-5">
         <div className="flex-1 relative">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8] text-sm">⌕</span>
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-subtle text-sm">⌕</span>
           <input
             type="text"
             placeholder="Search by book name, topic, skill, or keyword..."
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="w-full border border-[#E2E8F0] focus:border-[#DC2626] pl-8 pr-4 py-2.5 text-[13px] text-[#374151] outline-none bg-white transition-colors"
+            className="w-full border border-divider focus:border-[#DC2626] pl-8 pr-4 py-2.5 text-[13px] text-graphite outline-none bg-surface transition-colors"
             style={{ borderRadius: 4, fontFamily: 'Inter, sans-serif' }}
           />
         </div>
         <select
           value={difficulty}
           onChange={e => setDifficulty(e.target.value)}
-          className="border border-[#E2E8F0] focus:border-[#DC2626] px-3 py-2.5 text-[12px] text-[#374151] outline-none bg-white"
+          className="border border-divider focus:border-[#DC2626] px-3 py-2.5 text-[12px] text-graphite outline-none bg-surface"
           style={{ borderRadius: 4, fontFamily: 'Inter, sans-serif' }}
         >
           <option value="All">All Difficulty Levels</option>
@@ -216,15 +217,15 @@ export default function ResourceLibrary() {
             onClick={() => setCat(c)}
             className={`mono text-[10px] px-3 py-1.5 border tracking-widest transition-all ${
               cat === c
-                ? 'bg-[#0F172A] border-[#0F172A] text-white'
-                : 'border-[#E2E8F0] text-[#64748B] bg-white hover:border-[#CBD5E1] hover:text-[#374151]'
+                ? 'bg-navy border-line-ink text-white'
+                : 'border-divider text-muted bg-surface hover:border-line-strong hover:text-graphite'
             }`}
             style={{ borderRadius: 3 }}
           >
             {c.toUpperCase()}
           </button>
         ))}
-        <span className="ml-auto mono text-[10px] text-[#94A3B8] self-center">{filtered.length} resources shown</span>
+        <span className="ml-auto mono text-[10px] text-subtle self-center">{filtered.length} resources shown</span>
       </div>
 
       {/* Resource grid */}
@@ -233,7 +234,7 @@ export default function ResourceLibrary() {
           <div
             key={r.id}
             onClick={() => handleCardClick(r)}
-            className="bg-white border border-[#E2E8F0] hover:border-[#CBD5E1] hover:shadow-sm transition-all cursor-pointer group flex flex-col justify-between"
+            className="bg-surface border border-divider hover:border-line-strong hover:shadow-sm transition-all cursor-pointer group flex flex-col justify-between"
             style={{ borderRadius: 4 }}
           >
             <div className="p-5">
@@ -243,48 +244,48 @@ export default function ResourceLibrary() {
                     className="mono text-[9px] font-medium px-2 py-0.5"
                     style={{
                       borderRadius: 2,
-                      color: TYPE_TEXT[r.type] || '#374151',
-                      background: TYPE_COLORS[r.type] || '#F1F5F9',
+                      color: themeText(TYPE_TEXT[r.type] || '#374151'),
+                      background: themeBg(TYPE_COLORS[r.type] || '#F1F5F9'),
                     }}
                   >
                     {r.type.toUpperCase()}
                   </span>
-                  <span className="mono text-[9px] text-[#94A3B8]">{r.category}</span>
+                  <span className="mono text-[9px] text-subtle">{r.category}</span>
                 </div>
                 <button
                   type="button"
                   aria-label={saved.has(r.id) ? 'Remove bookmark' : 'Bookmark resource'}
                   onClick={e => toggleSave(r.id, e)}
                   className={`text-base transition-colors ${
-                    saved.has(r.id) ? 'text-[#BE123C]' : 'text-slate-300 hover:text-slate-500'
+                    saved.has(r.id) ? 'text-accent-2' : 'text-slate-300 hover:text-muted'
                   }`}
                 >
                   {saved.has(r.id) ? '★' : '☆'}
                 </button>
               </div>
 
-              <h3 className="text-[13px] font-semibold text-[#0F172A] plex leading-snug mb-2 group-hover:text-[#DC2626] transition-colors">
+              <h3 className="text-[13px] font-semibold text-ink plex leading-snug mb-2 group-hover:text-accent transition-colors">
                 {r.title}
               </h3>
               <p
-                className="text-[11px] text-[#64748B] leading-relaxed mb-3"
+                className="text-[11px] text-muted leading-relaxed mb-3"
                 style={{ fontFamily: 'Inter, sans-serif' }}
               >
                 {r.desc}
               </p>
 
-              <div className="flex items-center gap-3 text-[10px] text-[#94A3B8]">
+              <div className="flex items-center gap-3 text-[10px] text-subtle">
                 <span className="mono">{r.pages}p</span>
                 <span>·</span>
                 <span className="mono">{r.difficulty}</span>
                 <span>·</span>
                 <span className="mono">{r.reads.toLocaleString()} reads</span>
-                <span className="ml-auto mono text-[#DC2626] font-medium">★ {r.rating}</span>
+                <span className="ml-auto mono text-accent font-medium">★ {r.rating}</span>
               </div>
             </div>
 
-            <div className="border-t border-[#F1F5F9] px-5 py-3 flex items-center justify-between bg-slate-50/50 gap-2">
-              <span className="mono text-[9px] text-[#94A3B8] border border-divider px-2 py-0.5 rounded bg-white truncate max-w-[120px]">
+            <div className="border-t border-divider-soft px-5 py-3 flex items-center justify-between bg-surface-2/50 gap-2">
+              <span className="mono text-[9px] text-subtle border border-divider px-2 py-0.5 rounded bg-surface truncate max-w-[120px]">
                 {r.tag}
               </span>
 
@@ -294,7 +295,7 @@ export default function ResourceLibrary() {
                   type="button"
                   onClick={e => handleOpenExternal(r.externalUrl, e)}
                   title={`Redirect to authentic ${r.sourceOrg} page`}
-                  className="mono text-[10px] text-[#64748B] hover:text-[#0F172A] border border-slate-200 px-2 py-1 rounded bg-white hover:bg-slate-50 transition-colors"
+                  className="mono text-[10px] text-muted hover:text-ink border border-divider px-2 py-1 rounded bg-surface hover:bg-surface-2 transition-colors"
                 >
                   Official Source ↗
                 </button>
@@ -315,7 +316,7 @@ export default function ResourceLibrary() {
                       e.stopPropagation()
                       setSelectedResource(r)
                     }}
-                    className="mono text-[10px] font-semibold text-[#DC2626] hover:text-[#991B1B] hover:underline"
+                    className="mono text-[10px] font-semibold text-accent hover:text-accent-strong hover:underline"
                   >
                     Read Guide →
                   </button>
@@ -328,8 +329,8 @@ export default function ResourceLibrary() {
 
       {filtered.length === 0 && (
         <div className="text-center py-16">
-          <div className="text-2xl text-[#E2E8F0] mb-3">◎</div>
-          <div className="text-sm text-[#94A3B8] plex">No resources found matching "{search}"</div>
+          <div className="text-2xl text-faint-2 mb-3">◎</div>
+          <div className="text-sm text-subtle plex">No resources found matching "{search}"</div>
         </div>
       )}
 
@@ -340,41 +341,41 @@ export default function ResourceLibrary() {
           onClick={() => setSelectedResource(null)}
         >
           <div
-            className="bg-white rounded-lg shadow-2xl max-w-3xl w-full max-h-[90vh] flex flex-col overflow-hidden border border-slate-200 animate-in fade-in zoom-in-95 duration-150"
+            className="bg-surface rounded-lg shadow-2xl max-w-3xl w-full max-h-[90vh] flex flex-col overflow-hidden border border-divider animate-in fade-in zoom-in-95 duration-150"
             onClick={e => e.stopPropagation()}
           >
             {/* Modal Header */}
-            <div className="px-6 py-4 border-b border-slate-200 flex items-start justify-between bg-slate-50">
+            <div className="px-6 py-4 border-b border-divider flex items-start justify-between bg-surface-2">
               <div>
                 <div className="flex items-center gap-2 mb-1.5">
                   <span
                     className="mono text-[9px] font-semibold px-2 py-0.5 rounded"
                     style={{
-                      color: TYPE_TEXT[selectedResource.type] || '#374151',
-                      background: TYPE_COLORS[selectedResource.type] || '#F1F5F9',
+                      color: themeText(TYPE_TEXT[selectedResource.type] || '#374151'),
+                      background: themeBg(TYPE_COLORS[selectedResource.type] || '#F1F5F9'),
                     }}
                   >
                     {selectedResource.type.toUpperCase()}
                   </span>
-                  <span className="mono text-[10px] text-[#64748B]">{selectedResource.category}</span>
-                  <span className="mono text-[10px] text-[#94A3B8]">·</span>
-                  <span className="mono text-[10px] text-[#64748B]">{selectedResource.difficulty}</span>
+                  <span className="mono text-[10px] text-muted">{selectedResource.category}</span>
+                  <span className="mono text-[10px] text-subtle">·</span>
+                  <span className="mono text-[10px] text-muted">{selectedResource.difficulty}</span>
                 </div>
-                <h2 className="text-lg font-bold text-slate-900 plex leading-snug">
+                <h2 className="text-lg font-bold text-ink plex leading-snug">
                   {selectedResource.title}
                 </h2>
               </div>
               <button
                 type="button"
                 onClick={() => setSelectedResource(null)}
-                className="text-slate-400 hover:text-slate-700 text-xl font-bold p-1 ml-4"
+                className="text-subtle hover:text-ink-3 text-xl font-bold p-1 ml-4"
               >
                 ✕
               </button>
             </div>
 
             {/* Modal Body */}
-            <div className="p-6 overflow-y-auto space-y-5 text-slate-700 text-sm leading-relaxed" style={{ fontFamily: 'Inter, sans-serif' }}>
+            <div className="p-6 overflow-y-auto space-y-5 text-ink-3 text-sm leading-relaxed" style={{ fontFamily: 'Inter, sans-serif' }}>
               {/* Authenticity Verification Box */}
               <div className="p-3.5 bg-blue-50/70 border border-blue-200 rounded flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
                 <div>
@@ -393,7 +394,7 @@ export default function ResourceLibrary() {
               </div>
 
               {/* Description */}
-              <p className="text-slate-600 italic border-l-2 border-[#DC2626] pl-3 py-0.5">
+              <p className="text-ink-4 italic border-l-2 border-[#DC2626] pl-3 py-0.5">
                 {selectedResource.desc}
               </p>
 
@@ -416,11 +417,11 @@ export default function ResourceLibrary() {
 
               {/* Structured Sections */}
               {selectedResource.sections && selectedResource.sections.map((sec, idx) => (
-                <div key={idx} className="border-t border-slate-100 pt-4">
-                  <h4 className="text-sm font-bold text-slate-900 plex mb-2">
+                <div key={idx} className="border-t border-divider-soft pt-4">
+                  <h4 className="text-sm font-bold text-ink plex mb-2">
                     {sec.heading}
                   </h4>
-                  <div className="whitespace-pre-line text-xs sm:text-[13px] text-slate-700 leading-relaxed bg-slate-50 p-4 rounded border border-slate-100">
+                  <div className="whitespace-pre-line text-xs sm:text-[13px] text-ink-3 leading-relaxed bg-surface-2 p-4 rounded border border-divider-soft">
                     {sec.body}
                   </div>
                 </div>
@@ -428,29 +429,29 @@ export default function ResourceLibrary() {
             </div>
 
             {/* Modal Footer */}
-            <div className="px-6 py-3.5 border-t border-slate-200 bg-slate-50 flex items-center justify-between">
-              <div className="mono text-[10px] text-slate-500">
+            <div className="px-6 py-3.5 border-t border-divider bg-surface-2 flex items-center justify-between">
+              <div className="mono text-[10px] text-muted">
                 ★ {selectedResource.rating} rating · {selectedResource.reads.toLocaleString()} readers
               </div>
               <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => window.print()}
-                  className="mono text-[10px] px-3 py-1.5 border border-slate-300 rounded bg-white text-slate-700 hover:bg-slate-100 transition-colors"
+                  className="mono text-[10px] px-3 py-1.5 border border-line-strong rounded bg-surface text-ink-3 hover:bg-surface-3 transition-colors"
                 >
                   Print / Save 🖨
                 </button>
                 <button
                   type="button"
                   onClick={e => handleOpenExternal(selectedResource.externalUrl, e)}
-                  className="mono text-[10px] px-3 py-1.5 bg-[#0F172A] text-white rounded hover:bg-slate-800 transition-colors font-medium"
+                  className="mono text-[10px] px-3 py-1.5 bg-navy text-white rounded hover:bg-slate-800 transition-colors font-medium"
                 >
                   Open Official External Page ↗
                 </button>
                 <button
                   type="button"
                   onClick={() => setSelectedResource(null)}
-                  className="mono text-[10px] px-3 py-1.5 border border-slate-300 rounded bg-white text-slate-700 hover:bg-slate-100 transition-colors"
+                  className="mono text-[10px] px-3 py-1.5 border border-line-strong rounded bg-surface text-ink-3 hover:bg-surface-3 transition-colors"
                 >
                   Close
                 </button>

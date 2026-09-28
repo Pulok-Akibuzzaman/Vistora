@@ -5,6 +5,7 @@ import FullTestResult from '../components/FullTestResult'
 import { saveExamResult } from '../lib/results'
 import { checkBackendHealth, getStreamUrl, saveExamResultApi, type BackendHealth } from '../lib/api'
 import { useAuth } from '../lib/authContext'
+import { themeText } from '../lib/theme'
 import { NavLink } from 'react-router'
 
 type TestType = 'Reading' | 'Listening' | 'Writing' | 'Speaking' | 'Full Test'
@@ -199,15 +200,15 @@ function ListeningExam({
   }
 
   const completionRow = ({ id, prefix, suffix }: { id: number; prefix: string; suffix: string }) => (
-    <li key={id} className="flex flex-wrap items-center gap-2 font-plex text-sm leading-7 text-navy">
-      <span className="w-6 font-mono text-xs font-bold text-navy">{id}</span>
+    <li key={id} className="flex flex-wrap items-center gap-2 font-plex text-sm leading-7 text-ink">
+      <span className="w-6 font-mono text-xs font-bold text-ink">{id}</span>
       <span>{prefix}</span>
       <input
         aria-label={`Answer ${id}`}
         value={answers[id] || ''}
         onFocus={() => setCurrentQ(id)}
         onChange={event => setAnswer(id, event.target.value)}
-        className={`h-8 w-44 rounded-sm border bg-white px-2 font-plex text-sm outline-none ${currentQ === id ? 'border-electric ring-1 ring-electric' : 'border-graphite-light'}`}
+        className={`h-8 w-44 rounded-sm border bg-surface px-2 font-plex text-sm outline-none ${currentQ === id ? 'border-electric ring-1 ring-electric' : 'border-graphite-light'}`}
       />
       <span>{suffix}</span>
     </li>
@@ -278,19 +279,19 @@ function ListeningExam({
   }
 
   return (
-    <main className="fixed inset-x-0 bottom-0 top-14 z-30 flex flex-col bg-white">
+    <main className="fixed inset-x-0 bottom-0 top-14 z-30 flex flex-col bg-surface">
       {/* Top Header */}
-      <header className="flex min-h-14 items-center justify-between border-b border-divider bg-white px-4">
+      <header className="flex min-h-14 items-center justify-between border-b border-divider bg-surface px-4">
         <div className="flex items-center gap-5">
-          <div className="border-r border-divider pr-5 font-plex text-2xl font-bold tracking-tight text-danger">IELTS</div>
+          <div className="border-r border-divider pr-5 font-plex text-2xl font-bold tracking-tight text-accent">IELTS</div>
           <div>
-            <div className="font-plex text-xs font-semibold text-navy">Computer-Delivered Listening Exam</div>
+            <div className="font-plex text-xs font-semibold text-ink">Computer-Delivered Listening Exam</div>
             <div className="flex items-center gap-2 mt-0.5">
               <span className={`inline-block h-2 w-2 rounded-full ${audioPlaying ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`} />
               <span className="font-plex text-xs text-graphite-mid">
                 {audioPlaying ? `Playing: ${effectiveAudioTitle}` : `Paused: ${effectiveAudioTitle}`}
               </span>
-              <span className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[10px] text-slate-600">
+              <span className="rounded bg-surface-3 px-1.5 py-0.5 font-mono text-[10px] text-ink-4">
                 {isCustomUpload ? 'Local File' : 'Backend Stream (HTTP 206)'}
               </span>
             </div>
@@ -298,7 +299,7 @@ function ListeningExam({
         </div>
         <div className="flex items-center gap-5">
           <div className="text-right">
-            <div className="font-mono text-sm font-semibold text-navy">{formatTime(timeLeft)}</div>
+            <div className="font-mono text-sm font-semibold text-ink">{formatTime(timeLeft)}</div>
             <div className="font-mono text-xs uppercase text-graphite-light">Time left</div>
           </div>
           <button onClick={onFinish} className="rounded-sm bg-navy px-4 py-2 font-plex text-xs font-semibold text-white hover:bg-navy-dark transition-colors">Finish Exam</button>
@@ -306,7 +307,7 @@ function ListeningExam({
       </header>
 
       {/* Modern Audio Player Bar */}
-      <div className="border-b border-divider bg-[#0F172A] text-white px-4 py-3 shadow-inner">
+      <div className="theme-fixed border-b border-divider bg-navy text-white px-4 py-3 shadow-inner">
         {/* Hidden Audio Element */}
         <audio
           ref={audioRef}
@@ -324,7 +325,7 @@ function ListeningExam({
           {/* Top row: Part tabs + Audio title */}
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-1.5 overflow-x-auto">
-              <span className="font-mono text-xs text-slate-400 mr-1 hidden sm:inline">PARTS:</span>
+              <span className="font-mono text-xs text-subtle mr-1 hidden sm:inline">PARTS:</span>
               {[1, 2, 3, 4].map(p => (
                 <button
                   key={p}
@@ -439,50 +440,50 @@ function ListeningExam({
         </div>
       </div>
 
-      <section className="m-4 flex-1 overflow-y-auto rounded-sm border border-divider bg-white">
+      <section className="m-4 flex-1 overflow-y-auto rounded-sm border border-divider bg-surface">
         <div className="sticky top-0 z-10 border-b border-divider bg-paper-dark px-4 py-3">
-          <h1 className="font-plex text-sm font-bold text-navy">Part {currentPart}</h1>
-          <p className="mt-1 font-plex text-sm text-navy">Listen and answer questions {partStart}–{partEnd}.</p>
+          <h1 className="font-plex text-sm font-bold text-ink">Part {currentPart}</h1>
+          <p className="mt-1 font-plex text-sm text-ink">Listen and answer questions {partStart}–{partEnd}.</p>
         </div>
 
         <div className="mx-auto max-w-5xl px-4 py-5">
           {currentPart === 1 && (
             <>
-              <h2 className="font-plex text-sm font-bold text-navy">Questions 1–10</h2>
-              <p className="mt-1 font-plex text-sm text-navy">Complete the table and notes. Write <strong>ONE WORD AND/OR A NUMBER</strong> for each answer.</p>
-              <h3 className="mt-5 font-plex text-base font-bold text-navy">Oyster Bay Sailing Club Courses</h3>
+              <h2 className="font-plex text-sm font-bold text-ink">Questions 1–10</h2>
+              <p className="mt-1 font-plex text-sm text-ink">Complete the table and notes. Write <strong>ONE WORD AND/OR A NUMBER</strong> for each answer.</p>
+              <h3 className="mt-5 font-plex text-base font-bold text-ink">Oyster Bay Sailing Club Courses</h3>
               <ul className="mt-4 space-y-3">{PART_1_PROMPTS.map(completionRow)}</ul>
             </>
           )}
 
           {currentPart === 2 && (
             <>
-              <h2 className="font-plex text-sm font-bold text-navy">Questions 11–16</h2>
-              <p className="mt-1 font-plex text-sm text-navy">Choose the correct letter, A, B or C.</p>
-              <h3 className="mt-5 font-plex text-base font-bold text-navy">Working as a makeup trainee</h3>
+              <h2 className="font-plex text-sm font-bold text-ink">Questions 11–16</h2>
+              <p className="mt-1 font-plex text-sm text-ink">Choose the correct letter, A, B or C.</p>
+              <h3 className="mt-5 font-plex text-base font-bold text-ink">Working as a makeup trainee</h3>
               <div className="mt-4 space-y-6">
                 {PART_2_MULTIPLE_CHOICE.map(question => (
                   <fieldset key={question.id} className="border-b border-divider pb-5">
-                    <legend className="font-plex text-sm font-semibold text-navy">{question.id}. {question.text}</legend>
+                    <legend className="font-plex text-sm font-semibold text-ink">{question.id}. {question.text}</legend>
                     <div className="mt-3 grid gap-2">
                       {question.options.map((option, index) => {
                         const letter = String.fromCharCode(65 + index)
-                        return <button key={option} onClick={() => setAnswer(question.id, letter)} className={`rounded-sm border px-4 py-2 text-left font-plex text-sm ${answers[question.id] === letter ? 'border-electric bg-electric-dim text-navy' : 'border-divider bg-white text-graphite'}`}><span className="mr-3 font-mono font-bold text-electric">{letter}</span>{option}</button>
+                        return <button key={option} onClick={() => setAnswer(question.id, letter)} className={`rounded-sm border px-4 py-2 text-left font-plex text-sm ${answers[question.id] === letter ? 'border-electric bg-electric-dim text-ink' : 'border-divider bg-surface text-graphite'}`}><span className="mr-3 font-mono font-bold text-accent">{letter}</span>{option}</button>
                       })}
                     </div>
                   </fieldset>
                 ))}
               </div>
-              <h2 className="mt-7 font-plex text-sm font-bold text-navy">Questions 17–20</h2>
-              <p className="mt-1 font-plex text-sm text-navy">What ability is required for each duty?</p>
-              <div className="mt-3 rounded-sm border border-divider bg-slate-50 p-4 text-sm text-navy">
+              <h2 className="mt-7 font-plex text-sm font-bold text-ink">Questions 17–20</h2>
+              <p className="mt-1 font-plex text-sm text-ink">What ability is required for each duty?</p>
+              <div className="mt-3 rounded-sm border border-divider bg-surface-2 p-4 text-sm text-ink">
                 <div><strong>A</strong> — being well-organised</div><div><strong>B</strong> — being flexible</div><div><strong>C</strong> — working quickly</div>
               </div>
               <div className="mt-4 space-y-3">
                 {PART_2_MATCHING.map(question => (
                   <div key={question.id} className="flex items-center gap-4">
-                    <span className="w-8 font-mono text-xs font-bold">{question.id}</span><span className="flex-1 text-sm text-navy">{question.text}</span>
-                    <select aria-label={`Answer ${question.id}`} value={answers[question.id] || ''} onChange={event => setAnswer(question.id, event.target.value)} className="rounded-sm border border-graphite-light bg-white px-3 py-2 text-sm"><option value="">Select</option>{['A', 'B', 'C'].map(letter => <option key={letter}>{letter}</option>)}</select>
+                    <span className="w-8 font-mono text-xs font-bold">{question.id}</span><span className="flex-1 text-sm text-ink">{question.text}</span>
+                    <select aria-label={`Answer ${question.id}`} value={answers[question.id] || ''} onChange={event => setAnswer(question.id, event.target.value)} className="rounded-sm border border-graphite-light bg-surface px-3 py-2 text-sm"><option value="">Select</option>{['A', 'B', 'C'].map(letter => <option key={letter}>{letter}</option>)}</select>
                   </div>
                 ))}
               </div>
@@ -493,9 +494,9 @@ function ListeningExam({
             <>
               {PART_3_GROUPS.map(group => (
                 <section key={group.ids[0]} className="mb-8">
-                  <h2 className="font-plex text-sm font-bold text-navy">Questions {group.ids[0]} and {group.ids[1]}</h2>
-                  <p className="mt-1 font-plex text-sm text-navy">Choose <strong>TWO</strong> letters, A–E. Answers may be in either order.</p>
-                  <h3 className="mt-4 font-plex text-sm font-semibold text-navy">{group.text}</h3>
+                  <h2 className="font-plex text-sm font-bold text-ink">Questions {group.ids[0]} and {group.ids[1]}</h2>
+                  <p className="mt-1 font-plex text-sm text-ink">Choose <strong>TWO</strong> letters, A–E. Answers may be in either order.</p>
+                  <h3 className="mt-4 font-plex text-sm font-semibold text-ink">{group.text}</h3>
                   <div className="mt-3 grid gap-2">
                     {group.options.map((option, index) => {
                       const letter = String.fromCharCode(65 + index)
@@ -506,21 +507,21 @@ function ListeningExam({
                           const target = group.ids.find(id => !answers[id]) ?? group.ids[1]
                           setAnswer(target, letter)
                         }
-                      }} className={`rounded-sm border px-4 py-2 text-left text-sm ${selectedId ? 'border-electric bg-electric-dim' : 'border-divider bg-white'}`}><span className="mr-3 font-mono font-bold text-electric">{letter}</span>{option}</button>
+                      }} className={`rounded-sm border px-4 py-2 text-left text-sm ${selectedId ? 'border-electric bg-electric-dim' : 'border-divider bg-surface'}`}><span className="mr-3 font-mono font-bold text-accent">{letter}</span>{option}</button>
                     })}
                   </div>
                 </section>
               ))}
-              <h2 className="font-plex text-sm font-bold text-navy">Questions 25–30</h2>
-              <p className="mt-1 font-plex text-sm text-navy">Choose the correct opinion, A–H, for each resource.</p>
-              <div className="mt-3 grid gap-1 rounded-sm border border-divider bg-slate-50 p-4 text-xs text-navy md:grid-cols-2">
+              <h2 className="font-plex text-sm font-bold text-ink">Questions 25–30</h2>
+              <p className="mt-1 font-plex text-sm text-ink">Choose the correct opinion, A–H, for each resource.</p>
+              <div className="mt-3 grid gap-1 rounded-sm border border-divider bg-surface-2 p-4 text-xs text-ink md:grid-cols-2">
                 {PART_3_OPINIONS.map((opinion, index) => <div key={opinion}><strong>{String.fromCharCode(65 + index)}</strong> — {opinion}</div>)}
               </div>
               <div className="mt-4 space-y-3">
                 {PART_3_MATCHING.map(question => (
                   <div key={question.id} className="flex items-center gap-4">
-                    <span className="w-8 font-mono text-xs font-bold">{question.id}</span><span className="flex-1 text-sm text-navy">{question.text}</span>
-                    <select aria-label={`Answer ${question.id}`} value={answers[question.id] || ''} onChange={event => setAnswer(question.id, event.target.value)} className="rounded-sm border border-graphite-light bg-white px-3 py-2 text-sm"><option value="">Select</option>{PART_3_OPINIONS.map((_, index) => <option key={index}>{String.fromCharCode(65 + index)}</option>)}</select>
+                    <span className="w-8 font-mono text-xs font-bold">{question.id}</span><span className="flex-1 text-sm text-ink">{question.text}</span>
+                    <select aria-label={`Answer ${question.id}`} value={answers[question.id] || ''} onChange={event => setAnswer(question.id, event.target.value)} className="rounded-sm border border-graphite-light bg-surface px-3 py-2 text-sm"><option value="">Select</option>{PART_3_OPINIONS.map((_, index) => <option key={index}>{String.fromCharCode(65 + index)}</option>)}</select>
                   </div>
                 ))}
               </div>
@@ -529,9 +530,9 @@ function ListeningExam({
 
           {currentPart === 4 && (
             <>
-              <h2 className="font-plex text-sm font-bold text-navy">Questions 31–40</h2>
-              <p className="mt-1 font-plex text-sm text-navy">Complete the notes. Write <strong>ONE WORD ONLY</strong> for each answer.</p>
-              <h3 className="mt-5 font-plex text-base font-bold text-navy">Sources of rubber</h3>
+              <h2 className="font-plex text-sm font-bold text-ink">Questions 31–40</h2>
+              <p className="mt-1 font-plex text-sm text-ink">Complete the notes. Write <strong>ONE WORD ONLY</strong> for each answer.</p>
+              <h3 className="mt-5 font-plex text-base font-bold text-ink">Sources of rubber</h3>
               <ul className="mt-4 space-y-3">{PART_4_PROMPTS.map(completionRow)}</ul>
             </>
           )}
@@ -541,13 +542,13 @@ function ListeningExam({
       <footer className="border-t border-divider bg-paper-dark px-4 py-3">
         <div className="flex items-center justify-between gap-4">
           <div className="flex min-w-0 items-center gap-4 overflow-x-auto">
-            <span className="whitespace-nowrap font-plex text-sm font-bold text-navy">Part {currentPart}</span>
+            <span className="whitespace-nowrap font-plex text-sm font-bold text-ink">Part {currentPart}</span>
             <div className="flex gap-1">
               {Array.from({ length: 10 }, (_, index) => partStart + index).map(id => (
                 <button key={id} onClick={() => {
                   setCurrentQ(id)
                   window.setTimeout(() => document.querySelector<HTMLElement>(`[aria-label="Answer ${id}"]`)?.focus(), 0)
-                }} className={`h-7 w-7 rounded-sm border font-mono text-xs ${currentQ === id ? 'border-electric bg-white text-electric' : answers[id] ? 'border-success bg-success-soft text-success' : 'border-transparent text-navy'}`}>{id}</button>
+                }} className={`h-7 w-7 rounded-sm border font-mono text-xs ${currentQ === id ? 'border-electric bg-surface text-accent' : answers[id] ? 'border-success bg-success-soft text-positive' : 'border-transparent text-ink'}`}>{id}</button>
               ))}
             </div>
             <span className="hidden whitespace-nowrap font-mono text-xs text-graphite-mid sm:inline">{answered}/{totalQuestions} answered</span>
@@ -573,7 +574,7 @@ function ListeningExam({
         </div>
         <div className="mt-2 flex gap-4 border-t border-divider pt-2">
           {(part ? [part] : [1, 2, 3, 4]).map(partNumber => (
-            <button key={partNumber} onClick={() => setCurrentQ((partNumber - 1) * 10 + 1)} className={`font-mono text-xs ${currentPart === partNumber ? 'font-semibold text-electric' : 'text-graphite-mid hover:text-navy'}`}>Part {partNumber} · {Object.keys(answers).filter(key => Number(key) > (partNumber - 1) * 10 && Number(key) <= partNumber * 10 && answers[Number(key)]).length}/10</button>
+            <button key={partNumber} onClick={() => setCurrentQ((partNumber - 1) * 10 + 1)} className={`font-mono text-xs ${currentPart === partNumber ? 'font-semibold text-accent' : 'text-graphite-mid hover:text-ink'}`}>Part {partNumber} · {Object.keys(answers).filter(key => Number(key) > (partNumber - 1) * 10 && Number(key) <= partNumber * 10 && answers[Number(key)]).length}/10</button>
           ))}
         </div>
       </footer>
@@ -611,18 +612,18 @@ function ReadingExam({ answers, setAnswers, currentQ, setCurrentQ, timeLeft, par
   const optionValue = (option: string) => /^[A-I] ·/.test(option) ? option.charAt(0) : option
 
   return (
-    <main className="fixed inset-x-0 bottom-0 top-14 z-30 flex flex-col bg-white">
-      <header className="flex min-h-14 items-center justify-between border-b border-divider bg-white px-4">
+    <main className="fixed inset-x-0 bottom-0 top-14 z-30 flex flex-col bg-surface">
+      <header className="flex min-h-14 items-center justify-between border-b border-divider bg-surface px-4">
         <div className="flex items-center gap-5">
-          <div className="border-r border-divider pr-5 font-plex text-2xl font-bold tracking-tight text-danger">IELTS</div>
+          <div className="border-r border-divider pr-5 font-plex text-2xl font-bold tracking-tight text-accent">IELTS</div>
           <div>
-            <div className="font-plex text-xs font-semibold text-navy">Test taker ID</div>
+            <div className="font-plex text-xs font-semibold text-ink">Test taker ID</div>
             <div className="font-plex text-xs text-graphite-mid">Academic Reading · Test 1{part ? ` · Passage ${part}` : ''}</div>
           </div>
         </div>
         <div className="flex items-center gap-5">
           <div className="text-right">
-            <div className={`font-mono text-sm font-semibold ${timeLeft < 300 ? 'text-danger' : 'text-navy'}`}>{formatTime(timeLeft)}</div>
+            <div className={`font-mono text-sm font-semibold ${timeLeft < 300 ? 'text-accent' : 'text-ink'}`}>{formatTime(timeLeft)}</div>
             <div className="font-mono text-xs uppercase text-graphite-light">Time left</div>
           </div>
           <button onClick={onFinish} className="rounded-sm bg-navy px-4 py-2 font-plex text-xs font-semibold text-white">Finish</button>
@@ -630,16 +631,16 @@ function ReadingExam({ answers, setAnswers, currentQ, setCurrentQ, timeLeft, par
       </header>
 
       <div className="border-b border-divider bg-paper-dark px-4 py-3">
-        <h1 className="font-plex text-sm font-bold text-navy">Part {passage.part}</h1>
-        <p className="mt-1 font-plex text-sm text-navy">Read the text and answer questions {passage.range[0]}–{passage.range[1]}.</p>
+        <h1 className="font-plex text-sm font-bold text-ink">Part {passage.part}</h1>
+        <p className="mt-1 font-plex text-sm text-ink">Read the text and answer questions {passage.range[0]}–{passage.range[1]}.</p>
       </div>
 
       <div className="grid min-h-0 flex-1 md:grid-cols-2">
         <article className="overflow-y-auto border-b border-divider p-5 md:border-b-0 md:border-r md:p-7">
           <div className="mx-auto max-w-3xl">
-            <h2 className="font-plex text-xl font-bold text-navy">{passage.title}</h2>
+            <h2 className="font-plex text-xl font-bold text-ink">{passage.title}</h2>
             {passage.subtitle && <p className="mt-2 font-plex text-sm font-semibold italic leading-6 text-graphite">{passage.subtitle}</p>}
-            <div className="mt-5 space-y-5 font-plex text-sm leading-7 text-navy">
+            <div className="mt-5 space-y-5 font-plex text-sm leading-7 text-ink">
               {passage.paragraphs.map((paragraph, index) => <p key={index}>{paragraph}</p>)}
             </div>
           </div>
@@ -654,17 +655,17 @@ function ReadingExam({ answers, setAnswers, currentQ, setCurrentQ, timeLeft, par
                 <div key={question.id} id={`reading-question-${question.id}`} className={`scroll-mt-4 ${currentQ === question.id ? 'border-l-2 border-electric pl-4' : ''}`}>
                   {showHeading && (
                     <div className="mb-4">
-                      <h3 className="font-plex text-sm font-bold text-navy">Questions {question.id}–{question.kind === 'text' ? passage.questions.filter(item => item.kind === question.kind && item.instruction === question.instruction).at(-1)?.id : passage.range[1]}</h3>
+                      <h3 className="font-plex text-sm font-bold text-ink">Questions {question.id}–{question.kind === 'text' ? passage.questions.filter(item => item.kind === question.kind && item.instruction === question.instruction).at(-1)?.id : passage.range[1]}</h3>
                       <p className="mt-1 font-plex text-xs leading-5 text-graphite-mid">
                         {question.kind === 'text' ? `Complete each answer. Write ${question.instruction}.` : question.options?.includes('TRUE') ? 'Choose TRUE, FALSE or NOT GIVEN.' : question.options?.includes('YES') ? 'Choose YES, NO or NOT GIVEN.' : 'Choose the correct option.'}
                       </p>
                     </div>
                   )}
-                  <div className="font-plex text-sm font-semibold leading-6 text-navy"><span className="mr-2 font-mono">{question.id}</span>{question.prompt}</div>
+                  <div className="font-plex text-sm font-semibold leading-6 text-ink"><span className="mr-2 font-mono">{question.id}</span>{question.prompt}</div>
                   {question.kind === 'text' ? (
-                    <input aria-label={`Reading answer ${question.id}`} value={answers[question.id] || ''} onFocus={() => setCurrentQ(question.id)} onChange={event => setAnswer(question.id, event.target.value)} className="mt-3 w-full max-w-sm rounded-sm border border-graphite-light bg-white px-3 py-2 font-plex text-sm outline-none focus:border-electric focus:ring-1 focus:ring-electric" placeholder="Type your answer" />
+                    <input aria-label={`Reading answer ${question.id}`} value={answers[question.id] || ''} onFocus={() => setCurrentQ(question.id)} onChange={event => setAnswer(question.id, event.target.value)} className="mt-3 w-full max-w-sm rounded-sm border border-graphite-light bg-surface px-3 py-2 font-plex text-sm outline-none focus:border-electric focus:ring-1 focus:ring-electric" placeholder="Type your answer" />
                   ) : question.options && question.options.length > 7 ? (
-                    <select aria-label={`Reading answer ${question.id}`} value={answers[question.id] || ''} onChange={event => setAnswer(question.id, event.target.value)} className="mt-3 w-full rounded-sm border border-graphite-light bg-white px-3 py-2 font-plex text-sm">
+                    <select aria-label={`Reading answer ${question.id}`} value={answers[question.id] || ''} onChange={event => setAnswer(question.id, event.target.value)} className="mt-3 w-full rounded-sm border border-graphite-light bg-surface px-3 py-2 font-plex text-sm">
                       <option value="">Select an answer</option>
                       {question.options.map(option => <option key={option} value={optionValue(option)}>{option}</option>)}
                     </select>
@@ -673,7 +674,7 @@ function ReadingExam({ answers, setAnswers, currentQ, setCurrentQ, timeLeft, par
                       {question.options?.map(option => {
                         const value = optionValue(option)
                         return (
-                          <label key={option} className={`flex cursor-pointer items-start gap-3 rounded-sm border px-3 py-2 font-plex text-sm ${answers[question.id] === value ? 'border-electric bg-electric-dim' : 'border-transparent hover:bg-slate-50'}`}>
+                          <label key={option} className={`flex cursor-pointer items-start gap-3 rounded-sm border px-3 py-2 font-plex text-sm ${answers[question.id] === value ? 'border-electric bg-electric-dim' : 'border-transparent hover:bg-surface-2'}`}>
                             <input type="radio" name={`reading-${question.id}`} checked={answers[question.id] === value} onChange={() => setAnswer(question.id, value)} className="mt-1 accent-electric" />
                             <span>{option}</span>
                           </label>
@@ -691,13 +692,13 @@ function ReadingExam({ answers, setAnswers, currentQ, setCurrentQ, timeLeft, par
       <footer className="border-t border-divider bg-paper-dark px-4 py-3">
         <div className="flex items-center justify-between gap-4">
           <div className="flex min-w-0 items-center gap-4 overflow-x-auto">
-            <span className="whitespace-nowrap font-plex text-sm font-bold text-navy">Part {passage.part}</span>
+            <span className="whitespace-nowrap font-plex text-sm font-bold text-ink">Part {passage.part}</span>
             <div className="flex gap-1">
               {Array.from({ length: passage.range[1] - passage.range[0] + 1 }, (_, index) => passage.range[0] + index).map(id => (
                 <button key={id} onClick={() => {
                   setCurrentQ(id)
                   window.setTimeout(() => document.getElementById(`reading-question-${id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 0)
-                }} className={`h-7 w-7 rounded-sm border font-mono text-xs ${currentQ === id ? 'border-electric bg-white text-electric' : answers[id] ? 'border-success bg-success-soft text-success' : 'border-transparent text-navy'}`}>{id}</button>
+                }} className={`h-7 w-7 rounded-sm border font-mono text-xs ${currentQ === id ? 'border-electric bg-surface text-accent' : answers[id] ? 'border-success bg-success-soft text-positive' : 'border-transparent text-ink'}`}>{id}</button>
               ))}
             </div>
             <span className="hidden whitespace-nowrap font-mono text-xs text-graphite-mid lg:inline">{answered}/{totalQuestions} answered</span>
@@ -709,7 +710,7 @@ function ReadingExam({ answers, setAnswers, currentQ, setCurrentQ, timeLeft, par
         </div>
         <div className="mt-2 flex gap-4 border-t border-divider pt-2">
           {READING_PASSAGES.filter(item => part === undefined || item.part === part).map(item => (
-            <button key={item.part} onClick={() => setCurrentQ(item.range[0])} className={`font-mono text-xs ${item.part === passage.part ? 'font-semibold text-electric' : 'text-graphite-mid hover:text-navy'}`}>Part {item.part} · {Object.keys(answers).filter(key => Number(key) >= item.range[0] && Number(key) <= item.range[1] && answers[Number(key)]).length}/{item.range[1] - item.range[0] + 1}</button>
+            <button key={item.part} onClick={() => setCurrentQ(item.range[0])} className={`font-mono text-xs ${item.part === passage.part ? 'font-semibold text-accent' : 'text-graphite-mid hover:text-ink'}`}>Part {item.part} · {Object.keys(answers).filter(key => Number(key) >= item.range[0] && Number(key) <= item.range[1] && answers[Number(key)]).length}/{item.range[1] - item.range[0] + 1}</button>
           ))}
         </div>
       </footer>
@@ -738,29 +739,29 @@ function WritingChart() {
   const y = (value: number) => 232 - value * 9
 
   return (
-    <svg viewBox="0 0 520 300" role="img" aria-label="Line graph showing the number of jobs in four US economic sectors from 1960 to 2020" className="mx-auto mt-6 w-full max-w-2xl bg-white">
-      <text x="260" y="22" textAnchor="middle" className="fill-navy font-plex text-sm font-semibold">Number of jobs in four sectors of the US economy, 1960–2020</text>
+    <svg viewBox="0 0 520 300" role="img" aria-label="Line graph showing the number of jobs in four US economic sectors from 1960 to 2020" className="mx-auto mt-6 w-full max-w-2xl bg-surface">
+      <text x="260" y="22" textAnchor="middle" className="fill-ink font-plex text-sm font-semibold">Number of jobs in four sectors of the US economy, 1960–2020</text>
       {[0, 5, 10, 15, 20, 25].map(value => (
         <g key={value}>
           <line x1="60" x2="390" y1={y(value)} y2={y(value)} className="stroke-divider" />
           <text x="50" y={y(value) + 4} textAnchor="end" className="fill-graphite-mid font-mono text-xs">{value}</text>
         </g>
       ))}
-      <line x1="60" x2="60" y1="7" y2="232" className="stroke-navy" />
-      <line x1="60" x2="390" y1="232" y2="232" className="stroke-navy" />
-      {[1960, 1980, 2000, 2020].map((year, index) => <text key={year} x={x(index)} y="252" textAnchor="middle" className="fill-navy font-mono text-xs">{year}</text>)}
+      <line x1="60" x2="60" y1="7" y2="232" className="stroke-ink" />
+      <line x1="60" x2="390" y1="232" y2="232" className="stroke-ink" />
+      {[1960, 1980, 2000, 2020].map((year, index) => <text key={year} x={x(index)} y="252" textAnchor="middle" className="fill-ink font-mono text-xs">{year}</text>)}
       <text x="225" y="280" textAnchor="middle" className="fill-graphite font-plex text-xs">Year</text>
       <text x="16" y="125" textAnchor="middle" transform="rotate(-90 16 125)" className="fill-graphite font-plex text-xs">Number of jobs (millions)</text>
       {series.map((item, seriesIndex) => {
         const points = item.values.map((value, index) => `${x(index)},${y(value)}`).join(' ')
         return (
           <g key={item.name}>
-            <polyline points={points} fill="none" stroke={seriesIndex < 2 ? '#0F172A' : '#64748B'} strokeWidth="2" strokeDasharray={item.dash} />
+            <polyline points={points} fill="none" style={{ stroke: themeText(seriesIndex < 2 ? '#0F172A' : '#64748B') }} strokeWidth="2" strokeDasharray={item.dash} />
             {item.values.map((value, index) => item.marker === 'circle'
-              ? <circle key={index} cx={x(index)} cy={y(value)} r="3" className="fill-white stroke-navy" />
-              : <rect key={index} x={x(index) - 3} y={y(value) - 3} width="6" height="6" className={seriesIndex === 1 ? 'fill-navy' : 'fill-white stroke-graphite-mid'} />)}
-            <line x1="410" x2="438" y1={78 + seriesIndex * 28} y2={78 + seriesIndex * 28} stroke={seriesIndex < 2 ? '#0F172A' : '#64748B'} strokeWidth="2" strokeDasharray={item.dash} />
-            <text x="446" y={82 + seriesIndex * 28} className="fill-navy font-plex text-xs">{item.name}</text>
+              ? <circle key={index} cx={x(index)} cy={y(value)} r="3" className="fill-white stroke-ink" />
+              : <rect key={index} x={x(index) - 3} y={y(value) - 3} width="6" height="6" className={seriesIndex === 1 ? 'fill-ink' : 'fill-white stroke-graphite-mid'} />)}
+            <line x1="410" x2="438" y1={78 + seriesIndex * 28} y2={78 + seriesIndex * 28} style={{ stroke: themeText(seriesIndex < 2 ? '#0F172A' : '#64748B') }} strokeWidth="2" strokeDasharray={item.dash} />
+            <text x="446" y={82 + seriesIndex * 28} className="fill-ink font-plex text-xs">{item.name}</text>
           </g>
         )
       })}
@@ -777,26 +778,26 @@ function WritingExam({ answers, setAnswers, currentTask, setCurrentTask, timeLef
     `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`
 
   return (
-    <main className="fixed inset-x-0 bottom-0 top-14 z-30 flex flex-col bg-white">
-      <header className="flex min-h-14 items-center justify-between border-b border-divider bg-white px-4">
+    <main className="fixed inset-x-0 bottom-0 top-14 z-30 flex flex-col bg-surface">
+      <header className="flex min-h-14 items-center justify-between border-b border-divider bg-surface px-4">
         <div className="flex items-center gap-5">
-          <div className="border-r border-divider pr-5 font-plex text-2xl font-bold tracking-tight text-danger">IELTS</div>
-          <div><div className="font-plex text-xs font-semibold text-navy">Test taker ID</div><div className="font-plex text-xs text-graphite-mid">Academic Writing · Test 1{part ? ` · Task ${part}` : ''}</div></div>
+          <div className="border-r border-divider pr-5 font-plex text-2xl font-bold tracking-tight text-accent">IELTS</div>
+          <div><div className="font-plex text-xs font-semibold text-ink">Test taker ID</div><div className="font-plex text-xs text-graphite-mid">Academic Writing · Test 1{part ? ` · Task ${part}` : ''}</div></div>
         </div>
         <div className="flex items-center gap-5">
-          <div className="text-right"><div className={`font-mono text-sm font-semibold ${timeLeft < 300 ? 'text-danger' : 'text-navy'}`}>{formatTime(timeLeft)}</div><div className="font-mono text-xs uppercase text-graphite-light">Time left</div></div>
+          <div className="text-right"><div className={`font-mono text-sm font-semibold ${timeLeft < 300 ? 'text-accent' : 'text-ink'}`}>{formatTime(timeLeft)}</div><div className="font-mono text-xs uppercase text-graphite-light">Time left</div></div>
           <button onClick={onFinish} className="rounded-sm bg-navy px-4 py-2 font-plex text-xs font-semibold text-white">Finish</button>
         </div>
       </header>
 
       <div className="border-b border-divider bg-paper-dark px-4 py-3">
-        <h1 className="font-plex text-sm font-bold text-navy">Task {task}</h1>
-        <p className="mt-1 font-plex text-sm text-navy">You should spend about {task === 1 ? '20' : '40'} minutes on this task. Write at least {minimumWords} words.</p>
+        <h1 className="font-plex text-sm font-bold text-ink">Task {task}</h1>
+        <p className="mt-1 font-plex text-sm text-ink">You should spend about {task === 1 ? '20' : '40'} minutes on this task. Write at least {minimumWords} words.</p>
       </div>
 
       <div className="grid min-h-0 flex-1 md:grid-cols-2">
         <article className="overflow-y-auto border-b border-divider p-5 md:border-b-0 md:border-r md:p-7">
-          <div className="mx-auto max-w-3xl font-plex text-sm leading-7 text-navy">
+          <div className="mx-auto max-w-3xl font-plex text-sm leading-7 text-ink">
             {task === 1 ? (
               <>
                 <p className="font-semibold">The graph below gives information about the number of jobs in four sectors of the economy in the US between 1960 and 2020.</p>
@@ -806,9 +807,9 @@ function WritingExam({ answers, setAnswers, currentTask, setCurrentTask, timeLef
             ) : (
               <>
                 <p>You should write about the following topic:</p>
-                <div className="mt-5 border-y border-divider bg-slate-50 p-6">
-                  <p className="font-plex text-lg font-semibold leading-8 text-navy">The best way to provide enough homes in large cities is to build tall apartment blocks.</p>
-                  <p className="mt-4 font-plex text-base font-semibold text-navy">To what extent do you agree or disagree with this statement?</p>
+                <div className="mt-5 border-y border-divider bg-surface-2 p-6">
+                  <p className="font-plex text-lg font-semibold leading-8 text-ink">The best way to provide enough homes in large cities is to build tall apartment blocks.</p>
+                  <p className="mt-4 font-plex text-base font-semibold text-ink">To what extent do you agree or disagree with this statement?</p>
                 </div>
                 <p className="mt-5">Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>
               </>
@@ -816,7 +817,7 @@ function WritingExam({ answers, setAnswers, currentTask, setCurrentTask, timeLef
           </div>
         </article>
 
-        <section className="min-h-0 overflow-y-auto bg-white p-4 md:p-6">
+        <section className="min-h-0 overflow-y-auto bg-surface p-4 md:p-6">
           <label htmlFor={`writing-response-${task}`} className="font-mono text-xs uppercase tracking-wider text-graphite-mid">Your answer</label>
           <textarea
             id={`writing-response-${task}`}
@@ -824,12 +825,12 @@ function WritingExam({ answers, setAnswers, currentTask, setCurrentTask, timeLef
             onChange={event => setAnswers(values => ({ ...values, [task]: event.target.value }))}
             spellCheck
             autoFocus
-            className="mt-3 h-80 w-full resize-y rounded-sm border border-graphite-light bg-white p-4 font-plex text-sm leading-7 text-navy outline-none transition-colors focus:border-electric focus:ring-1 focus:ring-electric"
+            className="mt-3 h-80 w-full resize-y rounded-sm border border-graphite-light bg-surface p-4 font-plex text-sm leading-7 text-ink outline-none transition-colors focus:border-electric focus:ring-1 focus:ring-electric"
             placeholder={`Write your Task ${task} response here...`}
           />
           <div className="mt-2 flex items-center justify-between">
             <span className="font-mono text-xs text-graphite-light">Saved automatically</span>
-            <span className={`font-plex text-sm ${wordCount >= minimumWords ? 'font-semibold text-success' : 'text-navy'}`}>Words: {wordCount}</span>
+            <span className={`font-plex text-sm ${wordCount >= minimumWords ? 'font-semibold text-positive' : 'text-ink'}`}>Words: {wordCount}</span>
           </div>
           <div className="mt-4 border-t border-divider pt-4 font-plex text-xs text-graphite-mid">Minimum required: {minimumWords} words</div>
         </section>
@@ -838,7 +839,7 @@ function WritingExam({ answers, setAnswers, currentTask, setCurrentTask, timeLef
       <footer className="flex items-center justify-between border-t border-divider bg-paper-dark px-4 py-3">
         <div className="flex gap-4">
           {(part ? [part] : [1, 2]).map(taskNumber => (
-            <button key={taskNumber} onClick={() => setCurrentTask(taskNumber)} className={`font-mono text-xs ${task === taskNumber ? 'font-semibold text-electric' : 'text-graphite-mid'}`}>Task {taskNumber} · {answers[taskNumber]?.trim() ? `${answers[taskNumber].trim().split(/\s+/).length} words` : 'not started'}</button>
+            <button key={taskNumber} onClick={() => setCurrentTask(taskNumber)} className={`font-mono text-xs ${task === taskNumber ? 'font-semibold text-accent' : 'text-graphite-mid'}`}>Task {taskNumber} · {answers[taskNumber]?.trim() ? `${answers[taskNumber].trim().split(/\s+/).length} words` : 'not started'}</button>
           ))}
         </div>
         <div className="flex gap-2">
@@ -970,44 +971,44 @@ function SpeakingExam({ currentPart, setCurrentPart, timeLeft, part, onRecording
 
   return (
     <main className="fixed inset-x-0 bottom-0 top-14 z-30 flex flex-col bg-paper">
-      <header className="flex min-h-14 items-center justify-between border-b border-divider bg-white px-4">
+      <header className="flex min-h-14 items-center justify-between border-b border-divider bg-surface px-4">
         <div className="flex items-center gap-5">
-          <div className="border-r border-divider pr-5 font-plex text-2xl font-bold tracking-tight text-danger">IELTS</div>
-          <div><div className="font-plex text-xs font-semibold text-navy">Test taker ID</div><div className="font-plex text-xs text-graphite-mid">Speaking · Test 1{part ? ` · Part ${part}` : ''}</div></div>
+          <div className="border-r border-divider pr-5 font-plex text-2xl font-bold tracking-tight text-accent">IELTS</div>
+          <div><div className="font-plex text-xs font-semibold text-ink">Test taker ID</div><div className="font-plex text-xs text-graphite-mid">Speaking · Test 1{part ? ` · Part ${part}` : ''}</div></div>
         </div>
         <div className="flex items-center gap-5">
-          <div className="text-right"><div className={`font-mono text-sm font-semibold ${timeLeft < 60 ? 'text-danger' : 'text-navy'}`}>{formatTime(timeLeft)}</div><div className="font-mono text-xs uppercase text-graphite-light">Time left</div></div>
+          <div className="text-right"><div className={`font-mono text-sm font-semibold ${timeLeft < 60 ? 'text-accent' : 'text-ink'}`}>{formatTime(timeLeft)}</div><div className="font-mono text-xs uppercase text-graphite-light">Time left</div></div>
           <button disabled={recording} onClick={onFinish} className="rounded-sm bg-navy px-4 py-2 font-plex text-xs font-semibold text-white disabled:opacity-40">Finish</button>
         </div>
       </header>
 
       <div className="border-b border-divider bg-paper-dark px-4 py-3">
-        <h1 className="font-plex text-sm font-bold text-navy">Part {activePart}</h1>
-        <p className="mt-1 font-plex text-sm text-navy">{content.label}</p>
+        <h1 className="font-plex text-sm font-bold text-ink">Part {activePart}</h1>
+        <p className="mt-1 font-plex text-sm text-ink">{content.label}</p>
       </div>
 
       <div className="mx-auto grid min-h-0 w-full max-w-6xl flex-1 gap-5 overflow-y-auto p-5 lg:grid-cols-3 lg:p-8">
-        <section className="border border-divider bg-white p-6 lg:col-span-2">
-          <div className="font-mono text-xs uppercase tracking-widest text-electric">Speaking prompt</div>
-          <h2 className="mt-3 font-plex text-xl font-bold leading-8 text-navy">{content.title}</h2>
+        <section className="border border-divider bg-surface p-6 lg:col-span-2">
+          <div className="font-mono text-xs uppercase tracking-widest text-accent">Speaking prompt</div>
+          <h2 className="mt-3 font-plex text-xl font-bold leading-8 text-ink">{content.title}</h2>
           <p className="mt-3 border-l-2 border-electric-dim pl-4 font-plex text-sm leading-6 text-graphite-mid">{content.intro}</p>
           <ul className="mt-6 space-y-3">
             {content.questions.map((question, index) => (
-              <li key={question} className="flex gap-3 font-plex text-sm leading-6 text-navy">
-                <span className="font-mono text-xs font-semibold text-electric">{String(index + 1).padStart(2, '0')}</span>
+              <li key={question} className="flex gap-3 font-plex text-sm leading-6 text-ink">
+                <span className="font-mono text-xs font-semibold text-accent">{String(index + 1).padStart(2, '0')}</span>
                 <span>{activePart === 2 ? question : question}</span>
               </li>
             ))}
           </ul>
           {activePart === 2 && (
             <div className="mt-7 border-t border-divider pt-5">
-              <button disabled={prepLeft > 0 || recording} onClick={() => setPrepLeft(60)} className="rounded-sm border border-divider bg-white px-4 py-2 font-plex text-sm font-semibold text-navy disabled:opacity-50">{prepLeft > 0 ? `Preparation: ${prepLeft}s` : 'Start 1-minute preparation'}</button>
+              <button disabled={prepLeft > 0 || recording} onClick={() => setPrepLeft(60)} className="rounded-sm border border-divider bg-surface px-4 py-2 font-plex text-sm font-semibold text-ink disabled:opacity-50">{prepLeft > 0 ? `Preparation: ${prepLeft}s` : 'Start 1-minute preparation'}</button>
               <p className="mt-2 font-plex text-xs text-graphite-mid">You may make notes on paper during preparation.</p>
             </div>
           )}
         </section>
 
-        <aside className="border border-divider bg-navy p-6 text-white">
+        <aside className="theme-fixed border border-divider bg-navy p-6 text-white">
           <div className="font-mono text-xs uppercase tracking-widest text-electric-light">Voice recorder</div>
           <div className="mt-6 flex items-center gap-3">
             <span className={`h-3 w-3 rounded-full ${recording ? 'animate-pulse bg-danger' : 'bg-navy-light'}`} />
@@ -1031,10 +1032,10 @@ function SpeakingExam({ currentPart, setCurrentPart, timeLeft, part, onRecording
         </aside>
       </div>
 
-      <footer className="flex items-center justify-between border-t border-divider bg-white px-4 py-3">
+      <footer className="flex items-center justify-between border-t border-divider bg-surface px-4 py-3">
         <div className="flex gap-4">
           {(part ? [part] : [1, 2, 3]).map(partNumber => (
-            <button key={partNumber} onClick={() => changePart(partNumber)} className={`font-mono text-xs ${activePart === partNumber ? 'font-semibold text-electric' : 'text-graphite-mid'}`}>Part {partNumber} · {recordings[partNumber] ? 'recorded' : 'not started'}</button>
+            <button key={partNumber} onClick={() => changePart(partNumber)} className={`font-mono text-xs ${activePart === partNumber ? 'font-semibold text-accent' : 'text-graphite-mid'}`}>Part {partNumber} · {recordings[partNumber] ? 'recorded' : 'not started'}</button>
           ))}
         </div>
         <div className="flex gap-2">
@@ -1272,13 +1273,13 @@ export default function PracticeTest() {
     if (selectedTest.type === 'Speaking') {
       return (
         <main className="mx-auto max-w-4xl px-6 py-12">
-          <section className="corner-mark border border-divider bg-white p-8">
+          <section className="corner-mark border border-divider bg-surface p-8">
             <div className="label-tag mb-3">{selectedTest.title}</div>
-            <h1 className="font-plex text-3xl font-bold text-navy">Speaking practice complete</h1>
+            <h1 className="font-plex text-3xl font-bold text-ink">Speaking practice complete</h1>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-graphite-mid">Speaking recordings are kept only for playback during the active browser session. A band score requires evaluation of fluency and coherence, lexical resource, grammatical range and accuracy, and pronunciation.</p>
             <div className="mt-8 flex gap-3">
               <button onClick={resetTest} className="rounded-card bg-electric px-6 py-3 font-plex text-sm font-semibold text-white">Return to test centre</button>
-              <button onClick={() => setStage('instructions')} className="rounded-card border border-divider px-6 py-3 font-plex text-sm font-semibold text-navy">Practice again</button>
+              <button onClick={() => setStage('instructions')} className="rounded-card border border-divider px-6 py-3 font-plex text-sm font-semibold text-ink">Practice again</button>
             </div>
           </section>
         </main>
@@ -1288,18 +1289,18 @@ export default function PracticeTest() {
       const taskNumbers = selectedTest.part ? [selectedTest.part] : [1, 2]
       return (
         <main className="mx-auto max-w-4xl px-6 py-12">
-          <section className="corner-mark border border-divider bg-white p-8">
+          <section className="corner-mark border border-divider bg-surface p-8">
             <div className="label-tag mb-3">{selectedTest.title}</div>
-            <h1 className="font-plex text-3xl font-bold text-navy">Writing test submitted</h1>
+            <h1 className="font-plex text-3xl font-bold text-ink">Writing test submitted</h1>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-graphite-mid">Your responses have been saved. Writing requires assessment against Task Achievement, Coherence and Cohesion, Lexical Resource, and Grammatical Range and Accuracy.</p>
             <div className="mt-8 grid gap-3 sm:grid-cols-2">
               {taskNumbers.map(taskNumber => {
                 const words = answers[taskNumber]?.trim() ? answers[taskNumber].trim().split(/\s+/).length : 0
                 const target = taskNumber === 1 ? 150 : 250
                 return (
-                  <div key={taskNumber} className="border border-divider bg-slate-50 p-4">
+                  <div key={taskNumber} className="border border-divider bg-surface-2 p-4">
                     <div className="font-mono text-xs uppercase tracking-wide text-graphite-light">Task {taskNumber}</div>
-                    <div className={`mt-1 font-mono text-xl font-semibold ${words >= target ? 'text-success' : 'text-warning'}`}>{words} words</div>
+                    <div className={`mt-1 font-mono text-xl font-semibold ${words >= target ? 'text-positive' : 'text-caution'}`}>{words} words</div>
                     <div className="mt-1 text-xs text-graphite-mid">Minimum: {target} words</div>
                   </div>
                 )
@@ -1307,7 +1308,7 @@ export default function PracticeTest() {
             </div>
             <div className="mt-8 flex gap-3">
               <button onClick={resetTest} className="rounded-card bg-electric px-6 py-3 font-plex text-sm font-semibold text-white">Return to test centre</button>
-              <button onClick={() => setStage('instructions')} className="rounded-card border border-divider px-6 py-3 font-plex text-sm font-semibold text-navy">Retake test</button>
+              <button onClick={() => setStage('instructions')} className="rounded-card border border-divider px-6 py-3 font-plex text-sm font-semibold text-ink">Retake test</button>
             </div>
           </section>
         </main>
@@ -1320,16 +1321,16 @@ export default function PracticeTest() {
     const correctAnswers = isListening ? listeningScore : readingScore
     return (
       <main className="mx-auto max-w-4xl px-6 py-12">
-        <section className="corner-mark border border-divider bg-white p-8">
+        <section className="corner-mark border border-divider bg-surface p-8">
           <div className="label-tag mb-3">{selectedTest.title}</div>
           <div className="flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
             <div>
-              <h1 className="font-plex text-3xl font-bold text-navy">Test complete</h1>
+              <h1 className="font-plex text-3xl font-bold text-ink">Test complete</h1>
               <p className="mt-2 max-w-xl text-sm leading-6 text-graphite-mid">This is a practice estimate, not an official IELTS result. Review each response before beginning your next attempt.</p>
             </div>
             <div className="border-l-4 border-electric pl-5">
               <div className="font-mono text-xs uppercase tracking-widest text-graphite-light">Estimated band</div>
-              <div className="font-mono text-5xl font-bold text-electric">{displayedBand.toFixed(1)}</div>
+              <div className="font-mono text-5xl font-bold text-accent">{displayedBand.toFixed(1)}</div>
             </div>
           </div>
           <div className="mt-8 grid gap-3 sm:grid-cols-3">
@@ -1338,9 +1339,9 @@ export default function PracticeTest() {
               ['Questions answered', `${answered} / ${selectedTest.questions}`],
               ['Time used', formatTime(selectedTest.duration * 60 - timeLeft)],
             ].map(([label, value]) => (
-              <div key={label} className="border border-divider bg-slate-50 p-4">
+              <div key={label} className="border border-divider bg-surface-2 p-4">
                 <div className="font-mono text-xs uppercase tracking-wide text-graphite-light">{label}</div>
-                <div className="mt-1 font-mono text-xl font-semibold text-navy">{value}</div>
+                <div className="mt-1 font-mono text-xl font-semibold text-ink">{value}</div>
               </div>
             ))}
           </div>
@@ -1348,10 +1349,10 @@ export default function PracticeTest() {
             <NavLink to="/results" className="rounded-card bg-electric px-6 py-3 font-plex text-sm font-semibold text-white transition-colors hover:bg-electric-light">
               View Detailed Diagnostic Report →
             </NavLink>
-            <button onClick={resetTest} className="rounded-card border border-divider bg-white px-6 py-3 font-plex text-sm font-semibold text-navy transition-colors hover:border-graphite-light">
+            <button onClick={resetTest} className="rounded-card border border-divider bg-surface px-6 py-3 font-plex text-sm font-semibold text-ink transition-colors hover:border-graphite-light">
               Return to test centre
             </button>
-            <button onClick={() => setStage('instructions')} className="rounded-card border border-divider bg-white px-6 py-3 font-plex text-sm font-semibold text-navy transition-colors hover:border-graphite-light">
+            <button onClick={() => setStage('instructions')} className="rounded-card border border-divider bg-surface px-6 py-3 font-plex text-sm font-semibold text-ink transition-colors hover:border-graphite-light">
               Retake test
             </button>
           </div>
@@ -1453,17 +1454,17 @@ export default function PracticeTest() {
     const isFullTest = selectedTest.type === 'Full Test'
     return (
       <main className="mx-auto max-w-5xl px-6 py-10">
-        <button onClick={() => setStage('select')} className="mb-6 font-mono text-xs uppercase tracking-wide text-graphite-mid hover:text-electric">← Back to test centre</button>
+        <button onClick={() => setStage('select')} className="mb-6 font-mono text-xs uppercase tracking-wide text-graphite-mid hover:text-accent">← Back to test centre</button>
         <div className="grid gap-6 md:grid-cols-3">
-          <section className="border border-divider bg-white p-6 md:col-span-2">
+          <section className="border border-divider bg-surface p-6 md:col-span-2">
             <div className="label-tag">Before you begin</div>
-            <h1 className="mt-2 font-plex text-2xl font-bold text-navy">{selectedTest.title}</h1>
+            <h1 className="mt-2 font-plex text-2xl font-bold text-ink">{selectedTest.title}</h1>
             <p className="mt-3 text-sm leading-6 text-graphite-mid">This mock follows the timing and question structure of the computer-delivered IELTS {isFullTest ? 'Academic' : selectedTest.type} test{selectedTest.part ? ` (Part ${selectedTest.part})` : ''}.</p>
             <div className="my-6 h-px bg-divider" />
-            <h2 className="font-plex text-base font-semibold text-navy">Test instructions</h2>
+            <h2 className="font-plex text-base font-semibold text-ink">Test instructions</h2>
             <ul className="mt-4 space-y-3 text-sm leading-6 text-graphite">
               <li className="flex gap-3">
-                <span className="font-mono text-electric">01</span>
+                <span className="font-mono text-accent">01</span>
                 <span>
                   {isFullTest
                     ? 'You will complete Listening, Reading, Writing, and Speaking in sequence (total 85 questions, 174 minutes).'
@@ -1484,9 +1485,9 @@ export default function PracticeTest() {
                         : `You have ${selectedTest.duration} minutes to answer ${selectedTest.questions} questions across three passages.`)}
                 </span>
               </li>
-              <li className="flex gap-3"><span className="font-mono text-electric">02</span><span>Answers are saved automatically as you move through the test.</span></li>
+              <li className="flex gap-3"><span className="font-mono text-accent">02</span><span>Answers are saved automatically as you move through the test.</span></li>
               <li className="flex gap-3">
-                <span className="font-mono text-electric">03</span>
+                <span className="font-mono text-accent">03</span>
                 <span>
                   {isWriting
                     ? (selectedTest.part === 1
@@ -1499,19 +1500,19 @@ export default function PracticeTest() {
                     : 'Spelling matters. Follow word-limit instructions exactly for completion questions.'}
                 </span>
               </li>
-              <li className="flex gap-3"><span className="font-mono text-electric">04</span><span>The test submits automatically when the timer reaches zero.</span></li>
+              <li className="flex gap-3"><span className="font-mono text-accent">04</span><span>The test submits automatically when the timer reaches zero.</span></li>
             </ul>
             {isFullTest && (
               <div className="mt-7 grid grid-cols-2 gap-3 sm:grid-cols-4">
-                {FULL_TEST_ORDER.map((module, index) => <div key={module} className="border border-divider bg-slate-50 p-3"><div className="font-mono text-xs text-electric">0{index + 1}</div><div className="mt-1 font-plex text-xs font-semibold text-navy">{module}</div><div className="mt-1 font-mono text-xs text-graphite-light">{FULL_TEST_DURATIONS[module]} min</div></div>)}
+                {FULL_TEST_ORDER.map((module, index) => <div key={module} className="border border-divider bg-surface-2 p-3"><div className="font-mono text-xs text-accent">0{index + 1}</div><div className="mt-1 font-plex text-xs font-semibold text-ink">{module}</div><div className="mt-1 font-mono text-xs text-graphite-light">{FULL_TEST_DURATIONS[module]} min</div></div>)}
               </div>
             )}
             {(isListening || isFullTest) && (
-              <div className="mt-7 rounded-sm border border-divider bg-slate-50 p-5">
+              <div className="mt-7 rounded-sm border border-divider bg-surface-2 p-5">
                 <div className="flex items-center justify-between pb-3 border-b border-divider">
                   <div className="flex items-center gap-2">
                     <span className={`h-2.5 w-2.5 rounded-full ${backendHealth.connected ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`} />
-                    <span className="font-plex text-sm font-bold text-navy">
+                    <span className="font-plex text-sm font-bold text-ink">
                       {backendHealth.connected ? 'Local Backend Audio Connected' : 'Local Backend Offline'}
                     </span>
                   </div>
@@ -1536,7 +1537,7 @@ export default function PracticeTest() {
                           setAudioName(`IELTS ${b} · Test ${t} · Part 1`)
                         }
                       }}
-                      className="w-full rounded border border-graphite-light/40 bg-white px-3 py-2 font-plex text-xs text-navy focus:outline-none focus:ring-1 focus:ring-electric"
+                      className="w-full rounded border border-graphite-light/40 bg-surface px-3 py-2 font-plex text-xs text-ink focus:outline-none focus:ring-1 focus:ring-electric"
                     >
                       <option value="18-1">IELTS 18 · Test 1 (Matches Questions)</option>
                       <option value="18-2">IELTS 18 · Test 2</option>
@@ -1592,21 +1593,21 @@ export default function PracticeTest() {
 
                 <div className="mt-4 flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-divider/60">
                   <div className="font-mono text-xs text-graphite-mid truncate">
-                    Streaming: <strong className="text-navy">{audioUrl.startsWith('blob:') ? (audioName || 'Custom File') : `IELTS ${selectedBook} · Test ${selectedTestNum} (Parts 1–4)`}</strong>
+                    Streaming: <strong className="text-ink">{audioUrl.startsWith('blob:') ? (audioName || 'Custom File') : `IELTS ${selectedBook} · Test ${selectedTestNum} (Parts 1–4)`}</strong>
                   </div>
-                  <label className="cursor-pointer text-xs font-plex font-semibold text-electric hover:underline">
+                  <label className="cursor-pointer text-xs font-plex font-semibold text-accent hover:underline">
                     <span>{audioUrl.startsWith('blob:') ? 'Replace custom file' : 'Or upload custom MP3'}</span>
                     <input className="sr-only" type="file" accept="audio/*" onChange={event => connectAudio(event.target.files?.[0])} />
                   </label>
                 </div>
               </div>
             )}
-            <label className="mt-7 flex items-start gap-3 border border-divider bg-slate-50 p-4 text-sm text-graphite">
+            <label className="mt-7 flex items-start gap-3 border border-divider bg-surface-2 p-4 text-sm text-graphite">
               <input type="checkbox" defaultChecked className="mt-1 accent-electric" />
               <span>I understand the instructions and am ready to begin under timed conditions.</span>
             </label>
           </section>
-          <aside className="border border-divider bg-navy p-6 text-white">
+          <aside className="theme-fixed border border-divider bg-navy p-6 text-white">
             <div className="font-mono text-xs uppercase tracking-widest text-electric-light">Test summary</div>
             <dl className="mt-6 space-y-5">
               {[['Module', selectedTest.module], ['Questions', String(selectedTest.questions)], ['Time limit', `${selectedTest.duration} minutes`], ['Format', 'Computer-delivered']].map(([term, detail]) => (
@@ -1629,42 +1630,42 @@ export default function PracticeTest() {
       <div className="flex flex-col justify-between gap-5 border-b border-divider pb-7 md:flex-row md:items-end">
         <div>
           <div className="label-tag mb-2">IELTS simulation centre</div>
-          <h1 className="font-plex text-3xl font-bold tracking-tight text-navy">Practice under real exam conditions</h1>
+          <h1 className="font-plex text-3xl font-bold tracking-tight text-ink">Practice under real exam conditions</h1>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-graphite-mid">Full-length computer-delivered mocks with authentic timing, navigation and question formats.</p>
         </div>
         <div className="grid grid-cols-2 gap-3">
-          <div className="border-l-2 border-electric pl-3"><div className="font-mono text-lg font-bold text-navy">14</div><div className="font-mono text-xs uppercase text-graphite-light">Tests completed</div></div>
-          <div className="border-l-2 border-violet pl-3"><div className="font-mono text-lg font-bold text-navy">7.0</div><div className="font-mono text-xs uppercase text-graphite-light">Best overall</div></div>
+          <div className="border-l-2 border-electric pl-3"><div className="font-mono text-lg font-bold text-ink">14</div><div className="font-mono text-xs uppercase text-graphite-light">Tests completed</div></div>
+          <div className="border-l-2 border-violet pl-3"><div className="font-mono text-lg font-bold text-ink">7.0</div><div className="font-mono text-xs uppercase text-graphite-light">Best overall</div></div>
         </div>
       </div>
 
       <div className="mt-7 flex flex-wrap gap-2">
         {FILTERS.map(item => (
-          <button key={item} onClick={() => setFilter(item)} className={`rounded-sm border px-4 py-2 font-mono text-xs uppercase tracking-wide transition-colors ${filter === item ? 'border-navy bg-navy text-white' : 'border-divider bg-white text-graphite-mid hover:border-graphite-light'}`}>{item}</button>
+          <button key={item} onClick={() => setFilter(item)} className={`rounded-sm border px-4 py-2 font-mono text-xs uppercase tracking-wide transition-colors ${filter === item ? 'border-line-ink bg-navy text-white' : 'border-divider bg-surface text-graphite-mid hover:border-graphite-light'}`}>{item}</button>
         ))}
       </div>
 
       <section className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {visibleTests.map(test => (
-          <button key={test.id} onClick={() => setSelectedTest(test)} className={`group rounded-card border-2 bg-white p-5 text-left transition-all hover:-translate-y-0.5 hover:shadow-lg ${selectedTest.id === test.id ? 'border-electric' : 'border-divider'}`}>
+          <button key={test.id} onClick={() => setSelectedTest(test)} className={`group rounded-card border-2 bg-surface p-5 text-left transition-all hover:-translate-y-0.5 hover:shadow-lg ${selectedTest.id === test.id ? 'border-electric' : 'border-divider'}`}>
             <div className="flex items-start justify-between gap-4">
-              <span className={`rounded-sm px-2 py-1 font-mono text-xs uppercase tracking-wide ${test.type === 'Writing' ? 'bg-violet-dim text-violet' : test.type === 'Full Test' ? 'bg-navy text-white' : 'bg-electric-dim text-electric'}`}>{test.type}</span>
+              <span className={`rounded-sm px-2 py-1 font-mono text-xs uppercase tracking-wide ${test.type === 'Writing' ? 'bg-violet-dim text-accent-2' : test.type === 'Full Test' ? 'bg-navy text-white' : 'bg-electric-dim text-accent'}`}>{test.type}</span>
               <span className="font-mono text-xs text-graphite-light">{test.status}</span>
             </div>
-            <h2 className="mt-5 font-plex text-base font-semibold text-navy">{test.title}</h2>
+            <h2 className="mt-5 font-plex text-base font-semibold text-ink">{test.title}</h2>
             <div className="mt-5 grid grid-cols-3 border-t border-divider pt-4">
-              <div><div className="font-mono text-sm font-semibold text-navy">{test.questions}</div><div className="font-mono text-xs uppercase text-graphite-light">Questions</div></div>
-              <div><div className="font-mono text-sm font-semibold text-navy">{test.duration}</div><div className="font-mono text-xs uppercase text-graphite-light">Minutes</div></div>
-              <div><div className="font-mono text-sm font-semibold text-navy">{test.difficulty}</div><div className="font-mono text-xs uppercase text-graphite-light">Level</div></div>
+              <div><div className="font-mono text-sm font-semibold text-ink">{test.questions}</div><div className="font-mono text-xs uppercase text-graphite-light">Questions</div></div>
+              <div><div className="font-mono text-sm font-semibold text-ink">{test.duration}</div><div className="font-mono text-xs uppercase text-graphite-light">Minutes</div></div>
+              <div><div className="font-mono text-sm font-semibold text-ink">{test.difficulty}</div><div className="font-mono text-xs uppercase text-graphite-light">Level</div></div>
             </div>
           </button>
         ))}
       </section>
 
-      <section className="sticky bottom-4 mt-7 flex flex-col justify-between gap-4 rounded-card border border-divider bg-white/95 p-5 shadow-xl backdrop-blur md:flex-row md:items-center">
+      <section className="sticky bottom-4 mt-7 flex flex-col justify-between gap-4 rounded-card border border-divider bg-surface/95 p-5 shadow-xl backdrop-blur md:flex-row md:items-center">
         <div>
-          <div className="font-mono text-xs uppercase tracking-widest text-electric">Selected test</div>
-          <div className="mt-1 font-plex text-sm font-semibold text-navy">{selectedTest.title}</div>
+          <div className="font-mono text-xs uppercase tracking-widest text-accent">Selected test</div>
+          <div className="mt-1 font-plex text-sm font-semibold text-ink">{selectedTest.title}</div>
           <div className="mt-1 font-mono text-xs text-graphite-light">{selectedTest.module} · {selectedTest.questions} questions · {selectedTest.duration} minutes</div>
         </div>
         <button onClick={() => setStage('instructions')} className="rounded-card bg-electric px-7 py-3 font-plex text-sm font-semibold text-white transition-colors hover:bg-electric-light">View instructions and begin →</button>

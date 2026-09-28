@@ -1,6 +1,7 @@
 import { NavLink } from 'react-router'
 import { useEffect, useRef, useState, type MouseEvent } from 'react'
 import { CountUp, Reveal, cssVars, prefersReducedMotion, useInView } from '../components/Motion'
+import { themeBg, themeText } from '../lib/theme'
 
 const FEATURES = [
   {
@@ -160,7 +161,7 @@ export default function Landing() {
         ref={heroRef}
         onMouseMove={onHeroMove}
         onMouseLeave={onHeroLeave}
-        className="group/hero bg-navy-grid min-h-[92vh] flex flex-col items-center justify-center relative overflow-hidden px-6 pt-24 pb-36"
+        className="theme-fixed group/hero bg-navy-grid min-h-[92vh] flex flex-col items-center justify-center relative overflow-hidden px-6 pt-24 pb-36"
       >
         {/* Pointer spotlight */}
         <div
@@ -188,8 +189,8 @@ export default function Landing() {
               <div className="absolute inset-0 translate-x-8 translate-y-8 border border-[#DC2626]/20" style={{ borderRadius: 3 }} />
             </div>
           </div>
-          <div className="absolute top-1/2 left-8 -translate-y-1/2 w-px h-64 bg-gradient-to-b from-transparent via-[#1E293B] to-transparent" />
-          <div className="absolute top-1/2 right-8 -translate-y-1/2 w-px h-64 bg-gradient-to-b from-transparent via-[#1E293B] to-transparent" />
+          <div className="absolute top-1/2 left-8 -translate-y-1/2 w-px h-64 bg-gradient-to-b from-transparent via-navy-mid to-transparent" />
+          <div className="absolute top-1/2 right-8 -translate-y-1/2 w-px h-64 bg-gradient-to-b from-transparent via-navy-mid to-transparent" />
         </div>
 
         {/* Floating preview cards */}
@@ -197,10 +198,10 @@ export default function Landing() {
           <div key={chip.label} className={`hidden xl:block absolute z-10 pointer-events-none ${chip.pos}`}>
             <div className="parallax" style={cssVars({ '--depth': chip.depth })}>
               <div className="hero-in" style={cssVars({ '--delay': `${chip.delay}ms` })}>
-                <div className="float-c flex items-center gap-3 bg-[#1E293B]/80 backdrop-blur border border-[#334155] px-4 py-3 shadow-2xl shadow-black/30" style={{ borderRadius: 4, animationDelay: chip.bobOffset }}>
+                <div className="float-c flex items-center gap-3 bg-navy-mid/80 backdrop-blur border border-[#334155] px-4 py-3 shadow-2xl shadow-black/30" style={{ borderRadius: 4, animationDelay: chip.bobOffset }}>
                   <span className="w-8 h-8 flex items-center justify-center bg-[#DC2626]/15 text-[#F87171] text-sm" style={{ borderRadius: 3 }}>{chip.icon}</span>
                   <div>
-                    <div className="text-[10px] text-[#94A3B8]">{chip.label}</div>
+                    <div className="text-[10px] text-subtle">{chip.label}</div>
                     <div className="mono text-sm font-semibold text-white">{chip.value}</div>
                   </div>
                 </div>
@@ -212,7 +213,7 @@ export default function Landing() {
         <div className="relative z-10 max-w-4xl mx-auto text-center">
           {/* Tag */}
           <div className="hero-in" style={cssVars({ '--delay': '0ms' })}>
-            <div className="inline-flex items-center gap-2 bg-[#1E293B] border border-[#DC2626]/30 px-4 py-1.5 mb-8" style={{ borderRadius: 3 }}>
+            <div className="inline-flex items-center gap-2 bg-navy-mid border border-[#DC2626]/30 px-4 py-1.5 mb-8" style={{ borderRadius: 3 }}>
               <span className="w-1.5 h-1.5 rounded-full bg-[#DC2626] anim-pulse-dot" />
               <span className="mono text-[10px] text-[#F87171] tracking-widest">AI-POWERED IELTS PREPARATION PLATFORM</span>
             </div>
@@ -226,7 +227,7 @@ export default function Landing() {
             </span>
           </h1>
 
-          <p className="hero-in text-[#94A3B8] text-lg leading-relaxed max-w-2xl mx-auto mb-10" style={cssVars({ '--delay': '400ms', fontFamily: 'Inter, sans-serif' })}>
+          <p className="hero-in text-subtle text-lg leading-relaxed max-w-2xl mx-auto mb-10" style={cssVars({ '--delay': '400ms', fontFamily: 'Inter, sans-serif' })}>
             Vistora AI combines advanced language models with proven IELTS pedagogy to deliver personalized band score improvement — from diagnostic assessment to final exam readiness.
           </p>
 
@@ -239,7 +240,7 @@ export default function Landing() {
               <span className="text-[#FCA5A5] transition-transform group-hover:translate-x-1">→</span>
             </NavLink>
             <NavLink to="/practice"
-              className="flex items-center gap-2 bg-transparent border border-[#334155] text-[#CBD5E1] text-sm font-medium px-8 py-3.5 hover:border-[#DC2626]/60 hover:text-white hover:bg-[#1E293B]/60 active:scale-[0.97] transition"
+              className="flex items-center gap-2 bg-transparent border border-[#334155] text-faint text-sm font-medium px-8 py-3.5 hover:border-[#DC2626]/60 hover:text-white hover:bg-navy-mid/60 active:scale-[0.97] transition"
               style={{ fontFamily: 'IBM Plex Sans, sans-serif', borderRadius: 4 }}>
               Take a Practice Test
             </NavLink>
@@ -250,7 +251,7 @@ export default function Landing() {
             {STATS.map((s, i) => (
               <div key={s.val} className="hero-in text-center" style={cssVars({ '--delay': `${680 + i * 90}ms` })}>
                 <div className="mono text-2xl font-semibold text-white tabular-nums"><CountUp value={s.val} delay={700 + i * 90} /></div>
-                <div className="text-[11px] text-[#64748B] mt-0.5" style={{ fontFamily: 'Inter, sans-serif' }}>{s.label}</div>
+                <div className="text-[11px] text-muted mt-0.5" style={{ fontFamily: 'Inter, sans-serif' }}>{s.label}</div>
               </div>
             ))}
           </div>
@@ -259,29 +260,29 @@ export default function Landing() {
         {/* Scroll cue */}
         <div className="absolute bottom-24 inset-x-0 z-10 flex justify-center">
           <a href="#features" className="hero-in group flex flex-col items-center gap-2" style={cssVars({ '--delay': '1400ms' })} aria-label="Scroll to features">
-            <span className="mono text-[9px] tracking-[0.3em] text-[#64748B] group-hover:text-[#F87171] transition-colors">SCROLL</span>
-            <span className="relative block w-px h-8 overflow-hidden bg-[#334155]">
+            <span className="mono text-[9px] tracking-[0.3em] text-muted group-hover:text-[#F87171] transition-colors">SCROLL</span>
+            <span className="relative block w-px h-8 overflow-hidden bg-navy-light">
               <span className="scroll-cue-dot absolute inset-x-0 top-0 h-1/3 bg-[#DC2626]" />
             </span>
           </a>
         </div>
 
         {/* Bottom fade */}
-        <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-[#FAFAF7] to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-paper to-transparent" />
       </section>
 
       {/* ── FEATURES ─────────────────────────────────────── */}
       <section id="features" className="max-w-[1400px] mx-auto px-4 sm:px-6 py-16 lg:py-24">
         <Reveal className="text-center mb-14">
           <div className="label-tag justify-center mb-3">
-            <span className="w-3 h-px bg-[#CBD5E1]" />
+            <span className="w-3 h-px bg-line-strong" />
             Platform Capabilities
-            <span className="w-3 h-px bg-[#CBD5E1]" />
+            <span className="w-3 h-px bg-line-strong" />
           </div>
-          <h2 className="text-3xl font-bold text-[#0F172A] tracking-tight" style={{ fontFamily: 'IBM Plex Sans, sans-serif' }}>
+          <h2 className="text-3xl font-bold text-ink tracking-tight" style={{ fontFamily: 'IBM Plex Sans, sans-serif' }}>
             Everything You Need to Achieve Band 8+
           </h2>
-          <p className="text-[#64748B] mt-3 max-w-xl mx-auto text-sm" style={{ fontFamily: 'Inter, sans-serif' }}>
+          <p className="text-muted mt-3 max-w-xl mx-auto text-sm" style={{ fontFamily: 'Inter, sans-serif' }}>
             A complete IELTS preparation ecosystem, from first diagnostic to day-of exam confidence.
           </p>
         </Reveal>
@@ -291,21 +292,21 @@ export default function Landing() {
             <Reveal key={f.title} delay={(i % 3) * 110} className="h-full">
               <div
                 onMouseMove={onCardMove}
-                className="h-full bg-white border border-[#E2E8F0] p-6 corner-mark group hover:border-[#CBD5E1] hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-900/5 transition duration-300"
+                className="h-full bg-surface border border-divider p-6 corner-mark group hover:border-line-strong hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-900/5 transition duration-300"
                 style={{ borderRadius: 4 }}>
                 <div
                   className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                  style={{ borderRadius: 4, background: `radial-gradient(260px circle at var(--x, 50%) var(--y, 50%), ${f.bg}, transparent 70%)` }}
+                  style={{ borderRadius: 4, background: `radial-gradient(260px circle at var(--x, 50%) var(--y, 50%), ${themeBg(f.bg)}, transparent 70%)` }}
                 />
                 <div className="relative">
                   <div className="flex items-start justify-between mb-4">
-                    <div className="w-10 h-10 flex items-center justify-center text-lg border transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6" style={{ background: f.bg, borderColor: f.bg, borderRadius: 4, color: f.color }}>
+                    <div className="w-10 h-10 flex items-center justify-center text-lg border transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6" style={{ background: themeBg(f.bg), borderColor: themeBg(f.bg), borderRadius: 4, color: themeText(f.color) }}>
                       {f.icon}
                     </div>
-                    <span className="mono text-[9px] tracking-widest" style={{ color: f.color }}>{f.tag}</span>
+                    <span className="mono text-[9px] tracking-widest" style={{ color: themeText(f.color) }}>{f.tag}</span>
                   </div>
-                  <h3 className="text-[15px] font-semibold text-[#0F172A] mb-2" style={{ fontFamily: 'IBM Plex Sans, sans-serif' }}>{f.title}</h3>
-                  <p className="text-[12px] text-[#64748B] leading-relaxed" style={{ fontFamily: 'Inter, sans-serif' }}>{f.desc}</p>
+                  <h3 className="text-[15px] font-semibold text-ink mb-2" style={{ fontFamily: 'IBM Plex Sans, sans-serif' }}>{f.title}</h3>
+                  <p className="text-[12px] text-muted leading-relaxed" style={{ fontFamily: 'Inter, sans-serif' }}>{f.desc}</p>
                 </div>
                 <span className="absolute bottom-0 left-0 h-[2px] w-full origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-500" style={{ background: f.color }} />
               </div>
@@ -315,15 +316,15 @@ export default function Landing() {
       </section>
 
       {/* ── HOW IT WORKS ────────────────────────────────── */}
-      <section id="how-it-works" className="bg-[#F4F4F0] border-y border-[#E2E8F0] py-16 lg:py-24 px-4 sm:px-6">
+      <section id="how-it-works" className="bg-paper-dark border-y border-divider py-16 lg:py-24 px-4 sm:px-6">
         <div className="max-w-[1400px] mx-auto">
           <Reveal className="text-center mb-14">
             <div className="label-tag justify-center mb-3">
-              <span className="w-3 h-px bg-[#CBD5E1]" />
+              <span className="w-3 h-px bg-line-strong" />
               Methodology
-              <span className="w-3 h-px bg-[#CBD5E1]" />
+              <span className="w-3 h-px bg-line-strong" />
             </div>
-            <h2 className="text-3xl font-bold text-[#0F172A] tracking-tight" style={{ fontFamily: 'IBM Plex Sans, sans-serif' }}>
+            <h2 className="text-3xl font-bold text-ink tracking-tight" style={{ fontFamily: 'IBM Plex Sans, sans-serif' }}>
               A Systematic Path to Your Target Band
             </h2>
           </Reveal>
@@ -335,7 +336,7 @@ export default function Landing() {
               return (
                 <Reveal key={s.num} delay={i * 130} className="relative h-full">
                   {i < STEPS.length - 1 && (
-                    <div className="hidden lg:block absolute top-10 left-full w-6 h-px bg-[#E2E8F0] z-0">
+                    <div className="hidden lg:block absolute top-10 left-full w-6 h-px bg-divider z-0">
                       <div className={`h-full bg-[#DC2626] origin-left transition-transform duration-700 ${passed ? 'scale-x-100' : 'scale-x-0'}`} />
                     </div>
                   )}
@@ -346,12 +347,12 @@ export default function Landing() {
                     onBlur={() => setStepsPaused(false)}
                     onClick={() => setActiveStep(i)}
                     aria-pressed={active}
-                    className={`relative z-10 block w-full h-full text-left bg-white border p-6 overflow-hidden transition duration-300 ${active ? 'border-[#DC2626]/40 -translate-y-1 shadow-xl shadow-[#DC2626]/10' : 'border-[#E2E8F0] hover:border-[#CBD5E1]'}`}
+                    className={`relative z-10 block w-full h-full text-left bg-surface border p-6 overflow-hidden transition duration-300 ${active ? 'border-[#DC2626]/40 -translate-y-1 shadow-xl shadow-[#DC2626]/10' : 'border-divider hover:border-line-strong'}`}
                     style={{ borderRadius: 4 }}
                   >
-                    <div className={`mono text-3xl font-semibold mb-3 transition-colors duration-300 ${active ? 'text-[#DC2626]' : passed ? 'text-[#FCA5A5]' : 'text-[#E2E8F0]'}`}>{s.num}</div>
-                    <h3 className="text-[14px] font-semibold text-[#0F172A] mb-2" style={{ fontFamily: 'IBM Plex Sans, sans-serif' }}>{s.title}</h3>
-                    <p className="text-[12px] text-[#64748B] leading-relaxed" style={{ fontFamily: 'Inter, sans-serif' }}>{s.desc}</p>
+                    <div className={`mono text-3xl font-semibold mb-3 transition-colors duration-300 ${active ? 'text-accent' : passed ? 'text-[#FCA5A5]' : 'text-faint-2'}`}>{s.num}</div>
+                    <h3 className="text-[14px] font-semibold text-ink mb-2" style={{ fontFamily: 'IBM Plex Sans, sans-serif' }}>{s.title}</h3>
+                    <p className="text-[12px] text-muted leading-relaxed" style={{ fontFamily: 'Inter, sans-serif' }}>{s.desc}</p>
                     {active && autoAdvance && (
                       <span key={activeStep} className="step-timer absolute bottom-0 left-0 h-[2px] w-full bg-[#DC2626]" style={cssVars({ '--duration': `${STEP_INTERVAL}ms` })} />
                     )}
@@ -367,11 +368,11 @@ export default function Landing() {
       <section id="testimonials" className="max-w-[1400px] mx-auto px-4 sm:px-6 py-16 lg:py-24">
         <Reveal className="text-center mb-14">
           <div className="label-tag justify-center mb-3">
-            <span className="w-3 h-px bg-[#CBD5E1]" />
+            <span className="w-3 h-px bg-line-strong" />
             Student Outcomes
-            <span className="w-3 h-px bg-[#CBD5E1]" />
+            <span className="w-3 h-px bg-line-strong" />
           </div>
-          <h2 className="text-3xl font-bold text-[#0F172A] tracking-tight" style={{ fontFamily: 'IBM Plex Sans, sans-serif' }}>
+          <h2 className="text-3xl font-bold text-ink tracking-tight" style={{ fontFamily: 'IBM Plex Sans, sans-serif' }}>
             Real Results from Real Learners
           </h2>
         </Reveal>
@@ -379,25 +380,25 @@ export default function Landing() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {TESTIMONIALS.map((t, i) => (
             <Reveal key={t.name} delay={i * 130} className="h-full">
-              <div className="group h-full bg-white border border-[#E2E8F0] p-6 hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-900/5 hover:border-[#CBD5E1] transition duration-300" style={{ borderRadius: 4 }}>
+              <div className="group h-full bg-surface border border-divider p-6 hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-900/5 hover:border-line-strong transition duration-300" style={{ borderRadius: 4 }}>
                 {/* Score change */}
-                <div className="flex items-center gap-3 mb-4 pb-4 border-b border-[#F1F5F9]">
-                  <div className="w-10 h-10 bg-[#FFE4E6] flex items-center justify-center text-[#BE123C] text-xs font-bold transition-colors group-hover:bg-[#BE123C] group-hover:text-white" style={{ borderRadius: 4 }}>
+                <div className="flex items-center gap-3 mb-4 pb-4 border-b border-divider-soft">
+                  <div className="w-10 h-10 bg-violet-dim flex items-center justify-center text-accent-2 text-xs font-bold transition-colors group-hover:bg-[#BE123C] group-hover:text-white" style={{ borderRadius: 4 }}>
                     {t.avatar}
                   </div>
                   <div className="flex-1">
-                    <div className="text-sm font-semibold text-[#0F172A] plex">{t.name}</div>
-                    <div className="text-[11px] text-[#94A3B8]" style={{ fontFamily: 'Inter, sans-serif' }}>{t.country}</div>
+                    <div className="text-sm font-semibold text-ink plex">{t.name}</div>
+                    <div className="text-[11px] text-subtle" style={{ fontFamily: 'Inter, sans-serif' }}>{t.country}</div>
                   </div>
                   <div className="text-right">
-                    <div className="mono text-xs text-[#94A3B8] line-through">{t.prev}</div>
-                    <div className="mono text-sm font-semibold text-[#DC2626] tabular-nums">
+                    <div className="mono text-xs text-subtle line-through">{t.prev}</div>
+                    <div className="mono text-sm font-semibold text-accent tabular-nums">
                       <CountUp value={t.score} from={Number(t.prev)} delay={300 + i * 130} duration={1400} />
                     </div>
                   </div>
                 </div>
-                <p className="text-[12px] text-[#374151] leading-relaxed mb-3" style={{ fontFamily: 'Inter, sans-serif' }}>"{t.text}"</p>
-                <div className="mono text-[10px] text-[#94A3B8] tracking-wide">{t.program}</div>
+                <p className="text-[12px] text-graphite leading-relaxed mb-3" style={{ fontFamily: 'Inter, sans-serif' }}>"{t.text}"</p>
+                <div className="mono text-[10px] text-subtle tracking-wide">{t.program}</div>
               </div>
             </Reveal>
           ))}
@@ -405,17 +406,17 @@ export default function Landing() {
       </section>
 
       {/* ── CTA BANNER ─────────────────────────────────── */}
-      <section className="bg-navy-grid border-t border-[#1E293B] py-20 px-6">
+      <section className="theme-fixed bg-navy-grid border-t border-[#1E293B] py-20 px-6">
         <Reveal className="max-w-2xl mx-auto text-center">
-          <div className="label-tag justify-center mb-4 text-[#475569]">
-            <span className="w-3 h-px bg-[#334155]" />
+          <div className="label-tag justify-center mb-4 text-ink-4">
+            <span className="w-3 h-px bg-navy-light" />
             Begin Your Journey
-            <span className="w-3 h-px bg-[#334155]" />
+            <span className="w-3 h-px bg-navy-light" />
           </div>
           <h2 className="text-3xl font-bold text-white mb-4 tracking-tight" style={{ fontFamily: 'IBM Plex Sans, sans-serif' }}>
             Your Target Band Score Is Within Reach
           </h2>
-          <p className="text-[#64748B] text-sm mb-8" style={{ fontFamily: 'Inter, sans-serif' }}>
+          <p className="text-muted text-sm mb-8" style={{ fontFamily: 'Inter, sans-serif' }}>
             Join 40,000+ students who have achieved their IELTS goals with Vistora AI.
           </p>
           <div className="flex items-center justify-center gap-3 flex-wrap">
@@ -425,7 +426,7 @@ export default function Landing() {
               Start Free — No Credit Card
             </NavLink>
             <NavLink to="/resources"
-              className="border border-[#334155] text-[#94A3B8] text-sm font-medium px-6 py-3.5 hover:border-[#475569] hover:text-white active:scale-[0.97] transition"
+              className="border border-[#334155] text-subtle text-sm font-medium px-6 py-3.5 hover:border-[#475569] hover:text-white active:scale-[0.97] transition"
               style={{ fontFamily: 'IBM Plex Sans, sans-serif', borderRadius: 4 }}>
               Browse Resources
             </NavLink>

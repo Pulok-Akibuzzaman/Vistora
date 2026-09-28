@@ -1,6 +1,7 @@
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router'
 import { useEffect, useState } from 'react'
 import { useAuth } from '../lib/authContext'
+import { ThemeToggle } from '../lib/theme'
 
 const NAV = [
   { to: '/dashboard', label: 'Dashboard' },
@@ -71,7 +72,7 @@ export default function Layout() {
       <div className="h-[2px] bg-gradient-to-r from-[#DC2626] via-[#BE123C] to-[#DC2626] fixed top-0 left-0 right-0 z-50" />
 
       {/* Header */}
-      <header className={`fixed top-[2px] left-0 right-0 z-40 border-b ${isPublicPage ? 'bg-[#0F172A]/95 border-[#1E293B]' : 'bg-white/95 border-[#E2E8F0]'} backdrop-blur-sm`}>
+      <header className={`fixed top-[2px] left-0 right-0 z-40 border-b ${isPublicPage ? 'bg-[#0F172A]/95 border-[#1E293B]' : 'bg-surface/95 border-divider'} backdrop-blur-sm`}>
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           {/* Wordmark */}
           <NavLink to="/" className="flex items-center gap-2.5 group">
@@ -82,8 +83,8 @@ export default function Layout() {
               </svg>
             </div>
             <div>
-              <span className={`font-bold text-sm tracking-tight ${isPublicPage ? 'text-white' : 'text-[#0F172A]'}`} style={{ fontFamily: 'IBM Plex Sans, sans-serif' }}>Vistora</span>
-              <span className="mono text-[10px] text-[#DC2626] ml-1 tracking-widest">AI</span>
+              <span className={`font-bold text-sm tracking-tight ${isPublicPage ? 'text-white' : 'text-ink'}`} style={{ fontFamily: 'IBM Plex Sans, sans-serif' }}>Vistora</span>
+              <span className="mono text-[10px] text-accent ml-1 tracking-widest">AI</span>
             </div>
           </NavLink>
 
@@ -91,9 +92,9 @@ export default function Layout() {
           <nav className="hidden xl:flex items-center gap-0.5">
             {isLanding ? (
               <>
-                <a href="#features" className="px-3 py-2 text-[11px] text-[#94A3B8] hover:text-white tracking-wider uppercase font-medium transition-colors" style={{ fontFamily: 'IBM Plex Sans, sans-serif' }}>Features</a>
-                <a href="#how-it-works" className="px-3 py-2 text-[11px] text-[#94A3B8] hover:text-white tracking-wider uppercase font-medium transition-colors" style={{ fontFamily: 'IBM Plex Sans, sans-serif' }}>How It Works</a>
-                <a href="#testimonials" className="px-3 py-2 text-[11px] text-[#94A3B8] hover:text-white tracking-wider uppercase font-medium transition-colors" style={{ fontFamily: 'IBM Plex Sans, sans-serif' }}>Testimonials</a>
+                <a href="#features" className="px-3 py-2 text-[11px] text-subtle hover:text-white tracking-wider uppercase font-medium transition-colors" style={{ fontFamily: 'IBM Plex Sans, sans-serif' }}>Features</a>
+                <a href="#how-it-works" className="px-3 py-2 text-[11px] text-subtle hover:text-white tracking-wider uppercase font-medium transition-colors" style={{ fontFamily: 'IBM Plex Sans, sans-serif' }}>How It Works</a>
+                <a href="#testimonials" className="px-3 py-2 text-[11px] text-subtle hover:text-white tracking-wider uppercase font-medium transition-colors" style={{ fontFamily: 'IBM Plex Sans, sans-serif' }}>Testimonials</a>
               </>
             ) : isAuthPage ? null : (
               NAV.map(n => (
@@ -101,8 +102,8 @@ export default function Layout() {
                   className={({ isActive }) =>
                     `px-3 py-2 text-[11px] tracking-wider uppercase font-medium transition-colors border-b-2 ${
                       isActive
-                        ? 'text-[#DC2626] border-[#DC2626]'
-                        : 'text-[#64748B] border-transparent hover:text-[#0F172A]'
+                        ? 'text-accent border-[#DC2626]'
+                        : 'text-muted border-transparent hover:text-ink'
                     }`
                   }
                   style={{ fontFamily: 'IBM Plex Sans, sans-serif' }}
@@ -111,98 +112,101 @@ export default function Layout() {
             )}
           </nav>
 
-          {/* Right actions */}
-          <div className="hidden sm:flex items-center gap-2">
-            {!isAuthenticated ? (
-              <>
-                <NavLink to="/login" className={`text-[11px] font-medium px-3 py-2 transition-colors ${isPublicPage ? 'text-[#94A3B8] hover:text-white' : 'text-[#64748B] hover:text-[#0F172A]'}`} style={{ fontFamily: 'IBM Plex Sans, sans-serif' }}>Sign In</NavLink>
-                <NavLink to="/signup" className="text-[11px] font-semibold text-white bg-[#DC2626] px-4 py-2 hover:bg-[#B91C1C] transition-colors" style={{ fontFamily: 'IBM Plex Sans, sans-serif', borderRadius: 3 }}>
-                  Create Account
-                </NavLink>
-              </>
-            ) : (
-              <>
-                <div className="w-px h-5 bg-[#E2E8F0]" />
-                <div className="relative">
-                  <button
-                    type="button"
-                    aria-label="Open account options"
-                    aria-expanded={accountOpen}
-                    onClick={() => setAccountOpen(open => !open)}
-                    className="flex items-center gap-2 border border-transparent p-1 transition-colors hover:border-[#E2E8F0]"
-                    style={{ borderRadius: 4 }}
-                  >
-                    <span className="w-8 h-8 bg-[#FFE4E6] border border-[#FECDD3] flex items-center justify-center text-[#BE123C] text-xs font-bold" style={{ borderRadius: 4 }}>
-                      {initials}
-                    </span>
-                    <span className="hidden xl:block text-left">
-                      <span className="block text-[10px] font-semibold text-[#0F172A]">{user?.name || 'My Account'}</span>
-                      <span className="block mono text-[8px] uppercase tracking-wider text-[#94A3B8]">{user?.role || 'Student'} account</span>
-                    </span>
-                    <span className="mono text-[9px] text-[#94A3B8]">⌄</span>
-                  </button>
-                  {accountOpen && (
-                    <div className="absolute right-0 top-full mt-2 w-64 border border-[#E2E8F0] bg-white p-2 shadow-xl z-50" style={{ borderRadius: 4 }}>
-                      <div className="border-b border-[#F1F5F9] px-3 py-2">
-                        <div className="text-xs font-semibold text-[#0F172A]">{user?.name}</div>
-                        <div className="mt-0.5 text-[10px] text-[#94A3B8] truncate">{user?.email}</div>
-                      </div>
-                      <NavLink to="/profile" className="mt-1 flex items-center justify-between px-3 py-2.5 text-xs text-[#374151] hover:bg-[#F8FAFC]">
-                        <span>Profile & Settings</span><span className="mono text-[9px] text-[#DC2626] uppercase">{user?.role || 'STUDENT'}</span>
-                      </NavLink>
-                      <NavLink to="/dashboard" className="flex items-center justify-between px-3 py-2.5 text-xs text-[#374151] hover:bg-[#F8FAFC]">
-                        <span>Dashboard</span><span className="mono text-[9px] text-[#059669]">BAND {user?.currentBand || 7.0}</span>
-                      </NavLink>
-                      {user?.role === 'Admin' && (
-                        <NavLink to="/admin" className="flex items-center justify-between px-3 py-2.5 text-xs text-[#374151] hover:bg-[#F8FAFC]">
-                          <span>Admin console</span><span className="mono text-[9px] text-[#BE123C]">ADMIN</span>
+          <div className="flex items-center gap-2">
+            {/* Right actions */}
+            <div className="hidden sm:flex items-center gap-2">
+              {!isAuthenticated ? (
+                <>
+                  <NavLink to="/login" className={`text-[11px] font-medium px-3 py-2 transition-colors ${isPublicPage ? 'text-subtle hover:text-white' : 'text-muted hover:text-ink'}`} style={{ fontFamily: 'IBM Plex Sans, sans-serif' }}>Sign In</NavLink>
+                  <NavLink to="/signup" className="text-[11px] font-semibold text-white bg-[#DC2626] px-4 py-2 hover:bg-[#B91C1C] transition-colors" style={{ fontFamily: 'IBM Plex Sans, sans-serif', borderRadius: 3 }}>
+                    Create Account
+                  </NavLink>
+                </>
+              ) : (
+                <>
+                  <div className="w-px h-5 bg-divider" />
+                  <div className="relative">
+                    <button
+                      type="button"
+                      aria-label="Open account options"
+                      aria-expanded={accountOpen}
+                      onClick={() => setAccountOpen(open => !open)}
+                      className="flex items-center gap-2 border border-transparent p-1 transition-colors hover:border-divider"
+                      style={{ borderRadius: 4 }}
+                    >
+                      <span className="w-8 h-8 bg-violet-dim border border-rose-line flex items-center justify-center text-accent-2 text-xs font-bold" style={{ borderRadius: 4 }}>
+                        {initials}
+                      </span>
+                      <span className="hidden xl:block text-left">
+                        <span className="block text-[10px] font-semibold text-ink">{user?.name || 'My Account'}</span>
+                        <span className="block mono text-[8px] uppercase tracking-wider text-subtle">{user?.role || 'Student'} account</span>
+                      </span>
+                      <span className="mono text-[9px] text-subtle">⌄</span>
+                    </button>
+                    {accountOpen && (
+                      <div className="absolute right-0 top-full mt-2 w-64 border border-divider bg-surface p-2 shadow-xl z-50" style={{ borderRadius: 4 }}>
+                        <div className="border-b border-divider-soft px-3 py-2">
+                          <div className="text-xs font-semibold text-ink">{user?.name}</div>
+                          <div className="mt-0.5 text-[10px] text-subtle truncate">{user?.email}</div>
+                        </div>
+                        <NavLink to="/profile" className="mt-1 flex items-center justify-between px-3 py-2.5 text-xs text-graphite hover:bg-surface-2">
+                          <span>Profile & Settings</span><span className="mono text-[9px] text-accent uppercase">{user?.role || 'STUDENT'}</span>
                         </NavLink>
-                      )}
-                      <button type="button" onClick={signOut} className="mt-1 block w-full border-t border-[#F1F5F9] px-3 py-2.5 text-left text-xs font-medium text-[#DC2626] hover:bg-[#FEF2F2]">
-                        Sign out
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </>
-            )}
+                        <NavLink to="/dashboard" className="flex items-center justify-between px-3 py-2.5 text-xs text-graphite hover:bg-surface-2">
+                          <span>Dashboard</span><span className="mono text-[9px] text-positive">BAND {user?.currentBand || 7.0}</span>
+                        </NavLink>
+                        {user?.role === 'Admin' && (
+                          <NavLink to="/admin" className="flex items-center justify-between px-3 py-2.5 text-xs text-graphite hover:bg-surface-2">
+                            <span>Admin console</span><span className="mono text-[9px] text-accent-2">ADMIN</span>
+                          </NavLink>
+                        )}
+                        <button type="button" onClick={signOut} className="mt-1 block w-full border-t border-divider-soft px-3 py-2.5 text-left text-xs font-medium text-accent hover:bg-electric-soft">
+                          Sign out
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+            <ThemeToggle className={isPublicPage ? 'border-[#334155] text-[#CBD5E1] hover:text-white hover:border-[#475569]' : 'border-divider text-muted hover:text-ink hover:border-line-strong'} />
+            <button
+              type="button"
+              aria-label={mobileOpen ? 'Close navigation menu' : 'Open navigation menu'}
+              aria-expanded={mobileOpen}
+              onClick={() => setMobileOpen(open => !open)}
+              className={`xl:hidden h-9 w-9 border flex flex-col items-center justify-center gap-1 transition-colors ${
+                isPublicPage ? 'border-[#334155] text-white' : 'border-divider text-ink'
+              }`}
+              style={{ borderRadius: 3 }}
+            >
+              <span className="h-px w-4 bg-current" />
+              <span className="h-px w-4 bg-current" />
+              <span className="h-px w-4 bg-current" />
+            </button>
           </div>
-          <button
-            type="button"
-            aria-label={mobileOpen ? 'Close navigation menu' : 'Open navigation menu'}
-            aria-expanded={mobileOpen}
-            onClick={() => setMobileOpen(open => !open)}
-            className={`xl:hidden h-9 w-9 border flex flex-col items-center justify-center gap-1 transition-colors ${
-              isPublicPage ? 'border-[#334155] text-white' : 'border-[#E2E8F0] text-[#0F172A]'
-            }`}
-            style={{ borderRadius: 3 }}
-          >
-            <span className="h-px w-4 bg-current" />
-            <span className="h-px w-4 bg-current" />
-            <span className="h-px w-4 bg-current" />
-          </button>
         </div>
         {mobileOpen && (
-          <div className={`xl:hidden border-t px-4 py-3 ${isPublicPage ? 'border-[#1E293B] bg-[#0F172A]' : 'border-[#E2E8F0] bg-white'}`}>
+          <div className={`xl:hidden border-t px-4 py-3 ${isPublicPage ? 'border-[#1E293B] bg-[#0F172A]' : 'border-divider bg-surface'}`}>
             <nav className="grid gap-1">
               {isPublicPage ? (
                 <>
                   {isLanding && [['Features', '#features'], ['How It Works', '#how-it-works'], ['Testimonials', '#testimonials']].map(([label, href]) => (
-                    <a key={href} href={href} onClick={() => setMobileOpen(false)} className="px-3 py-3 text-xs font-medium uppercase tracking-wider text-[#94A3B8] hover:text-white">{label}</a>
+                    <a key={href} href={href} onClick={() => setMobileOpen(false)} className="px-3 py-3 text-xs font-medium uppercase tracking-wider text-subtle hover:text-white">{label}</a>
                   ))}
-                  <NavLink to="/login" className="px-3 py-3 text-xs font-medium uppercase tracking-wider text-[#94A3B8] hover:text-white">Sign in</NavLink>
+                  <NavLink to="/login" className="px-3 py-3 text-xs font-medium uppercase tracking-wider text-subtle hover:text-white">Sign in</NavLink>
                   <NavLink to="/signup" className="mt-2 bg-[#DC2626] px-3 py-3 text-center text-xs font-semibold text-white" style={{ borderRadius: 3 }}>Create account</NavLink>
                 </>
               ) : (
                 <>
                   {NAV.map(item => (
-                    <NavLink key={item.to} to={item.to} className={({ isActive }) => `border-l-2 px-3 py-3 text-xs font-medium uppercase tracking-wider ${isActive ? 'border-[#DC2626] bg-[#FEE2E2] text-[#DC2626]' : 'border-transparent text-[#64748B]'}`}>{item.label}</NavLink>
+                    <NavLink key={item.to} to={item.to} className={({ isActive }) => `border-l-2 px-3 py-3 text-xs font-medium uppercase tracking-wider ${isActive ? 'border-[#DC2626] bg-electric-dim text-accent' : 'border-transparent text-muted'}`}>{item.label}</NavLink>
                   ))}
-                  <NavLink to="/profile" className="border-l-2 border-transparent px-3 py-3 text-xs font-medium uppercase tracking-wider text-[#64748B]">Profile</NavLink>
+                  <NavLink to="/profile" className="border-l-2 border-transparent px-3 py-3 text-xs font-medium uppercase tracking-wider text-muted">Profile</NavLink>
                   {user?.role === 'Admin' && (
-                    <NavLink to="/admin" className="border-l-2 border-transparent px-3 py-3 text-xs font-medium uppercase tracking-wider text-[#BE123C]">Admin console</NavLink>
+                    <NavLink to="/admin" className="border-l-2 border-transparent px-3 py-3 text-xs font-medium uppercase tracking-wider text-accent-2">Admin console</NavLink>
                   )}
-                  <button type="button" onClick={signOut} className="mt-2 border border-[#E2E8F0] px-3 py-3 text-center text-xs font-semibold uppercase tracking-wider text-[#0F172A]" style={{ borderRadius: 3 }}>Sign out</button>
+                  <button type="button" onClick={signOut} className="mt-2 border border-divider px-3 py-3 text-center text-xs font-semibold uppercase tracking-wider text-ink" style={{ borderRadius: 3 }}>Sign out</button>
                 </>
               )}
             </nav>
@@ -216,7 +220,7 @@ export default function Layout() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-[#0F172A] border-t border-[#1E293B] mt-auto">
+      <footer className="theme-fixed bg-navy border-t border-[#1E293B] mt-auto">
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-10">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
             <div>
@@ -226,19 +230,19 @@ export default function Layout() {
                 </div>
                 <span className="text-white font-bold text-sm plex">Vistora AI</span>
               </div>
-              <p className="text-[#475569] text-[11px] leading-relaxed">AI-powered IELTS preparation platform for ambitious learners worldwide.</p>
+              <p className="text-ink-4 text-[11px] leading-relaxed">AI-powered IELTS preparation platform for ambitious learners worldwide.</p>
             </div>
             {FOOTER_LINKS.map(col => (
               <div key={col.title}>
-                <div className="mono text-[10px] text-[#475569] tracking-widest mb-3">{col.title.toUpperCase()}</div>
-                {col.links.map(link => <NavLink key={link.to} to={link.to} className="block text-[#64748B] text-[11px] hover:text-[#94A3B8] transition-colors mb-1.5" style={{ fontFamily: 'Inter, sans-serif' }}>{link.label}</NavLink>)}
+                <div className="mono text-[10px] text-ink-4 tracking-widest mb-3">{col.title.toUpperCase()}</div>
+                {col.links.map(link => <NavLink key={link.to} to={link.to} className="block text-muted text-[11px] hover:text-subtle transition-colors mb-1.5" style={{ fontFamily: 'Inter, sans-serif' }}>{link.label}</NavLink>)}
               </div>
             ))}
           </div>
           <div className="blueprint-rule mb-4" />
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <span className="mono text-[10px] text-[#334155]">© 2026 VISTORA AI · ALL RIGHTS RESERVED</span>
-            <span className="mono text-[10px] text-[#334155]">IELTS PREPARATION PLATFORM · CSE412 EAST WEST UNIVERSITY</span>
+            <span className="mono text-[10px] text-ink-3">© 2026 VISTORA AI · ALL RIGHTS RESERVED</span>
+            <span className="mono text-[10px] text-ink-3">IELTS PREPARATION PLATFORM · CSE412 EAST WEST UNIVERSITY</span>
           </div>
         </div>
       </footer>
