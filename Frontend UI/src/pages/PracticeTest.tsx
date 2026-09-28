@@ -641,7 +641,19 @@ function ReadingExam({ answers, setAnswers, currentQ, setCurrentQ, timeLeft, par
             <h2 className="font-plex text-xl font-bold text-ink">{passage.title}</h2>
             {passage.subtitle && <p className="mt-2 font-plex text-sm font-semibold italic leading-6 text-graphite">{passage.subtitle}</p>}
             <div className="mt-5 space-y-5 font-plex text-sm leading-7 text-ink">
-              {passage.paragraphs.map((paragraph, index) => <p key={index}>{paragraph}</p>)}
+              {passage.paragraphs.map((paragraph, index) => {
+                const match = paragraph.match(/^([A-Z]\.?)\s+([\s\S]*)$/)
+                if (match) {
+                  const label = match[1].endsWith('.') ? match[1] : `${match[1]}.`
+                  return (
+                    <p key={index} className="whitespace-pre-line">
+                      <strong className="mr-2 inline-block font-bold text-ink">{label}</strong>
+                      {match[2]}
+                    </p>
+                  )
+                }
+                return <p key={index} className="whitespace-pre-line">{paragraph}</p>
+              })}
             </div>
           </div>
         </article>
