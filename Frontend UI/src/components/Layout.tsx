@@ -211,7 +211,7 @@ export default function Layout() {
       </header>
 
       {/* Page content */}
-      <main className="flex-1 pt-[calc(2px+56px)]">
+      <main key={location.pathname} className="flex-1 pt-[calc(2px+56px)] anim-page">
         <Outlet />
       </main>
 
