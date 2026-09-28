@@ -39,3 +39,35 @@ Database/**/*.mp3
 Database/*.mp3
 !Database/README.md
 !Database/**/.gitkeep
+
+# -----------------------------------------------------------------------------
+# Audio & Video (never commit media files anywhere in the repository)
+# Bracket patterns match any letter case, even where core.ignorecase is false
+# -----------------------------------------------------------------------------
+# Audio
+*.[mM][pP]3
+*.[wW][aA][vV]
+*.[mM]4[aA]
+*.[aA][aA][cC]
+*.[oO][gG][gG]
+*.[oO][gG][aA]
+*.[fF][lL][aA][cC]
+*.[wW][mM][aA]
+*.[oO][pP][uU][sS]
+*.[aA][iI][fF][fF]
+*.[aA][iI][fF]
+*.[aA][mM][rR]
+*.[mM][iI][dD]
+*.[mM][iI][dD][iI]
+# Video
+*.[mM][pP]4
+*.[mM]4[vV]
+*.[mM][oO][vV]
+*.[aA][vV][iI]
+*.[mM][kK][vV]
+*.[wW][eE][bB][mM]
+*.[wW][mM][vV]
+*.[fF][lL][vV]
+*.3[gG][pP]
+*.[mM][pP][eE][gG]
+*.[mM][pP][gG]
