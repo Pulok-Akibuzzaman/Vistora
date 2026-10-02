@@ -174,6 +174,7 @@ function ListeningExam({
   const [volume, setVolume] = useState(1)
   const [isMuted, setIsMuted] = useState(false)
   const [audioError, setAudioError] = useState(false)
+  const [reviewFlags, setReviewFlags] = useState<number[]>([])
 
   const answered = Object.keys(answers).filter(key => {
     const num = Number(key)
@@ -200,15 +201,21 @@ function ListeningExam({
   }
 
   const completionRow = ({ id, prefix, suffix }: { id: number; prefix: string; suffix: string }) => (
-    <li key={id} className="flex flex-wrap items-center gap-2 font-plex text-sm leading-7 text-ink">
-      <span className="w-6 font-mono text-xs font-bold text-ink">{id}</span>
+    <li
+      key={id}
+      className="listening-answer-row font-plex text-sm leading-6 text-slate-200"
+      data-active={currentQ === id}
+      data-answered={!!answers[id]?.trim()}
+      id={`listening-question-${id}`}
+    >
+      <span className="listening-answer-number font-mono text-xs font-bold" data-active={currentQ === id} data-answered={!!answers[id]?.trim()}>{id}</span>
       <span>{prefix}</span>
       <input
         aria-label={`Answer ${id}`}
         value={answers[id] || ''}
         onFocus={() => setCurrentQ(id)}
         onChange={event => setAnswer(id, event.target.value)}
-        className={`h-8 w-44 rounded-sm border bg-surface px-2 font-plex text-sm outline-none ${currentQ === id ? 'border-electric ring-1 ring-electric' : 'border-graphite-light'}`}
+        className="listening-answer-input h-8 w-40 rounded-lg px-3 py-1 text-sm"
       />
       <span>{suffix}</span>
     </li>
@@ -278,307 +285,289 @@ function ListeningExam({
     setCurrentQ(q)
   }
 
+  const jumpToQuestion = (id: number) => {
+    setCurrentQ(id)
+    window.setTimeout(() => {
+      document.querySelector<HTMLElement>(`[aria-label="Answer ${id}"]`)?.focus()
+      document.getElementById(`listening-question-${id}`)?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+    }, 0)
+  }
+
+  const partTitle = ['Oyster Bay Sailing Club Courses', 'Working as a makeup trainee', 'Ocean biodiversity research', 'Sources of rubber'][currentPart - 1]
+  const partInstruction = currentPart === 1
+    ? 'Write ONE WORD AND/OR A NUMBER for each answer.'
+    : currentPart === 2
+      ? 'Choose the correct letter, A, B or C, then complete the matching questions.'
+      : currentPart === 3
+        ? 'Choose TWO letters for each paired question, then match each resource.'
+        : 'Write ONE WORD ONLY for each answer.'
+  const partAnswered = Array.from({ length: 10 }, (_, index) => answers[partStart + index]?.trim()).filter(Boolean).length
+
   return (
-    <main className="fixed inset-x-0 bottom-0 top-14 z-30 flex flex-col bg-surface">
-      {/* Top Header */}
-      <header className="flex min-h-14 items-center justify-between border-b border-divider bg-surface px-4">
-        <div className="flex items-center gap-5">
-          <div className="border-r border-divider pr-5 font-plex text-2xl font-bold tracking-tight text-accent">IELTS</div>
-          <div>
-            <div className="font-plex text-xs font-semibold text-ink">Computer-Delivered Listening Exam</div>
-            <div className="flex items-center gap-2 mt-0.5">
-              <span className={`inline-block h-2 w-2 rounded-full ${audioPlaying ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`} />
-              <span className="font-plex text-xs text-graphite-mid">
-                {audioPlaying ? `Playing: ${effectiveAudioTitle}` : `Paused: ${effectiveAudioTitle}`}
-              </span>
-              <span className="rounded bg-surface-3 px-1.5 py-0.5 font-mono text-[10px] text-ink-4">
-                {isCustomUpload ? 'Local File' : 'Backend Stream (HTTP 206)'}
-              </span>
-            </div>
+    <div className="listening-exam fixed inset-0 z-[60] flex flex-col overflow-hidden bg-[#080E1A] font-sans text-slate-100">
+      <audio
+        ref={audioRef}
+        src={effectiveAudioUrl}
+        onPlay={() => setAudioPlaying(true)}
+        onPause={() => setAudioPlaying(false)}
+        onEnded={() => setAudioPlaying(false)}
+        onTimeUpdate={() => audioRef.current && setCurrentTime(audioRef.current.currentTime)}
+        onLoadedMetadata={() => audioRef.current && setDuration(audioRef.current.duration)}
+        onError={() => setAudioError(true)}
+        className="hidden"
+      />
+
+      <header className="z-10 flex min-h-16 shrink-0 items-center justify-between gap-4 border-b border-slate-800 bg-[#0B1320]/95 px-4 backdrop-blur-md sm:px-6">
+        <div className="flex min-w-0 items-center gap-3 sm:gap-4">
+          <span className="text-xl font-black tracking-tight text-[#FF334B] sm:text-2xl">IELTS</span>
+          <span className="hidden rounded border border-rose-500/30 bg-rose-500/15 px-2 py-0.5 text-[10px] font-bold text-rose-300 sm:inline-flex">ACADEMIC</span>
+          <div className="hidden h-4 w-px bg-slate-800 sm:block" />
+          <div className="min-w-0 text-[11px] text-slate-400 sm:text-xs">
+            <div className="truncate text-slate-300">IELTS {selectedBook} · Test {selectedTestNumber}</div>
+            <div className="font-semibold text-rose-400">Listening Module</div>
           </div>
         </div>
-        <div className="flex items-center gap-5">
-          <div className="text-right">
-            <div className="font-mono text-sm font-semibold text-ink">{formatTime(timeLeft)}</div>
-            <div className="font-mono text-xs uppercase text-graphite-light">Time left</div>
+        <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-2 rounded-full border border-amber-500/30 bg-[#0F172A] px-3 py-1.5 shadow-[0_0_15px_rgba(245,158,11,0.12)] sm:px-4">
+            <span className="h-2 w-2 animate-pulse rounded-full bg-amber-400" />
+            <span className="hidden text-[10px] font-semibold uppercase text-slate-400 sm:inline">Remaining</span>
+            <span className="font-mono text-sm font-bold tabular-nums text-amber-300">{formatTime(timeLeft)}</span>
           </div>
-          <button onClick={onFinish} className="rounded-sm bg-navy px-4 py-2 font-plex text-xs font-semibold text-white hover:bg-navy-dark transition-colors">Finish Exam</button>
+          <span className="hidden items-center gap-1.5 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-3 py-1.5 text-[11px] font-medium text-emerald-400 md:flex">
+            {answered} answered
+          </span>
+          <button onClick={onFinish} className="flex items-center gap-1.5 rounded-lg border border-rose-500/60 px-3 py-2 text-[11px] font-bold text-rose-300 transition hover:bg-rose-600 hover:text-white sm:px-3.5">
+            <span className="hidden sm:inline">End Test</span><span className="sm:hidden">End</span>
+          </button>
         </div>
       </header>
 
-      {/* Modern Audio Player Bar */}
-      <div className="theme-fixed border-b border-divider bg-navy text-white px-4 py-3 shadow-inner">
-        {/* Hidden Audio Element */}
-        <audio
-          ref={audioRef}
-          src={effectiveAudioUrl}
-          onPlay={() => setAudioPlaying(true)}
-          onPause={() => setAudioPlaying(false)}
-          onEnded={() => setAudioPlaying(false)}
-          onTimeUpdate={() => audioRef.current && setCurrentTime(audioRef.current.currentTime)}
-          onLoadedMetadata={() => audioRef.current && setDuration(audioRef.current.duration)}
-          onError={() => setAudioError(true)}
-          className="hidden"
-        />
+      <div className="listening-exam-workspace flex min-h-0 flex-1 flex-col overflow-hidden md:flex-row">
+        <aside className="flex max-h-[42vh] w-full shrink-0 flex-col gap-3 overflow-y-auto border-b border-slate-800 bg-[#0B1220] p-3 md:max-h-none md:w-72 md:border-b-0 md:border-r md:p-4 xl:w-80">
+          <div className="rounded-xl border border-slate-800 bg-[#111A2E] p-3 shadow-sm">
+            <div className="mb-2 flex items-center justify-between">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-rose-400">Current Section</span>
+              <span className="rounded border border-rose-500/20 bg-rose-500/10 px-2 py-0.5 font-mono text-[10px] font-semibold text-rose-300">Part {currentPart}</span>
+            </div>
+            <h2 className="text-sm font-bold text-white">Questions {partStart}–{partEnd}</h2>
+            <p className="mt-1 text-[11px] leading-relaxed text-slate-400">{partTitle}</p>
+          </div>
 
-        <div className="flex flex-col gap-2 max-w-7xl mx-auto">
-          {/* Top row: Part tabs + Audio title */}
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-1.5 overflow-x-auto">
-              <span className="font-mono text-xs text-subtle mr-1 hidden sm:inline">PARTS:</span>
-              {[1, 2, 3, 4].map(p => (
-                <button
-                  key={p}
-                  onClick={() => jumpToPart(p)}
-                  className={`rounded px-3 py-1 font-plex text-xs font-medium transition-all ${
-                    currentPart === p
-                      ? 'bg-electric text-white shadow-sm ring-1 ring-white/20'
-                      : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
-                  }`}
-                >
-                  Part {p} {p === 1 ? '(Q1–10)' : p === 2 ? '(Q11–20)' : p === 3 ? '(Q21–30)' : '(Q31–40)'}
+          <div className="space-y-2 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3">
+            <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wide text-amber-400">
+              <span aria-hidden="true">!</span><span>Instructions</span>
+            </div>
+            <p className="text-xs font-medium leading-relaxed text-slate-200">{partInstruction}</p>
+            <p className="rounded border border-amber-500/20 bg-amber-500/5 px-2 py-1.5 text-[10px] leading-relaxed text-amber-300/90">Listen carefully and review your answers before ending the test.</p>
+          </div>
+
+          <section className="space-y-3 rounded-xl border border-slate-800 bg-[#111A2E] p-3.5" aria-label="Question matrix">
+            <div className="flex items-center justify-between gap-2">
+              <h3 className="text-[11px] font-bold uppercase tracking-wider text-slate-300">Question Matrix</h3>
+              <span className="font-mono text-[10px] font-semibold text-emerald-400">{partAnswered} of 10 done</span>
+            </div>
+            <div className="grid grid-cols-5 gap-2">
+              {Array.from({ length: 10 }, (_, index) => partStart + index).map(id => {
+                const isAnswered = !!answers[id]?.trim()
+                const isActive = currentQ === id
+                const isFlagged = reviewFlags.includes(id)
+                return (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => jumpToQuestion(id)}
+                    aria-label={`Go to question ${id}${isAnswered ? ', answered' : ''}${isFlagged ? ', flagged for review' : ''}`}
+                    aria-current={isActive ? 'step' : undefined}
+                    className={`relative flex h-9 flex-col items-center justify-center rounded-lg border font-mono text-xs transition ${isActive ? 'border-rose-400 bg-rose-500 font-bold text-white shadow-md shadow-rose-900/40 ring-2 ring-rose-400/50' : isAnswered ? 'border-emerald-500/40 bg-emerald-500/15 font-bold text-emerald-300 hover:bg-emerald-500/25' : 'border-slate-800 bg-[#0A101C] text-slate-400 hover:border-slate-600 hover:text-white'}`}
+                  >
+                    <span>{id}</span>
+                    {isAnswered && !isActive && <span className="-mt-1 text-[8px] text-emerald-400">✓</span>}
+                    {isFlagged && <span className="absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full border-2 border-[#111A2E] bg-amber-400" title="Flagged for review" />}
+                  </button>
+                )
+              })}
+            </div>
+            <div className="flex items-center justify-between border-t border-slate-800/80 pt-2 text-[9px] text-slate-400">
+              <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-sm bg-emerald-500" />Answered</span>
+              <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-sm bg-rose-500" />Current</span>
+              <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-sm bg-amber-400" />Flagged</span>
+            </div>
+          </section>
+
+          <section className="rounded-xl border border-slate-800/80 bg-[#111A2E]/70 p-3" aria-label="Part navigation">
+            <h3 className="mb-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">Listening Parts</h3>
+            <div className="grid grid-cols-4 gap-1.5 md:grid-cols-2 xl:grid-cols-4">
+              {(part ? [part] : [1, 2, 3, 4]).map(partNumber => {
+                const start = (partNumber - 1) * 10 + 1
+                const count = Array.from({ length: 10 }, (_, index) => answers[start + index]?.trim()).filter(Boolean).length
+                return (
+                  <button key={partNumber} type="button" onClick={() => jumpToPart(partNumber)} className={`rounded-md border px-2 py-2 text-left transition ${currentPart === partNumber ? 'border-rose-500/40 bg-rose-500/10 text-rose-300' : 'border-slate-800 text-slate-400 hover:border-slate-600 hover:text-slate-200'}`}>
+                    <span className="block text-[10px] font-semibold">Part {partNumber}</span>
+                    <span className="mt-0.5 block font-mono text-[9px]">{count}/10</span>
+                  </button>
+                )
+              })}
+            </div>
+          </section>
+
+          <section className="mt-auto space-y-3 rounded-xl border border-slate-800 bg-[#111A2E] p-3.5" aria-label="Audio playback">
+            <div className="flex items-center justify-between gap-2">
+              <span className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                <span className={`h-2 w-2 rounded-full ${audioPlaying ? 'animate-pulse bg-rose-400' : 'bg-slate-500'}`} />Audio Playback
+              </span>
+              <button type="button" onClick={cycleSpeed} className="rounded border border-slate-700 bg-slate-800 px-1.5 py-0.5 font-mono text-[10px] text-slate-300 hover:text-white" title="Playback speed">{playbackSpeed}x</button>
+            </div>
+            <div className="truncate text-[10px] text-slate-400" title={effectiveAudioTitle}>{effectiveAudioTitle}</div>
+            <div className="flex items-center justify-between font-mono text-[10px]">
+              <span className="text-rose-400">{formatTime(currentTime)}</span><span className="text-slate-500">{formatTime(duration)}</span>
+            </div>
+            <input type="range" min={0} max={duration || 100} step={0.5} value={currentTime} onChange={handleSliderChange} aria-label="Audio timeline" className="listening-audio-range w-full" />
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-1.5">
+                <button type="button" onClick={() => seekBy(-5)} aria-label="Rewind 5 seconds" title="Rewind 5 seconds" className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-800 text-xs text-slate-300 hover:bg-slate-700 hover:text-white">−5</button>
+                <button type="button" onClick={togglePlayPause} aria-label={audioPlaying ? 'Pause audio' : 'Play audio'} className="flex h-8 w-8 items-center justify-center rounded-full bg-[#FF334B] text-sm text-white shadow-md shadow-rose-900/50 transition hover:scale-105 hover:bg-rose-600">
+                  {audioPlaying ? 'Ⅱ' : '▶'}
                 </button>
-              ))}
-            </div>
-
-            <div className="flex items-center gap-3">
-              <div className="hidden md:flex items-center gap-2 font-mono text-xs text-slate-300">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
-                <span className="truncate max-w-xs">{effectiveAudioTitle}</span>
+                <button type="button" onClick={() => seekBy(5)} aria-label="Forward 5 seconds" title="Forward 5 seconds" className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-800 text-xs text-slate-300 hover:bg-slate-700 hover:text-white">+5</button>
               </div>
-              <label className="cursor-pointer rounded bg-slate-800 hover:bg-slate-700 px-2.5 py-1 text-xs text-slate-300 transition-colors">
-                <span>📁 Override File</span>
-                <input className="sr-only" type="file" accept="audio/*" onChange={e => onAudioFile(e.target.files?.[0])} />
-              </label>
-            </div>
-          </div>
-
-          {/* Bottom row: Play/Pause, Seek buttons, Scrubber, Volume, Speed */}
-          <div className="flex items-center gap-3 pt-1">
-            <button
-              onClick={() => seekBy(-5)}
-              aria-label="Rewind 5 seconds"
-              className="rounded p-1.5 text-slate-300 hover:bg-slate-800 hover:text-white transition-colors"
-              title="Rewind 5s"
-            >
-              ⏪ 5s
-            </button>
-
-            <button
-              onClick={togglePlayPause}
-              aria-label={audioPlaying ? 'Pause audio' : 'Play audio'}
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-electric text-white shadow-md hover:bg-electric-light transition-all"
-            >
-              {audioPlaying ? (
-                <span className="text-sm font-bold">❚❚</span>
-              ) : (
-                <span className="text-sm font-bold ml-0.5">▶</span>
-              )}
-            </button>
-
-            <button
-              onClick={() => seekBy(5)}
-              aria-label="Forward 5 seconds"
-              className="rounded p-1.5 text-slate-300 hover:bg-slate-800 hover:text-white transition-colors"
-              title="Forward 5s"
-            >
-              5s ⏩
-            </button>
-
-            <div className="font-mono text-xs text-slate-300 min-w-[90px]">
-              {formatTime(currentTime)} / {formatTime(duration)}
-            </div>
-
-            <div className="flex-1">
-              <input
-                type="range"
-                min={0}
-                max={duration || 100}
-                step={0.5}
-                value={currentTime}
-                onChange={handleSliderChange}
-                aria-label="Audio timeline"
-                className="w-full accent-electric cursor-pointer h-1.5 bg-slate-700 rounded-lg appearance-none"
-              />
-            </div>
-
-            <div className="hidden sm:flex items-center gap-2">
-              <button
-                onClick={toggleMute}
-                aria-label={isMuted ? 'Unmute' : 'Mute'}
-                className="text-slate-300 hover:text-white text-xs"
-              >
-                {isMuted || volume === 0 ? '🔇' : '🔊'}
-              </button>
-              <input
-                type="range"
-                min={0}
-                max={1}
-                step={0.05}
-                value={isMuted ? 0 : volume}
-                onChange={handleVolumeChange}
-                aria-label="Volume slider"
-                className="w-16 accent-electric cursor-pointer h-1 bg-slate-700 rounded-lg appearance-none"
-              />
-            </div>
-
-            <button
-              onClick={cycleSpeed}
-              className="rounded bg-slate-800 hover:bg-slate-700 px-2 py-1 font-mono text-xs text-slate-300"
-              title="Playback speed"
-            >
-              {playbackSpeed}x
-            </button>
-          </div>
-
-          {audioError && (
-            <div className="text-xs text-rose-400 bg-rose-950/60 border border-rose-800 rounded px-2.5 py-1 flex items-center justify-between">
-              <span>⚠️ Could not stream audio for Part {currentPart}. Check that backend is running on port 5001.</span>
-              <button onClick={() => { if (audioRef.current) { audioRef.current.src = effectiveAudioUrl; audioRef.current.load(); } }} className="underline ml-2">Retry</button>
-            </div>
-          )}
-        </div>
-      </div>
-
-      <section className="m-4 flex-1 overflow-y-auto rounded-sm border border-divider bg-surface">
-        <div className="sticky top-0 z-10 border-b border-divider bg-paper-dark px-4 py-3">
-          <h1 className="font-plex text-sm font-bold text-ink">Part {currentPart}</h1>
-          <p className="mt-1 font-plex text-sm text-ink">Listen and answer questions {partStart}–{partEnd}.</p>
-        </div>
-
-        <div className="mx-auto max-w-5xl px-4 py-5">
-          {currentPart === 1 && (
-            <>
-              <h2 className="font-plex text-sm font-bold text-ink">Questions 1–10</h2>
-              <p className="mt-1 font-plex text-sm text-ink">Complete the table and notes. Write <strong>ONE WORD AND/OR A NUMBER</strong> for each answer.</p>
-              <h3 className="mt-5 font-plex text-base font-bold text-ink">Oyster Bay Sailing Club Courses</h3>
-              <ul className="mt-4 space-y-3">{PART_1_PROMPTS.map(completionRow)}</ul>
-            </>
-          )}
-
-          {currentPart === 2 && (
-            <>
-              <h2 className="font-plex text-sm font-bold text-ink">Questions 11–16</h2>
-              <p className="mt-1 font-plex text-sm text-ink">Choose the correct letter, A, B or C.</p>
-              <h3 className="mt-5 font-plex text-base font-bold text-ink">Working as a makeup trainee</h3>
-              <div className="mt-4 space-y-6">
-                {PART_2_MULTIPLE_CHOICE.map(question => (
-                  <fieldset key={question.id} className="border-b border-divider pb-5">
-                    <legend className="font-plex text-sm font-semibold text-ink">{question.id}. {question.text}</legend>
-                    <div className="mt-3 grid gap-2">
-                      {question.options.map((option, index) => {
-                        const letter = String.fromCharCode(65 + index)
-                        return <button key={option} onClick={() => setAnswer(question.id, letter)} className={`rounded-sm border px-4 py-2 text-left font-plex text-sm ${answers[question.id] === letter ? 'border-electric bg-electric-dim text-ink' : 'border-divider bg-surface text-graphite'}`}><span className="mr-3 font-mono font-bold text-accent">{letter}</span>{option}</button>
-                      })}
-                    </div>
-                  </fieldset>
-                ))}
+              <div className="flex items-center gap-1.5">
+                <button type="button" onClick={toggleMute} aria-label={isMuted ? 'Unmute' : 'Mute'} className="text-xs text-slate-400 hover:text-white">{isMuted || volume === 0 ? 'Muted' : 'Vol'}</button>
+                <input type="range" min={0} max={1} step={0.05} value={isMuted ? 0 : volume} onChange={handleVolumeChange} aria-label="Volume slider" className="listening-audio-range w-12" />
               </div>
-              <h2 className="mt-7 font-plex text-sm font-bold text-ink">Questions 17–20</h2>
-              <p className="mt-1 font-plex text-sm text-ink">What ability is required for each duty?</p>
-              <div className="mt-3 rounded-sm border border-divider bg-surface-2 p-4 text-sm text-ink">
-                <div><strong>A</strong> — being well-organised</div><div><strong>B</strong> — being flexible</div><div><strong>C</strong> — working quickly</div>
+            </div>
+            <label className="block cursor-pointer rounded-md border border-slate-700 bg-slate-800/70 px-2.5 py-1.5 text-center text-[10px] text-slate-300 transition hover:border-slate-600 hover:text-white">
+              {isCustomUpload ? 'Replace audio file' : 'Use a different audio file'}
+              <input className="sr-only" type="file" accept="audio/*" onChange={event => onAudioFile(event.target.files?.[0])} />
+            </label>
+            {audioError && (
+              <div role="alert" className="flex items-center justify-between gap-2 rounded border border-rose-800 bg-rose-950/60 px-2.5 py-1.5 text-[10px] text-rose-300">
+                <span>Could not load audio for Part {currentPart}.</span>
+                <button type="button" onClick={() => { if (audioRef.current) { audioRef.current.src = effectiveAudioUrl; audioRef.current.load() } }} className="underline">Retry</button>
               </div>
-              <div className="mt-4 space-y-3">
-                {PART_2_MATCHING.map(question => (
-                  <div key={question.id} className="flex items-center gap-4">
-                    <span className="w-8 font-mono text-xs font-bold">{question.id}</span><span className="flex-1 text-sm text-ink">{question.text}</span>
-                    <select aria-label={`Answer ${question.id}`} value={answers[question.id] || ''} onChange={event => setAnswer(question.id, event.target.value)} className="rounded-sm border border-graphite-light bg-surface px-3 py-2 text-sm"><option value="">Select</option>{['A', 'B', 'C'].map(letter => <option key={letter}>{letter}</option>)}</select>
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
+            )}
+          </section>
 
-          {currentPart === 3 && (
-            <>
-              {PART_3_GROUPS.map(group => (
-                <section key={group.ids[0]} className="mb-8">
-                  <h2 className="font-plex text-sm font-bold text-ink">Questions {group.ids[0]} and {group.ids[1]}</h2>
-                  <p className="mt-1 font-plex text-sm text-ink">Choose <strong>TWO</strong> letters, A–E. Answers may be in either order.</p>
-                  <h3 className="mt-4 font-plex text-sm font-semibold text-ink">{group.text}</h3>
-                  <div className="mt-3 grid gap-2">
-                    {group.options.map((option, index) => {
-                      const letter = String.fromCharCode(65 + index)
-                      const selectedId = group.ids.find(id => answers[id] === letter)
-                      return <button key={option} onClick={() => {
-                        if (selectedId) setAnswer(selectedId, '')
-                        else {
-                          const target = group.ids.find(id => !answers[id]) ?? group.ids[1]
-                          setAnswer(target, letter)
-                        }
-                      }} className={`rounded-sm border px-4 py-2 text-left text-sm ${selectedId ? 'border-electric bg-electric-dim' : 'border-divider bg-surface'}`}><span className="mr-3 font-mono font-bold text-accent">{letter}</span>{option}</button>
-                    })}
+          <button type="button" onClick={() => setReviewFlags(flags => flags.includes(currentQ) ? flags.filter(id => id !== currentQ) : [...flags, currentQ])} aria-pressed={reviewFlags.includes(currentQ)} className={`flex w-full items-center justify-center gap-2 rounded-lg border px-3 py-2 text-xs font-semibold transition ${reviewFlags.includes(currentQ) ? 'border-amber-400/60 bg-amber-500/20 text-amber-200' : 'border-amber-500/30 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20'}`}>
+            <span aria-hidden="true">⚑</span>{reviewFlags.includes(currentQ) ? `Remove review flag from Q${currentQ}` : `Flag Q${currentQ} for review`}
+          </button>
+        </aside>
+
+        <main className="min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-6 lg:px-10 lg:pt-7" data-purpose="interactive-form">
+          <div className="mx-auto max-w-4xl space-y-5">
+            <div className="border-b border-slate-800 pb-5">
+              <div className="mb-1.5 flex flex-wrap items-center gap-2.5">
+                <span className="rounded bg-slate-800 px-2 py-0.5 font-mono text-[10px] font-semibold uppercase text-slate-300">Official Listening Test</span>
+                <span className="text-[11px] text-slate-500">Test {selectedTestNumber} · Part {currentPart}</span>
+                <span className="ml-auto font-mono text-[10px] text-slate-500">Questions {partStart}–{partEnd}</span>
+              </div>
+              <h1 className="text-xl font-black tracking-tight text-white sm:text-2xl">{partTitle}</h1>
+              <p className="mt-1 text-xs text-slate-400">Listen to the recording and complete each response in this section.</p>
+            </div>
+
+            {currentPart === 1 && (
+              <>
+                <section className="space-y-4 rounded-2xl border border-slate-800/90 bg-[#0F172A] p-4 shadow-xl sm:p-6">
+                  <div className="flex items-center gap-2.5 border-b border-slate-800/80 pb-3"><span className="h-2.5 w-2.5 rounded-full bg-rose-500" /><h2 className="text-[11px] font-extrabold uppercase tracking-wider text-rose-400">Beginner Programs &amp; Scheduling</h2></div>
+                  <ul className="space-y-3">{PART_1_PROMPTS.slice(0, 3).map(completionRow)}</ul>
+                </section>
+                <section className="space-y-4 rounded-2xl border border-slate-800/90 bg-[#0F172A] p-4 shadow-xl sm:p-6">
+                  <div className="flex items-center gap-2.5 border-b border-slate-800/80 pb-3"><span className="h-2.5 w-2.5 rounded-full bg-cyan-400" /><h2 className="text-[11px] font-extrabold uppercase tracking-wider text-cyan-400">Level 1 Certificate Course Details</h2></div>
+                  <ul className="space-y-3">{PART_1_PROMPTS.slice(3, 7).map(completionRow)}</ul>
+                </section>
+                <section className="space-y-4 rounded-2xl border border-slate-800/90 bg-[#0F172A] p-4 shadow-xl sm:p-6">
+                  <div className="flex items-center gap-2.5 border-b border-slate-800/80 pb-3"><span className="h-2.5 w-2.5 rounded-full bg-emerald-400" /><h2 className="text-[11px] font-extrabold uppercase tracking-wider text-emerald-400">Booking &amp; Administration Requirements</h2></div>
+                  <ul className="space-y-3">{PART_1_PROMPTS.slice(7).map(completionRow)}</ul>
+                </section>
+              </>
+            )}
+
+            {currentPart === 2 && (
+              <>
+                <section className="space-y-4 rounded-2xl border border-slate-800/90 bg-[#0F172A] p-4 shadow-xl sm:p-6">
+                  <div className="flex items-center gap-2.5 border-b border-slate-800/80 pb-3"><span className="h-2.5 w-2.5 rounded-full bg-rose-500" /><h2 className="text-[11px] font-extrabold uppercase tracking-wider text-rose-400">Working as a Makeup Trainee</h2></div>
+                  <div className="space-y-4">
+                    {PART_2_MULTIPLE_CHOICE.map(question => (
+                      <fieldset key={question.id} id={`listening-question-${question.id}`} className={`rounded-xl border p-3 transition ${currentQ === question.id ? 'border-rose-500/80 bg-[#111C30] shadow-[0_0_15px_rgba(225,29,72,0.12)]' : 'border-slate-800/70 bg-[#090E17]/80'}`}>
+                        <legend className="px-1 text-sm font-semibold text-slate-100">{question.id}. {question.text}</legend>
+                        <div className="mt-2 grid gap-2 sm:grid-cols-3">
+                          {question.options.map((option, index) => {
+                            const letter = String.fromCharCode(65 + index)
+                            return <button key={option} type="button" onClick={() => setAnswer(question.id, letter)} className={`rounded-lg border px-3 py-2 text-left text-xs transition ${answers[question.id] === letter ? 'border-rose-500/70 bg-rose-500/15 text-rose-200' : 'border-slate-800 bg-[#111A2E] text-slate-300 hover:border-slate-600'}`}><span className="mr-2 font-mono font-bold text-rose-400">{letter}</span>{option}</button>
+                          })}
+                        </div>
+                      </fieldset>
+                    ))}
                   </div>
                 </section>
-              ))}
-              <h2 className="font-plex text-sm font-bold text-ink">Questions 25–30</h2>
-              <p className="mt-1 font-plex text-sm text-ink">Choose the correct opinion, A–H, for each resource.</p>
-              <div className="mt-3 grid gap-1 rounded-sm border border-divider bg-surface-2 p-4 text-xs text-ink md:grid-cols-2">
-                {PART_3_OPINIONS.map((opinion, index) => <div key={opinion}><strong>{String.fromCharCode(65 + index)}</strong> — {opinion}</div>)}
-              </div>
-              <div className="mt-4 space-y-3">
-                {PART_3_MATCHING.map(question => (
-                  <div key={question.id} className="flex items-center gap-4">
-                    <span className="w-8 font-mono text-xs font-bold">{question.id}</span><span className="flex-1 text-sm text-ink">{question.text}</span>
-                    <select aria-label={`Answer ${question.id}`} value={answers[question.id] || ''} onChange={event => setAnswer(question.id, event.target.value)} className="rounded-sm border border-graphite-light bg-surface px-3 py-2 text-sm"><option value="">Select</option>{PART_3_OPINIONS.map((_, index) => <option key={index}>{String.fromCharCode(65 + index)}</option>)}</select>
+                <section className="space-y-4 rounded-2xl border border-slate-800/90 bg-[#0F172A] p-4 shadow-xl sm:p-6">
+                  <div className="border-b border-slate-800/80 pb-3"><h2 className="text-[11px] font-extrabold uppercase tracking-wider text-cyan-400">Questions 17–20 · Matching</h2><p className="mt-1 text-xs text-slate-400">Match each duty to the ability required.</p></div>
+                  <div className="rounded-lg border border-slate-800 bg-[#090E17]/80 p-3 text-xs leading-6 text-slate-300"><div><strong className="text-white">A</strong> — being well-organised</div><div><strong className="text-white">B</strong> — being flexible</div><div><strong className="text-white">C</strong> — working quickly</div></div>
+                  <div className="space-y-3">
+                    {PART_2_MATCHING.map(question => (
+                      <div key={question.id} id={`listening-question-${question.id}`} className={`flex flex-wrap items-center gap-3 rounded-xl border p-3 transition ${currentQ === question.id ? 'border-rose-500/80 bg-[#111C30]' : 'border-slate-800/70 bg-[#090E17]/80'}`}>
+                        <span className={`flex h-6 w-6 items-center justify-center rounded-md border font-mono text-xs font-bold ${answers[question.id] ? 'border-emerald-500/30 bg-emerald-500/20 text-emerald-300' : 'border-slate-700 bg-[#162238] text-slate-400'}`}>{question.id}</span><span className="min-w-40 flex-1 text-sm text-slate-200">{question.text}</span>
+                        <select aria-label={`Answer ${question.id}`} value={answers[question.id] || ''} onFocus={() => setCurrentQ(question.id)} onChange={event => setAnswer(question.id, event.target.value)} className="min-w-24 rounded-lg border border-slate-700 bg-[#152033] px-3 py-2 text-sm text-white focus:border-rose-500 focus:outline-none"><option value="">Select</option>{['A', 'B', 'C'].map(letter => <option key={letter}>{letter}</option>)}</select>
+                      </div>
+                    ))}
                   </div>
+                </section>
+              </>
+            )}
+
+            {currentPart === 3 && (
+              <>
+                {PART_3_GROUPS.map(group => (
+                  <section key={group.ids[0]} className="space-y-4 rounded-2xl border border-slate-800/90 bg-[#0F172A] p-4 shadow-xl sm:p-6">
+                    <div className="border-b border-slate-800/80 pb-3"><h2 className="text-[11px] font-extrabold uppercase tracking-wider text-rose-400">Questions {group.ids[0]} and {group.ids[1]}</h2><p className="mt-1 text-xs text-slate-400">Choose TWO letters, A–E. Answers may be in either order.</p><h3 className="mt-3 text-sm font-semibold text-slate-100">{group.text}</h3></div>
+                    <div className="grid gap-2">
+                      {group.options.map((option, index) => {
+                        const letter = String.fromCharCode(65 + index)
+                        const selectedId = group.ids.find(id => answers[id] === letter)
+                        return <button key={option} type="button" onClick={() => {
+                          if (selectedId) setAnswer(selectedId, '')
+                          else {
+                            const target = group.ids.find(id => !answers[id]) ?? group.ids[1]
+                            setAnswer(target, letter)
+                          }
+                        }} className={`rounded-lg border px-3 py-2.5 text-left text-sm transition ${selectedId ? 'border-rose-500/70 bg-rose-500/15 text-rose-100' : 'border-slate-800 bg-[#090E17]/80 text-slate-300 hover:border-slate-600'}`}><span className="mr-3 font-mono font-bold text-rose-400">{letter}</span>{option}</button>
+                      })}
+                    </div>
+                  </section>
                 ))}
+                <section className="space-y-4 rounded-2xl border border-slate-800/90 bg-[#0F172A] p-4 shadow-xl sm:p-6">
+                  <div className="border-b border-slate-800/80 pb-3"><h2 className="text-[11px] font-extrabold uppercase tracking-wider text-cyan-400">Questions 25–30 · Resource Matching</h2><p className="mt-1 text-xs text-slate-400">Choose the correct opinion, A–H, for each resource.</p></div>
+                  <div className="grid gap-1 rounded-lg border border-slate-800 bg-[#090E17]/80 p-3 text-xs leading-5 text-slate-300 sm:grid-cols-2">{PART_3_OPINIONS.map((opinion, index) => <div key={opinion}><strong className="text-white">{String.fromCharCode(65 + index)}</strong> — {opinion}</div>)}</div>
+                  <div className="space-y-3">
+                    {PART_3_MATCHING.map(question => (
+                      <div key={question.id} id={`listening-question-${question.id}`} className={`flex flex-wrap items-center gap-3 rounded-xl border p-3 transition ${currentQ === question.id ? 'border-rose-500/80 bg-[#111C30]' : 'border-slate-800/70 bg-[#090E17]/80'}`}>
+                        <span className={`flex h-6 w-6 items-center justify-center rounded-md border font-mono text-xs font-bold ${answers[question.id] ? 'border-emerald-500/30 bg-emerald-500/20 text-emerald-300' : 'border-slate-700 bg-[#162238] text-slate-400'}`}>{question.id}</span><span className="min-w-40 flex-1 text-sm text-slate-200">{question.text}</span>
+                        <select aria-label={`Answer ${question.id}`} value={answers[question.id] || ''} onFocus={() => setCurrentQ(question.id)} onChange={event => setAnswer(question.id, event.target.value)} className="min-w-24 rounded-lg border border-slate-700 bg-[#152033] px-3 py-2 text-sm text-white focus:border-rose-500 focus:outline-none"><option value="">Select</option>{PART_3_OPINIONS.map((_, index) => <option key={index}>{String.fromCharCode(65 + index)}</option>)}</select>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              </>
+            )}
+
+            {currentPart === 4 && (
+              <section className="space-y-4 rounded-2xl border border-slate-800/90 bg-[#0F172A] p-4 shadow-xl sm:p-6">
+                <div className="flex items-center gap-2.5 border-b border-slate-800/80 pb-3"><span className="h-2.5 w-2.5 rounded-full bg-emerald-400" /><h2 className="text-[11px] font-extrabold uppercase tracking-wider text-emerald-400">Sources of Rubber</h2></div>
+                <p className="text-xs text-slate-400">Complete the notes. Write ONE WORD ONLY for each answer.</p>
+                <ul className="space-y-3">{PART_4_PROMPTS.map(completionRow)}</ul>
+              </section>
+            )}
+
+            <div className="flex items-center justify-between border-t border-slate-800 py-4 text-xs text-slate-500">
+              <span>{partAnswered} of 10 questions answered in this section</span>
+              <div className="flex gap-2">
+                <button type="button" aria-label="Previous part" disabled={currentPart === 1 || part !== undefined} onClick={() => setCurrentQ((currentPart - 2) * 10 + 1)} className="rounded-lg border border-slate-700 px-3 py-2 text-slate-300 transition hover:border-slate-500 disabled:cursor-not-allowed disabled:opacity-40">Previous</button>
+                <button type="button" aria-label="Next part" disabled={currentPart === 4 || part !== undefined} onClick={() => setCurrentQ(currentPart * 10 + 1)} className="rounded-lg border border-slate-700 px-3 py-2 text-slate-300 transition hover:border-slate-500 disabled:cursor-not-allowed disabled:opacity-40">Next</button>
               </div>
-            </>
-          )}
-
-          {currentPart === 4 && (
-            <>
-              <h2 className="font-plex text-sm font-bold text-ink">Questions 31–40</h2>
-              <p className="mt-1 font-plex text-sm text-ink">Complete the notes. Write <strong>ONE WORD ONLY</strong> for each answer.</p>
-              <h3 className="mt-5 font-plex text-base font-bold text-ink">Sources of rubber</h3>
-              <ul className="mt-4 space-y-3">{PART_4_PROMPTS.map(completionRow)}</ul>
-            </>
-          )}
-        </div>
-      </section>
-
-      <footer className="border-t border-divider bg-paper-dark px-4 py-3">
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex min-w-0 items-center gap-4 overflow-x-auto">
-            <span className="whitespace-nowrap font-plex text-sm font-bold text-ink">Part {currentPart}</span>
-            <div className="flex gap-1">
-              {Array.from({ length: 10 }, (_, index) => partStart + index).map(id => (
-                <button key={id} onClick={() => {
-                  setCurrentQ(id)
-                  window.setTimeout(() => document.querySelector<HTMLElement>(`[aria-label="Answer ${id}"]`)?.focus(), 0)
-                }} className={`h-7 w-7 rounded-sm border font-mono text-xs ${currentQ === id ? 'border-electric bg-surface text-accent' : answers[id] ? 'border-success bg-success-soft text-positive' : 'border-transparent text-ink'}`}>{id}</button>
-              ))}
             </div>
-            <span className="hidden whitespace-nowrap font-mono text-xs text-graphite-mid sm:inline">{answered}/{totalQuestions} answered</span>
           </div>
-          <div className="flex items-center gap-2">
-            <button
-              aria-label="Go to previous part"
-              disabled={currentPart === 1 || part !== undefined}
-              onClick={() => setCurrentQ((currentPart - 2) * 10 + 1)}
-              className="h-11 w-11 rounded-sm bg-divider font-plex text-xl font-bold text-white disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              ←
-            </button>
-            <button
-              aria-label="Go to next part"
-              disabled={currentPart === 4 || part !== undefined}
-              onClick={() => setCurrentQ(currentPart * 10 + 1)}
-              className="h-11 w-11 rounded-sm bg-navy font-plex text-xl font-bold text-white disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              →
-            </button>
-          </div>
-        </div>
-        <div className="mt-2 flex gap-4 border-t border-divider pt-2">
-          {(part ? [part] : [1, 2, 3, 4]).map(partNumber => (
-            <button key={partNumber} onClick={() => setCurrentQ((partNumber - 1) * 10 + 1)} className={`font-mono text-xs ${currentPart === partNumber ? 'font-semibold text-accent' : 'text-graphite-mid hover:text-ink'}`}>Part {partNumber} · {Object.keys(answers).filter(key => Number(key) > (partNumber - 1) * 10 && Number(key) <= partNumber * 10 && answers[Number(key)]).length}/10</button>
-          ))}
-        </div>
-      </footer>
-    </main>
+        </main>
+      </div>
+    </div>
   )
 }
 
