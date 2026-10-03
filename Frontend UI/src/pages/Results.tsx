@@ -694,10 +694,18 @@ export default function Results() {
 
   const handleDelete = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation()
-    const ok = await deleteExamResultApi(id)
-    if (ok) {
-      setResults(prev => prev.filter(r => r.id !== id))
-    }
+    // Optimistically remove from state immediately
+    setResults(prev => {
+      const remaining = prev.filter(r => r.id !== id)
+      if (selectedId === id) {
+        const remainingInFilter = filter === 'All' ? remaining : remaining.filter(r => r.testType === filter)
+        setSelectedId(remainingInFilter[0]?.id || '')
+      }
+      return remaining
+    })
+
+    // Persist deletion to localStorage and backend API
+    await deleteExamResultApi(id)
   }
 
   const currentUserName = user?.name || 'Ayaan Rahman'
@@ -782,9 +790,9 @@ export default function Results() {
                     </div>
                     <button
                       type="button"
-                      title="Delete record"
+                      title="Delete test attempt"
                       onClick={e => handleDelete(result.id, e)}
-                      className="px-1 text-xs text-subtle opacity-0 transition-opacity hover:text-rose-600 group-hover:opacity-100"
+                      className="rounded p-1 text-xs text-graphite-light hover:bg-rose-50 hover:text-rose-600 transition-colors"
                     >
                       ✕
                     </button>

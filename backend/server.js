@@ -393,7 +393,19 @@ app.post('/api/auth/login', (req, res) => {
 
 /** User Registration */
 app.post('/api/auth/register', (req, res) => {
-  const { name, email, password, role = 'Student', country = 'Bangladesh' } = req.body
+  const {
+    name,
+    email,
+    password,
+    role = 'Student',
+    country = 'Bangladesh',
+    targetBand = 7.5,
+    examModule = 'Academic',
+    targetTimeline = '1–3 months',
+    targetCountry = 'United Kingdom',
+    primaryFocus = 'Speaking'
+  } = req.body
+
   if (!email || !password) {
     return res.status(400).json({ error: 'Email and password are required' })
   }
@@ -412,10 +424,14 @@ app.post('/api/auth/register', (req, res) => {
     country,
     role: role || 'Student',
     status: 'Active',
-    targetBand: 7.5,
-    currentBand: 6.5,
+    targetBand: Number(targetBand) || 7.5,
+    currentBand: 6.0,
+    examModule,
+    targetTimeline,
+    targetCountry,
+    primaryFocus,
     institution: 'East West University',
-    bio: 'Dedicated learner preparing for IELTS Academic examination.',
+    bio: `Dedicated learner preparing for IELTS ${examModule} targeting Band ${targetBand} for ${targetCountry}.`,
     lastActive: 'Just now',
     createdAt: new Date().toISOString()
   }

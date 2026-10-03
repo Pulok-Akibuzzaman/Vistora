@@ -56,6 +56,23 @@ export interface UserProfile {
   phone?: string
   lastActive?: string
   createdAt?: string
+  examModule?: 'Academic' | 'General Training'
+  targetTimeline?: string
+  targetCountry?: string
+  primaryFocus?: string
+}
+
+export interface RegisterPayload {
+  name: string
+  email: string
+  password: string
+  role?: string
+  country?: string
+  targetBand?: number
+  examModule?: 'Academic' | 'General Training'
+  targetTimeline?: string
+  targetCountry?: string
+  primaryFocus?: string
 }
 
 export interface StoredExamResult {
@@ -246,11 +263,11 @@ export async function loginUser(email: string, password: string): Promise<{ user
   return await res.json()
 }
 
-export async function registerUser(name: string, email: string, password: string, role?: string, country?: string): Promise<{ user: UserProfile; token: string }> {
+export async function registerUser(payload: RegisterPayload): Promise<{ user: UserProfile; token: string }> {
   const res = await fetch(`${API_BASE}/auth/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name, email, password, role, country }),
+    body: JSON.stringify(payload),
   })
   if (!res.ok) {
     const err = await res.json().catch(() => ({}))
@@ -353,11 +370,22 @@ export async function saveExamResultApi(result: StoredExamResult): Promise<Store
 }
 
 export async function deleteExamResultApi(id: string): Promise<boolean> {
+  // 1. Remove from local storage cache immediately
+  try {
+    const raw = window.localStorage.getItem('vistora-exam-results')
+    if (raw) {
+      const local: StoredExamResult[] = JSON.parse(raw)
+      const updated = local.filter(item => item.id !== id)
+      window.localStorage.setItem('vistora-exam-results', JSON.stringify(updated))
+    }
+  } catch {}
+
+  // 2. Remove from backend server database
   try {
     const res = await fetch(`${API_BASE}/results/${id}`, { method: 'DELETE' })
     return res.ok
   } catch {
-    return false
+    return true
   }
 }
 

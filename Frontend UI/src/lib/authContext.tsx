@@ -1,12 +1,12 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
-import { loginUser, registerUser, updateUserProfile, type UserProfile } from './api'
+import { loginUser, registerUser, updateUserProfile, type UserProfile, type RegisterPayload } from './api'
 
 interface AuthContextType {
   user: UserProfile | null
   isAuthenticated: boolean
   isLoading: boolean
   login: (email: string, password: string) => Promise<void>
-  signup: (name: string, email: string, password: string, role?: string, country?: string) => Promise<void>
+  signup: (payload: RegisterPayload | string, email?: string, password?: string, role?: string, country?: string) => Promise<void>
   updateProfile: (data: Partial<UserProfile>) => Promise<void>
   logout: () => void
 }
@@ -62,20 +62,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  const signup = async (name: string, email: string, password: string, role = 'Student', country = 'Bangladesh') => {
+  const signup = async (
+    payloadOrName: RegisterPayload | string,
+    email?: string,
+    password?: string,
+    role = 'Student',
+    country = 'Bangladesh'
+  ) => {
     setIsLoading(true)
+    const payload: RegisterPayload = typeof payloadOrName === 'object'
+      ? payloadOrName
+      : { name: payloadOrName, email: email || '', password: password || '', role, country }
+
     try {
-      const res = await registerUser(name, email, password, role, country)
+      const res = await registerUser(payload)
       setUser(res.user)
       window.localStorage.setItem('vistora-auth-user', JSON.stringify(res.user))
     } catch (error) {
       const fallbackUser: UserProfile = {
         ...DEFAULT_USER,
         id: `USR-${Date.now().toString().slice(-4)}`,
-        name,
-        email,
-        role: role as any,
-        country,
+        name: payload.name,
+        email: payload.email,
+        role: (payload.role as any) || 'Student',
+        country: payload.country || 'Bangladesh',
+        targetBand: payload.targetBand || 7.5,
+        examModule: payload.examModule || 'Academic',
+        targetCountry: payload.targetCountry || 'United Kingdom',
+        targetTimeline: payload.targetTimeline || '1–3 months',
+        primaryFocus: payload.primaryFocus || 'Speaking',
       }
       setUser(fallbackUser)
       window.localStorage.setItem('vistora-auth-user', JSON.stringify(fallbackUser))
