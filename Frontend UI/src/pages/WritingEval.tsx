@@ -22,10 +22,16 @@ In 1918, rented accommodation was by far the predominant tenure, accounting for 
 
 From 1971 onwards, owning a home became the dominant trend, peaking at 69% in 2001. During this same interval, renting fell to an all-time low of 31%. However, between 2001 and 2011, this trend reversed slightly: rented households increased to 36%, while owner-occupied homes decreased to 64%.`
 
+const SAMPLE_PROMPTS: Record<'1' | '2', string> = {
+  '1': 'The chart illustrates the percentage of households residing in owned and rented accommodation in England and Wales from 1918 to 2011. Summarise the information by selecting and reporting the main features, and make comparisons where relevant.',
+  '2': 'Some people believe that the best way to reduce crime is to give longer prison sentences. Others, however, believe there are better alternative ways of reducing crime. Discuss both views and give your own opinion.'
+}
+
 export default function WritingEval() {
   const { user } = useAuth()
   const [task, setTask] = useState<'1' | '2'>('2')
-  const [essay, setEssay] = useState(SAMPLE_ESSAY_TASK2)
+  const [prompt, setPrompt] = useState('')
+  const [essay, setEssay] = useState('')
   const [feedback, setFeedback] = useState<WritingEvaluationResult | null>(null)
   const [loading, setLoading] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -36,21 +42,26 @@ export default function WritingEval() {
 
   const handleTaskChange = (t: '1' | '2') => {
     setTask(t)
-    setEssay(t === '1' ? SAMPLE_ESSAY_TASK1 : SAMPLE_ESSAY_TASK2)
     setFeedback(null)
     setSaved(false)
+    setError('')
   }
 
-  const promptText = task === '2'
-    ? 'Some people believe that the best way to reduce crime is to give longer prison sentences. Others, however, believe there are better alternative ways of reducing crime. Discuss both views and give your own opinion.'
-    : 'The chart below shows the percentage of households in owned and rented accommodation in England and Wales between 1918 and 2011. Summarise the information by selecting and reporting the main features, and make comparisons where relevant.'
-
   const handleEvaluate = async () => {
-    setLoading(true)
     setError('')
+    if (!prompt.trim()) {
+      setError('Please enter or paste your IELTS question prompt so the AI can evaluate your Task Achievement.')
+      return
+    }
+    if (!essay.trim() || wordCount < 20) {
+      setError(`Please write or paste your essay response (minimum ${minWords} words recommended, at least 20 words required to evaluate).`)
+      return
+    }
+
+    setLoading(true)
     setSaved(false)
     try {
-      const result = await evaluateEssayApi(task, promptText, essay)
+      const result = await evaluateEssayApi(task, prompt.trim(), essay.trim())
       setFeedback(result)
     } catch (err: any) {
       setError(err?.message || 'Failed to connect to evaluation engine.')
@@ -62,17 +73,24 @@ export default function WritingEval() {
   const handleSaveResult = async () => {
     if (!feedback) return
     try {
+      const promptSnippet = prompt.trim().slice(0, 45).replace(/\s+/g, ' ')
       await saveExamResultApi({
         id: `eval-${Date.now()}`,
         userId: user?.id || 'USR-1048',
         userName: user?.name || 'Ayaan Rahman',
-        testTitle: `Writing Task ${task} — ${task === '1' ? 'Housing Accommodation Trends' : 'Crime & Incarceration'}`,
+        testTitle: `Writing Task ${task} — ${promptSnippet || 'Custom Prompt'}...`,
         testType: 'Writing',
         completedAt: new Date().toISOString(),
         overallBand: feedback.band,
         skillBands: { Writing: feedback.band },
         correctAnswers: 1,
         totalQuestions: 1,
+        userAnswers: {
+          prompt: prompt.trim(),
+          essay: essay.trim(),
+          wordCount,
+          taskType: `Task ${task}`
+        },
         comment: feedback.summary,
         source: 'AI'
       })
@@ -123,19 +141,73 @@ export default function WritingEval() {
             </div>
           </div>
 
-          {/* Essay prompt */}
-          <div className="bg-surface-2 border border-divider p-4" style={{ borderRadius: 4 }}>
-            <div className="label-tag mb-2">QUESTION PROMPT</div>
-            <p className="text-[12px] text-graphite leading-relaxed" style={{ fontFamily: 'Inter, sans-serif' }}>
-              {promptText}
-            </p>
+          {/* User-editable Essay prompt */}
+          <div className="bg-surface border border-divider p-4" style={{ borderRadius: 4 }}>
+            <div className="flex items-center justify-between mb-2">
+              <div className="label-tag">QUESTION PROMPT (YOUR TOPIC)</div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setPrompt(SAMPLE_PROMPTS[task])}
+                  className="mono text-[11px] text-accent hover:underline font-semibold"
+                >
+                  + Use sample Cambridge prompt
+                </button>
+                {prompt && (
+                  <button
+                    type="button"
+                    onClick={() => setPrompt('')}
+                    className="mono text-[11px] text-graphite-light hover:text-rose-600"
+                  >
+                    ✕ Clear
+                  </button>
+                )}
+              </div>
+            </div>
+            <textarea
+              value={prompt}
+              onChange={e => {
+                setPrompt(e.target.value)
+                setSaved(false)
+              }}
+              rows={3}
+              placeholder={
+                task === '2'
+                  ? "Type or paste your IELTS Task 2 prompt here (e.g. 'Some people believe that universities should focus on practical skills... Discuss both views and give your opinion.')..."
+                  : "Type or paste your IELTS Task 1 chart/graph description or question here (e.g. 'The chart below shows the percentage of households in owned and rented accommodation... Summarise the main features...')..."
+              }
+              className="w-full p-3 text-[13px] text-graphite leading-relaxed outline-none resize-y bg-surface-2 border border-divider rounded-xs focus:border-electric transition-colors"
+              style={{ fontFamily: 'Inter, sans-serif' }}
+            />
           </div>
 
-          {/* Textarea */}
+          {/* User essay response */}
           <div className="bg-surface border border-divider" style={{ borderRadius: 4 }}>
             <div className="flex items-center justify-between px-4 py-3 border-b border-divider-soft">
-              <div className="label-tag">YOUR ESSAY</div>
+              <div className="label-tag">YOUR ESSAY RESPONSE</div>
               <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPrompt(SAMPLE_PROMPTS[task])
+                    setEssay(task === '1' ? SAMPLE_ESSAY_TASK1 : SAMPLE_ESSAY_TASK2)
+                  }}
+                  className="mono text-[11px] text-accent hover:underline font-semibold hidden sm:inline-block"
+                >
+                  + Load demo essay
+                </button>
+                {essay && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEssay('')
+                      setSaved(false)
+                    }}
+                    className="mono text-[11px] text-graphite-light hover:text-rose-600"
+                  >
+                    ✕ Clear
+                  </button>
+                )}
                 <span
                   className={`mono text-[11px] font-bold ${
                     wordCount < minWords ? 'text-rose-600' : 'text-emerald-600'
@@ -154,7 +226,7 @@ export default function WritingEval() {
               }}
               className="w-full p-4 text-[13px] text-graphite leading-[1.8] outline-none resize-none bg-transparent"
               style={{ fontFamily: 'Inter, sans-serif', minHeight: 400 }}
-              placeholder="Type or paste your essay here..."
+              placeholder={`Write or paste your IELTS Task ${task} essay response here... Minimum ${minWords} words required.`}
             />
           </div>
 
