@@ -311,14 +311,30 @@ export async function toggleUserStatus(id: string): Promise<UserProfile> {
 // --------------------------------------------------------------------------
 
 export async function fetchResults(): Promise<StoredExamResult[]> {
+  let backendResults: StoredExamResult[] = []
   try {
     const res = await fetch(`${API_BASE}/results`)
     if (res.ok) {
       const data = await res.json()
-      return data.results
+      backendResults = data.results || []
     }
   } catch {}
-  return []
+
+  try {
+    const raw = window.localStorage.getItem('vistora-exam-results')
+    const local: StoredExamResult[] = raw ? JSON.parse(raw) : []
+    const seen = new Set(backendResults.map(r => r.id))
+    const combined = [...backendResults]
+    for (const item of local) {
+      if (!seen.has(item.id)) {
+        combined.push(item)
+        seen.add(item.id)
+      }
+    }
+    return combined
+  } catch {
+    return backendResults
+  }
 }
 
 export async function saveExamResultApi(result: StoredExamResult): Promise<StoredExamResult> {

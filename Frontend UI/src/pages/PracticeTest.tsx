@@ -1469,7 +1469,7 @@ export default function PracticeTest() {
       })
       setSpeakingEval(evalRes)
 
-      // Save to results history
+      // Save to local results cache
       const record = {
         id: `${selectedTest.id}-${Date.now()}`,
         userId: user?.id || 'USR-1048',
@@ -1479,14 +1479,11 @@ export default function PracticeTest() {
         completedAt: new Date().toISOString(),
         overallBand: evalRes.overallBand,
         skillBands: { Speaking: evalRes.overallBand },
-        correctAnswers: Math.round(evalRes.overallBand),
-        totalQuestions: 9,
-        userAnswers: { transcript: combinedTranscript, durationSeconds: totalDuration },
+        userAnswers: { transcript: combinedTranscript, durationSeconds: totalDuration, wordCount: combinedTranscript.split(/\s+/).filter(Boolean).length },
         comment: evalRes.summary || 'Speaking practice evaluated by Puku AI.',
         source: (evalRes.source?.includes('puku') ? 'AI' : 'Automatic') as any,
       }
       saveExamResult(record as any)
-      saveExamResultApi(record as any).catch(() => {})
     } catch (err: any) {
       setSpeakingError(err?.message || 'Failed to complete Speaking evaluation.')
     } finally {
