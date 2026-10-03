@@ -26,41 +26,37 @@ export function generateDocumentContent(type, details, candidate) {
 
   switch (type) {
     case 'cv':
-      return `${name.toUpperCase()}
-Email: ${email} · Origin: ${country} · English Proficiency: IELTS Band ${ielts}
-Professional Portfolio: linkedin.com/in/${name.toLowerCase().replace(/[^a-z0-9]/g, '')}
+      return `CURRICULUM VITAE
 
-================================================================================
+${name.toUpperCase()}
+Email: ${email} | Location: ${country} | English Proficiency: IELTS Band ${ielts}
+Professional Profile: linkedin.com/in/${name.toLowerCase().replace(/[^a-z0-9]/g, '')}
+
+CAREER OBJECTIVE
+A focused professional in ${degree}, dedicated to advancing technical excellence, computational research, and innovative problem-solving. Targeting academic and professional opportunities in ${country || 'international environments'} to contribute measurably to high-impact projects.
+
 ACADEMIC BACKGROUND
-================================================================================
 ${degree}
-• Focus: Advanced specialization, rigorous coursework, and analytical distinction
+• Status: Academic distinction and rigorous coursework completion
 • English Language Competency: IELTS Overall Band ${ielts} (Academic Module)
-• Status: Completed with academic honors and faculty commendation
+• Core Focus: Problem solving, analytical rigor, and specialized practical implementation
 
-================================================================================
 CORE COMPETENCIES & TECHNICAL SKILLS
-================================================================================
-${skills}
+• ${skills}
 
-================================================================================
-EXPERIENCE & RESEARCH PROJECTS
-================================================================================
+WORK & RESEARCH EXPERIENCE
 ${experience}
-• Spearheaded empirical investigations and rigorous literature syntheses.
-• Formulated data collection frameworks, evaluated outcomes, and authored comprehensive project reports.
-• Collaborated in cross-functional teams under academic and professional supervision.
+• Spearheaded practical investigations and end-to-end development initiatives.
+• Formulated data-driven frameworks, analyzed operational outcomes, and authored technical documentation.
+• Collaborated in cross-functional teams to design, test, and deploy resilient solutions.
 
-================================================================================
-ACHIEVEMENTS & EXTRACURRICULAR LEADERSHIP
-================================================================================
+ACADEMIC PROJECTS & LEADERSHIP
+• Led technical deliverables and algorithmic implementations matching core domain requirements.
 • Recipient of academic merit awards and competitive project recognition.
-• Active contributor to peer workshops and institutional seminars.
-• Target Destination: ${details.country || 'International Graduate Study'}
+• Active contributor to peer workshops, hackathons, and institutional seminars.
+• Target Destination: ${details.country || 'International Study & Industry'}
 
-================================================================================
 REFERENCES
-================================================================================
 Available upon request from academic faculty and research supervisors.`
 
     case 'sop':

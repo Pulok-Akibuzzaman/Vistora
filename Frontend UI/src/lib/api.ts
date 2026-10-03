@@ -129,10 +129,12 @@ export interface ForumThread {
 export interface DashboardStats {
   skillScores: {
     skill: string
-    score: number
+    score: number | null
     target: number
     color: string
     bg: string
+    hasAttempts?: boolean
+    attemptsCount?: number
   }[]
   overallBand: number
   targetBand: number
@@ -389,9 +391,10 @@ export async function deleteExamResultApi(id: string): Promise<boolean> {
   }
 }
 
-export async function fetchDashboardStats(): Promise<DashboardStats | null> {
+export async function fetchDashboardStats(email?: string): Promise<DashboardStats | null> {
   try {
-    const res = await fetch(`${API_BASE}/dashboard/stats`)
+    const url = email ? `${API_BASE}/dashboard/stats?email=${encodeURIComponent(email)}` : `${API_BASE}/dashboard/stats`
+    const res = await fetch(url)
     if (res.ok) return await res.json()
   } catch {}
   return null

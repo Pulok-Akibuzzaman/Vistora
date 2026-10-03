@@ -555,37 +555,140 @@ Evaluate this spoken response rigorously according to IELTS band descriptors. If
 }
 
 /**
+ * Cleanly strips raw Markdown symbols (asterisks, hashes, horizontal rules)
+ * to output professional, executive-grade plain text documents.
+ */
+export function stripMarkdownFormatting(text) {
+  if (!text || typeof text !== 'string') return '';
+  return text
+    // Remove horizontal rules like ---, ***, ___
+    .replace(/^[ \t]*[-*_]{3,}[ \t]*$/gm, '')
+    // Convert markdown headers (# Title, ## Subtitle) to plain text
+    .replace(/^[ \t]*#{1,6}[ \t]+(.+)$/gm, '$1')
+    // Remove bold and italics: **bold**, *italic*, __bold__, _italic_
+    .replace(/\*\*(.*?)\*\*/g, '$1')
+    .replace(/\*(.*?)\*/g, '$1')
+    .replace(/__(.*?)__/g, '$1')
+    .replace(/_([^_]+)_/g, '$1')
+    // Remove inline code ticks: `code`
+    .replace(/`([^`]+)`/g, '$1')
+    // Convert markdown bullet points to clean bullet points
+    .replace(/^[ \t]*[-*][ \t]+/gm, '• ')
+    // Normalize consecutive blank lines to at most two
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
+/**
  * Generate customized academic and professional documents using Puku AI
  */
 export async function generateDocumentWithPuku(type, params) {
   const {
-    fullName = 'Ayaan Rahman',
-    degree = 'M.Sc. in Computer Science',
-    university = 'University of Oxford',
+    fullName = 'Applicant',
+    email = '',
+    degree = '',
+    country = '',
+    ielts = '',
+    skills = '',
+    experience = '',
+    university = '',
+    program = '',
+    interests = '',
     background = '',
+    why = '',
     goals = '',
-    researchInterest = '',
-    experience = ''
+    motivation = '',
+    extra = '',
+    position = '',
+    company = '',
+    tone = 'Formal Academic'
   } = params;
 
-  const systemPrompt = `You are an elite academic admissions director and career consultant specializing in top international university applications (Oxford, Cambridge, Ivy League, Russell Group). Write articulate, compelling, authentic documents tailored specifically to the candidate's profile. Avoid cliché filler phrases. Use clear, professional formatting.`;
+  const systemPrompt = `You are an elite academic admissions director and career consultant specializing in top international university applications and high-level corporate careers.
+Write articulate, compelling, authentic documents tailored SPECIFICALLY to the candidate's exact provided inputs.
+Do NOT invent unrelated background facts that contradict the candidate's actual field or details.
 
-  const userPrompt = `Please generate a comprehensive, ready-to-submit ${type.toUpperCase()} for:
+CRITICAL FORMATTING INSTRUCTIONS:
+1. ABSOLUTELY DO NOT use any Markdown symbols or markdown syntax.
+2. DO NOT use asterisks (** or *), hashes (##, ###), underscores (__ or _), or horizontal rules (---).
+3. Use clean plain text formatting. Use standard UPPERCASE HEADINGS for sections (e.g. CAREER OBJECTIVE, ACADEMIC BACKGROUND, TECHNICAL SKILLS).
+4. Use standard bullet points (• ) for lists and achievements.
+5. Generate the ENTIRE document completely from start to finish without cutting off. Ensure all sections are fully articulated and complete.`;
+
+  let userPrompt = '';
+
+  if (type === 'cv') {
+    userPrompt = `Please generate a comprehensive, highly personalized, and complete CURRICULUM VITAE (CV) dynamically tailored to the following candidate details:
 - Candidate Name: ${fullName}
-- Target Degree: ${degree}
-- Target Institution: ${university}
-- Academic / Professional Background: ${background || 'High-achieving background in relevant field'}
-- Career / Academic Goals: ${goals || 'Pursuing advanced research and international leadership'}
-- Research / Specialization Interests: ${researchInterest || 'Emerging technologies and computational systems'}
-- Key Experiences & Achievements: ${experience || 'Academic projects, research assistantship, and practical internships'}
+- Contact Email: ${email || '[Enter Email Address]'}
+- Current Degree / Institution: ${degree || 'Computer Science and Engineering'}
+- Target Country: ${country || 'International / Global'}
+- English Proficiency: ${ielts ? `IELTS Band ${ielts}` : 'Proficient in Academic English'}
+- Key Skills & Expertise: ${skills || 'Algorithms, System Design, Full-Stack Engineering, Applied Computing'}
+- Work / Research Experience: ${experience || 'Software engineering, academic research, applied technical projects'}
 
-Write the full document with formal structure, clear paragraph headers (if appropriate), cohesive narrative, and professional closing.`;
+DYNAMIC SECTION INSTRUCTIONS:
+- Header: Feature the candidate's name (${fullName.toUpperCase()}), contact email (${email || 'Email'}), and location (${country ? `Targeting: ${country}` : 'Dhaka, Bangladesh'}).
+- CAREER OBJECTIVE: Craft an objective specifically tailored around their stated degree/discipline (${degree || 'Computer Science'}) and their target destination (${country || 'international institutions'}).
+- ACADEMIC BACKGROUND: Accurately reflect their stated degree and institution (${degree || 'B.Sc. in Computer Science and Engineering'}). Include coursework relevant to their discipline. Include IELTS Band ${ielts || '7.5'}.
+- TECHNICAL SKILLS: Feature all user-provided skills (${skills || 'Programming, Problem Solving, System Design'}) categorized logically (Languages, Frameworks, Tools, Databases).
+- WORK / RESEARCH EXPERIENCE: Transform their provided experience (${experience || 'Software development and research'}) into high-impact, quantified bullet points.
+- ACADEMIC PROJECTS: Provide 3-4 impressive, relevant projects matching their stated skills (${skills || 'Computing'}).
+- Include complete sections for AWARDS AND HONORS, PUBLICATIONS / PRESENTATIONS, and REFERENCES.
+- FORMAT: Output strictly in clean, executive plain text without asterisks (**), hashes (##), or horizontal rules (---).`;
+  } else if (type === 'sop') {
+    userPrompt = `Please generate an articulate, persuasive, and tailored STATEMENT OF PURPOSE (SOP) based on:
+- Candidate Name: ${fullName}
+- Target Program: ${program || degree || 'Graduate Program'}
+- Target University: ${university || 'Target University'}
+- Research Interests: ${interests || 'Advanced computing systems and emerging technologies'}
+- Academic Background: ${background || degree || 'Rigorous undergraduate study with distinction'}
+- Why This University: ${why || 'Distinguished faculty, advanced laboratory facilities, and collaborative culture'}
+- Career & Academic Goals: ${goals || 'Pursuing doctoral research and becoming an international technology innovator'}
+
+DYNAMIC INSTRUCTIONS:
+- Specifically mention ${university || 'the university'} and ${program || degree || 'the program'} throughout the essay.
+- Build upon their specific background (${background || degree}) and detail how it prepares them for ${interests || 'advanced studies'}.
+- Articulate clear synergy with ${university}'s faculty and programs based on: ${why}.
+- Close with their concrete goals: ${goals}.
+- FORMAT: Clean plain text essay without any asterisks (**), hashes (##), or markdown symbols.`;
+  } else if (type === 'ps') {
+    userPrompt = `Please generate an inspiring, highly personal, and authentic PERSONAL STATEMENT for:
+- Candidate Name: ${fullName}
+- Target Course: ${program || degree || 'Graduate Studies'}
+- Target University: ${university || 'Target University'}
+- Motivating Experience: ${motivation || 'A defining moment of curiosity and overcoming technical challenges'}
+- Extracurricular & Leadership: ${extra || 'Student club leadership, hackathons, and community mentorship'}
+- Why This Subject: ${why || 'A deep commitment to computational innovation and real-world impact'}
+
+DYNAMIC INSTRUCTIONS:
+- Narrate a cohesive personal story starting from ${motivation || 'their early academic curiosity'}.
+- Integrate their extracurricular achievements (${extra}) to showcase leadership and resilience.
+- Connect their values to studying ${program || degree} at ${university}.
+- FORMAT: Clean plain text without any asterisks (**), hashes (##), or markdown symbols.`;
+  } else if (type === 'cl') {
+    userPrompt = `Please generate a polished, compelling, and tailored COVER LETTER for:
+- Candidate Name: ${fullName}
+- Position Applied For: ${position || 'Software Engineer / Research Associate'}
+- Company / Organization: ${company || 'Target Organization'}
+- Key Relevant Experience: ${experience || skills || 'Demonstrated track record of delivering technical solutions'}
+- Why This Organization: ${why || 'Inspiration from your market leadership and engineering culture'}
+- Tone: ${tone}
+
+DYNAMIC INSTRUCTIONS:
+- Specifically address the hiring committee for ${position || 'the role'} at ${company || 'the organization'}.
+- Frame the candidate's background (${experience || skills}) as the direct solution to the organization's needs.
+- Close professionally with candidate name ${fullName}.
+- FORMAT: Clean plain text without asterisks (**), hashes (##), or markdown symbols.`;
+  }
 
   try {
-    const generatedText = await generatePukuCompletion(userPrompt, systemPrompt, 1400, 35000);
-    return generatedText || null;
+    const generatedText = await generatePukuCompletion(userPrompt, systemPrompt, 3500, 60000);
+    if (!generatedText) return null;
+    return stripMarkdownFormatting(generatedText);
   } catch (err) {
     console.warn(`[Puku.sh Document] Failed to generate document: ${err.message}`);
     return null;
   }
 }
+

@@ -593,56 +593,67 @@ app.delete('/api/results/:id', (req, res) => {
 
 /** Dynamic Dashboard Statistics (Computed from real user attempts) */
 app.get('/api/dashboard/stats', (req, res) => {
+  const { email } = req.query
   const results = readData('results.json', [])
   const users = readData('users.json', [])
-  const user = users[0] || { targetBand: 8.0, currentBand: 7.0 }
+  const user = (email ? users.find(u => u.email === email) : null) || users[0] || { targetBand: 8.0, currentBand: 7.0 }
+  const userTarget = typeof user.targetBand === 'number' ? user.targetBand : 8.0
 
-  // Calculate dynamic skill scores
+  // Filter results for this specific user if logged in
+  const userResults = results.filter(r => !r.userEmail || !email || r.userEmail === email)
+
+  // Calculate dynamic skill scores strictly from real records
   const skillScores = {
-    Reading: { total: 0, count: 0, default: 7.0, target: 7.5 },
-    Listening: { total: 0, count: 0, default: 7.5, target: 8.0 },
-    Writing: { total: 0, count: 0, default: 6.5, target: 7.0 },
-    Speaking: { total: 0, count: 0, default: 6.5, target: 7.0 }
+    Reading: { total: 0, count: 0, target: userTarget },
+    Listening: { total: 0, count: 0, target: userTarget },
+    Writing: { total: 0, count: 0, target: userTarget },
+    Speaking: { total: 0, count: 0, target: userTarget }
   }
 
-  results.forEach(r => {
-    if (r.testType === 'Reading' && typeof r.overallBand === 'number') {
-      skillScores.Reading.total += r.overallBand
+  userResults.forEach(r => {
+    const band = typeof r.overallBand === 'number' ? r.overallBand : (typeof r.bandScore === 'number' ? r.bandScore : null)
+    if (r.testType === 'Reading' && band !== null) {
+      skillScores.Reading.total += band
       skillScores.Reading.count++
-    } else if (r.testType === 'Listening' && typeof r.overallBand === 'number') {
-      skillScores.Listening.total += r.overallBand
+    } else if (r.testType === 'Listening' && band !== null) {
+      skillScores.Listening.total += band
       skillScores.Listening.count++
-    } else if (r.testType === 'Writing' && typeof r.overallBand === 'number') {
-      skillScores.Writing.total += r.overallBand
+    } else if (r.testType === 'Writing' && band !== null) {
+      skillScores.Writing.total += band
       skillScores.Writing.count++
-    } else if (r.testType === 'Speaking' && typeof r.overallBand === 'number') {
-      skillScores.Speaking.total += r.overallBand
+    } else if (r.testType === 'Speaking' && band !== null) {
+      skillScores.Speaking.total += band
       skillScores.Speaking.count++
     } else if (r.skillBands) {
-      if (r.skillBands.Reading) { skillScores.Reading.total += r.skillBands.Reading; skillScores.Reading.count++ }
-      if (r.skillBands.Listening) { skillScores.Listening.total += r.skillBands.Listening; skillScores.Listening.count++ }
-      if (r.skillBands.Writing) { skillScores.Writing.total += r.skillBands.Writing; skillScores.Writing.count++ }
-      if (r.skillBands.Speaking) { skillScores.Speaking.total += r.skillBands.Speaking; skillScores.Speaking.count++ }
+      if (typeof r.skillBands.Reading === 'number') { skillScores.Reading.total += r.skillBands.Reading; skillScores.Reading.count++ }
+      if (typeof r.skillBands.Listening === 'number') { skillScores.Listening.total += r.skillBands.Listening; skillScores.Listening.count++ }
+      if (typeof r.skillBands.Writing === 'number') { skillScores.Writing.total += r.skillBands.Writing; skillScores.Writing.count++ }
+      if (typeof r.skillBands.Speaking === 'number') { skillScores.Speaking.total += r.skillBands.Speaking; skillScores.Speaking.count++ }
     }
   })
 
   const computedSkills = Object.keys(skillScores).map(skill => {
     const s = skillScores[skill]
-    const avg = s.count > 0 ? Number((s.total / s.count).toFixed(1)) : s.default
+    const hasAttempts = s.count > 0
+    const avg = hasAttempts ? Number((s.total / s.count).toFixed(1)) : null
     return {
       skill,
       score: avg,
+      hasAttempts,
+      attemptsCount: s.count,
       target: s.target,
-      color: avg >= 7.5 ? '#059669' : avg >= 6.5 ? '#DC2626' : '#D97706',
-      bg: avg >= 7.5 ? '#D1FAE5' : avg >= 6.5 ? '#FEE2E2' : '#FEF3C7'
+      color: avg !== null ? (avg >= 7.5 ? '#059669' : avg >= 6.5 ? '#DC2626' : '#D97706') : '#94A3B8',
+      bg: avg !== null ? (avg >= 7.5 ? '#D1FAE5' : avg >= 6.5 ? '#FEE2E2' : '#FEF3C7') : '#F1F5F9'
     }
   })
 
-  const overallScore = Number((computedSkills.reduce((a, s) => a + s.score, 0) / 4).toFixed(1))
-  const targetScore = Number((computedSkills.reduce((a, s) => a + s.target, 0) / 4).toFixed(1))
+  const skillsWithAttempts = computedSkills.filter(s => s.hasAttempts)
+  const overallScore = skillsWithAttempts.length > 0
+    ? Number((skillsWithAttempts.reduce((a, s) => a + (s.score || 0), 0) / skillsWithAttempts.length).toFixed(1))
+    : 0
 
   // Recent activity formatted dynamically
-  const activities = results.slice(0, 5).map(r => {
+  const activities = userResults.slice(0, 5).map(r => {
     const timeAgo = formatTimeAgo(new Date(r.completedAt))
     let displayScore = '—'
     if (r.overallBand !== null) displayScore = `${r.overallBand}`
@@ -658,14 +669,26 @@ app.get('/api/dashboard/stats', (req, res) => {
     }
   })
 
-  // Dynamic recommendations based on weakest skill
-  const weakest = [...computedSkills].sort((a, b) => a.score - b.score)[0]
+  // Dynamic recommendations based on weakest or unassessed skill
+  const weakest = [...computedSkills].sort((a, b) => {
+    if (a.score === null && b.score !== null) return -1
+    if (a.score !== null && b.score === null) return 1
+    return (a.score || 0) - (b.score || 0)
+  })[0]
+
+  const weakestScoreText = typeof weakest?.score === 'number' ? `Band ${weakest.score.toFixed(1)}` : 'Unassessed'
+  const weakestTarget = typeof weakest?.target === 'number' ? weakest.target.toFixed(1) : '8.0'
+
   const recommendations = [
     {
-      title: `Focus on ${weakest.skill} (Current: Band ${weakest.score.toFixed(1)})`,
-      desc: `Your ${weakest.skill} band is currently below your target of ${weakest.target.toFixed(1)}. Dedicated practice sessions will yield the fastest overall band improvement.`,
+      title: weakest?.score !== null
+        ? `Focus on ${weakest.skill} (Current: ${weakestScoreText})`
+        : `Start Your ${weakest.skill} Diagnostic Practice`,
+      desc: weakest?.score !== null
+        ? `Your ${weakest.skill} band is currently below your target of ${weakestTarget}. Dedicated practice sessions will yield the fastest overall band improvement.`
+        : `Complete a ${weakest.skill} test to establish your baseline and measure progress toward your Band ${weakestTarget} target.`,
       priority: 'HIGH',
-      link: weakest.skill === 'Writing' ? '/writing' : '/practice'
+      link: weakest?.skill === 'Writing' ? '/writing' : '/practice'
     },
     {
       title: 'Expand Academic Vocabulary (AWL 1–4)',
@@ -684,7 +707,7 @@ app.get('/api/dashboard/stats', (req, res) => {
   res.json({
     skillScores: computedSkills,
     overallBand: overallScore,
-    targetBand: targetScore,
+    targetBand: userTarget,
     totalTestsCompleted: results.length,
     recentActivities: activities,
     recommendations,
@@ -893,13 +916,25 @@ app.post('/api/documents/generate', async (req, res) => {
   // Try generating with Puku.sh AI
   try {
     const aiGenerated = await generateDocumentWithPuku(documentType, {
-      fullName: candidate.name || details.fullName || details.name || 'Applicant',
-      degree: details.targetDegree || details.degree || details.program || 'Graduate Studies',
-      university: details.targetUniversity || details.university || details.institution || 'Target University',
-      background: details.academicBackground || details.background || '',
-      goals: details.careerGoals || details.goals || '',
-      researchInterest: details.researchInterests || details.researchInterest || details.interests || '',
-      experience: details.keyAchievements || details.workExperience || details.experience || ''
+      ...details,
+      fullName: details.name || candidate.name || details.fullName || 'Applicant',
+      name: details.name || candidate.name || details.fullName || 'Applicant',
+      email: details.email || candidate.email || '',
+      country: details.country || candidate.country || '',
+      ielts: details.ielts || candidate.targetBand || '',
+      degree: details.degree || details.targetDegree || details.program || details.background || '',
+      university: details.university || details.targetUniversity || details.institution || '',
+      skills: details.skills || '',
+      experience: details.experience || details.workExperience || details.keyAchievements || '',
+      background: details.background || details.academicBackground || '',
+      interests: details.interests || details.researchInterests || details.researchInterest || '',
+      goals: details.goals || details.careerGoals || '',
+      why: details.why || '',
+      motivation: details.motivation || '',
+      extra: details.extra || '',
+      position: details.position || '',
+      company: details.company || '',
+      tone: details.tone || 'Formal Academic'
     })
 
     if (aiGenerated && aiGenerated.trim().length > 100) {

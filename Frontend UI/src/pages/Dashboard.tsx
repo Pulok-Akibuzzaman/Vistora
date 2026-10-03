@@ -46,10 +46,10 @@ function BandArc({ score, target }: { score: number; target: number }) {
 }
 
 const DEFAULT_SKILLS = [
-  { skill: 'Reading', score: 7.0, target: 7.5, color: '#DC2626', bg: '#FEE2E2' },
-  { skill: 'Listening', score: 7.5, target: 8.0, color: '#059669', bg: '#D1FAE5' },
-  { skill: 'Writing', score: 6.5, target: 7.0, color: '#DC2626', bg: '#FEE2E2' },
-  { skill: 'Speaking', score: 7.0, target: 7.0, color: '#DC2626', bg: '#FEE2E2' },
+  { skill: 'Reading', score: null, hasAttempts: false, attemptsCount: 0, target: 8.0, color: '#94A3B8', bg: '#F1F5F9' },
+  { skill: 'Listening', score: null, hasAttempts: false, attemptsCount: 0, target: 8.0, color: '#94A3B8', bg: '#F1F5F9' },
+  { skill: 'Writing', score: null, hasAttempts: false, attemptsCount: 0, target: 8.0, color: '#94A3B8', bg: '#F1F5F9' },
+  { skill: 'Speaking', score: null, hasAttempts: false, attemptsCount: 0, target: 8.0, color: '#94A3B8', bg: '#F1F5F9' },
 ]
 
 export default function Dashboard() {
@@ -62,7 +62,7 @@ export default function Dashboard() {
 
   // Load live data from backend
   useEffect(() => {
-    fetchDashboardStats().then(data => {
+    fetchDashboardStats(user?.email).then(data => {
       if (data) setStats(data)
     }).catch(() => {})
 
@@ -72,7 +72,7 @@ export default function Dashboard() {
       setExamResults(results)
       if (results.length > 0) setSelectedResultId(results[0].id)
     }).catch(() => {})
-  }, [])
+  }, [user?.email])
 
   const addTask = async (event: FormEvent) => {
     event.preventDefault()
@@ -189,28 +189,81 @@ export default function Dashboard() {
             <span className="mono text-[10px] text-subtle">{examResults.length} test records evaluated</span>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-0 divide-x divide-y divide-divider-soft">
-            {skillScores.map(s => (
-              <div key={s.skill} className="p-6">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-sm font-semibold text-ink-2 plex">{s.skill}</span>
-                  <div className="flex items-center gap-2">
-                    <span className="mono text-xs text-subtle">Target: {s.target.toFixed(1)}</span>
-                    <span className="mono text-base font-bold" style={{ color: themeText(s.color) }}>Band {s.score.toFixed(1)}</span>
+            {skillScores.map(s => {
+              const hasScore = s.hasAttempts && typeof s.score === 'number' && s.score > 0
+              const scoreVal = hasScore ? (s.score as number) : 0
+              const linkPath = s.skill === 'Listening' ? '/practice'
+                             : s.skill === 'Reading' ? '/practice'
+                             : s.skill === 'Writing' ? '/writing'
+                             : '/results'
+              const linkAction = s.skill === 'Listening' ? 'Start listening test →'
+                               : s.skill === 'Reading' ? 'Start reading test →'
+                               : s.skill === 'Writing' ? 'Evaluate an essay →'
+                               : 'Take speaking interview →'
+
+              return (
+                <div key={s.skill} className="p-6 flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-semibold text-ink-2 plex">{s.skill}</span>
+                        {s.hasAttempts && s.attemptsCount ? (
+                          <span className="mono text-[9px] px-1.5 py-0.5 bg-paper text-subtle border border-divider-soft rounded">
+                            {s.attemptsCount} {s.attemptsCount === 1 ? 'record' : 'records'}
+                          </span>
+                        ) : null}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="mono text-xs text-subtle">Target: {s.target.toFixed(1)}</span>
+                        {hasScore ? (
+                          <span className="mono text-base font-bold" style={{ color: themeText(s.color) }}>
+                            Band {scoreVal.toFixed(1)}
+                          </span>
+                        ) : (
+                          <span className="mono text-[11px] text-subtle font-medium px-2 py-0.5 bg-surface-2 rounded border border-divider-soft">
+                            Unassessed
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="prog-bar mb-2">
+                      <div
+                        className="prog-bar-fill transition-all duration-500"
+                        style={{
+                          width: `${hasScore ? (scoreVal / 9) * 100 : 0}%`,
+                          background: hasScore ? s.color : '#E2E8F0'
+                        }}
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <div className="prog-bar flex-1 mr-2" style={{ height: 2 }}>
+                        <div
+                          className="h-full"
+                          style={{
+                            width: `${(s.target / 9) * 100}%`,
+                            background: themeBg('#E2E8F0'),
+                            borderRadius: 1
+                          }}
+                        />
+                      </div>
+                      <span className="text-[10px] text-subtle" style={{ fontFamily: 'Inter, sans-serif' }}>
+                        {hasScore ? (
+                          scoreVal < s.target
+                            ? `+${(s.target - scoreVal).toFixed(1)} needed`
+                            : 'Target met ✓'
+                        ) : (
+                          <NavLink to={linkPath} className="text-accent hover:underline font-medium">
+                            {linkAction}
+                          </NavLink>
+                        )}
+                      </span>
+                    </div>
                   </div>
                 </div>
-                <div className="prog-bar mb-2">
-                  <div className="prog-bar-fill" style={{ width: `${(s.score / 9) * 100}%`, background: s.color }} />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="prog-bar flex-1 mr-2" style={{ height: 2 }}>
-                    <div className="h-full" style={{ width: `${(s.target / 9) * 100}%`, background: themeBg('#E2E8F0'), borderRadius: 1 }} />
-                  </div>
-                  <span className="text-[10px] text-subtle" style={{ fontFamily: 'Inter, sans-serif' }}>
-                    {s.score < s.target ? `+${(s.target - s.score).toFixed(1)} needed` : 'Target met ✓'}
-                  </span>
-                </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </div>
       </div>
