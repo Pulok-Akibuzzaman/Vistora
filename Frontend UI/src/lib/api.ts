@@ -430,6 +430,56 @@ export async function generateDocumentApi(
   return { content: data.content, source: data.source }
 }
 
+export interface SpeakingCriterionFeedback {
+  band: number
+  feedback: string
+}
+
+export interface SpeakingSampleUpgrade {
+  original: string
+  improved: string
+  reason: string
+}
+
+export interface SpeakingEvaluationResult {
+  overallBand: number
+  wpm: number
+  criteria: {
+    fluencyCoherence: SpeakingCriterionFeedback
+    lexicalResource: SpeakingCriterionFeedback
+    grammaticalAccuracy: SpeakingCriterionFeedback
+    pronunciation: SpeakingCriterionFeedback
+  }
+  summary: string
+  strengths: string[]
+  improvements: string[]
+  sampleUpgrades?: SpeakingSampleUpgrade[]
+  source: string
+}
+
+export async function evaluateSpeakingApi(params: {
+  part?: number
+  title?: string
+  questions?: string[]
+  transcript: string
+  durationSeconds?: number
+  wordCount?: number
+  userId?: string
+  userName?: string
+  testTitle?: string
+}): Promise<SpeakingEvaluationResult> {
+  const res = await fetch(`${API_BASE}/speaking/evaluate`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(params),
+  })
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}))
+    throw new Error(err.error || 'Speaking evaluation failed')
+  }
+  return await res.json()
+}
+
 
 // --------------------------------------------------------------------------
 // Community Forum

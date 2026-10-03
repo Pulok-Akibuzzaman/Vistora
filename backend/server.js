@@ -5,7 +5,7 @@ import path from 'node:path'
 import { readData, saveData } from './storage.js'
 import { evaluateEssay } from './writingEvaluator.js'
 import { generateDocumentContent } from './documentGenerator.js'
-import { evaluateWritingWithPuku, generateDocumentWithPuku, PUKU_MODEL, PUKU_BASE_URL } from './pukuAi.js'
+import { evaluateWritingWithPuku, evaluateSpeakingWithPuku, evaluateSpeakingLocally, generateDocumentWithPuku, PUKU_MODEL, PUKU_BASE_URL } from './pukuAi.js'
 
 const app = express()
 const PORT = process.env.PORT || 5001
@@ -797,6 +797,77 @@ app.post('/api/writing/evaluate', async (req, res) => {
     ...localEval,
     aiEngine: 'Vistora Local NLP Engine (Rule-based)'
   })
+})
+
+/** Dynamic Speaking Evaluation with Puku.sh AI + Local Fallback */
+app.post('/api/speaking/evaluate', async (req, res) => {
+  const {
+    part = 1,
+    title = '',
+    questions = [],
+    transcript = '',
+    durationSeconds = 60,
+    wordCount = 0,
+    userId,
+    userName,
+    testTitle
+  } = req.body
+
+  if (!transcript || !transcript.trim()) {
+    return res.status(400).json({ error: 'Spoken transcript cannot be empty' })
+  }
+
+  let evalResult = null
+
+  // 1. Try Puku AI
+  try {
+    evalResult = await evaluateSpeakingWithPuku({
+      part,
+      title,
+      questions,
+      transcript,
+      durationSeconds,
+      wordCount
+    })
+  } catch (err) {
+    console.warn('[Puku AI Speaking Evaluation] Fallback to local rule engine:', err.message)
+  }
+
+  // 2. Fallback to local rule engine if AI is unavailable or failed
+  if (!evalResult) {
+    evalResult = evaluateSpeakingLocally({
+      part,
+      transcript,
+      durationSeconds,
+      wordCount
+    })
+  }
+
+  // 3. Auto-save result if testTitle provided
+  if (testTitle && evalResult.overallBand) {
+    try {
+      const results = readData('results.json')
+      const newResult = {
+        id: `s-${Date.now()}`,
+        userId: userId || 'USR-1048',
+        userName: userName || 'Candidate',
+        testTitle,
+        testType: 'Speaking',
+        completedAt: new Date().toISOString(),
+        overallBand: evalResult.overallBand,
+        skillBands: { Speaking: evalResult.overallBand },
+        userAnswers: { transcript, durationSeconds, wordCount },
+        comment: evalResult.summary || 'Speaking practice evaluated by AI.',
+        source: evalResult.source?.includes('puku') ? 'AI' : 'Automatic'
+      }
+      results.unshift(newResult)
+      saveData('results.json', results.slice(0, 100))
+    } catch (saveErr) {
+      console.warn('[Speaking Result Save Error]:', saveErr.message)
+    }
+  }
+
+  res.json(evalResult)
 })
 
 /** Dynamic Document Generation with Puku.sh AI + Local Fallback */

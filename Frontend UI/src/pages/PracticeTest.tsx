@@ -3,7 +3,7 @@ import { READING_ANSWERS, READING_PASSAGES } from '../data/readingTest1'
 import { LISTENING_ANSWERS } from '../data/listeningTest1'
 import FullTestResult from '../components/FullTestResult'
 import { saveExamResult } from '../lib/results'
-import { checkBackendHealth, getStreamUrl, saveExamResultApi, type BackendHealth } from '../lib/api'
+import { checkBackendHealth, getStreamUrl, saveExamResultApi, evaluateSpeakingApi, type BackendHealth, type SpeakingEvaluationResult } from '../lib/api'
 import { useAuth } from '../lib/authContext'
 import { themeText } from '../lib/theme'
 import { NavLink } from 'react-router'
@@ -858,60 +858,114 @@ type SpeakingExamProps = {
   timeLeft: number
   part?: number
   onRecording?: (part: number, recording: Blob) => void
+  onFinishSpeaking?: (data: {
+    recordings: Record<number, string>
+    transcripts: Record<number, string>
+    durations: Record<number, number>
+    blobs: Record<number, Blob>
+  }) => void
   onFinish: () => void
 }
 
-const SPEAKING_CONTENT = {
+type SpeakingTopic = {
+  title: string
+  questions: string[]
+}
+
+type SpeakingContentItem = {
+  label: string
+  title: string
+  intro: string
+  subheading?: string
+  topics?: SpeakingTopic[]
+  questions: string[]
+}
+
+const SPEAKING_CONTENT: Record<number, SpeakingContentItem> = {
   1: {
     label: 'Introduction and interview',
-    title: 'Hairstyles',
-    intro: 'The examiner asks you about yourself, your home, work or studies, and other familiar topics.',
+    title: 'Paying bills',
+    intro: 'The examiner asks you about yourself, your home, work or studies and other familiar topics.',
     questions: [
-      'Where do you go to get a haircut?',
-      'Have you changed your hairstyle recently?',
-      'Would you ever change the colour of your hair?',
-      'Do you enjoy going to the hairdresser or barber?',
+      'What kinds of bills do you have to pay?',
+      'How do you usually pay your bills – in cash or by another method? [Why?]',
+      'Have you ever forgotten to pay a bill? [Why/Why not?]',
+      'Is there anything you could do to make your bills cheaper? [Why/Why not?]',
     ],
   },
   2: {
     label: 'Individual long turn',
-    title: 'Describe a time when you used information for tourists, for example from a guidebook or online.',
-    intro: 'You have one minute to prepare. Then speak for one to two minutes.',
+    title: 'Describe some food or drink that you learned to prepare.',
+    intro: 'You will have to talk about the topic for one to two minutes. You have one minute to think about what you are going to say. You can make some notes to help you if you wish.',
+    subheading: 'You should say:',
     questions: [
-      'where you got this information',
-      'what place this information was about',
-      'what information you got',
-      'and explain whether this information was very helpful for you',
+      'what food or drink you learned to prepare',
+      'when and where you learned to prepare this',
+      'how you learned to prepare this',
+      'and explain how you felt about learning to prepare this food or drink.',
     ],
   },
   3: {
     label: 'Two-way discussion',
-    title: 'Different types of holidays and tourist attractions',
+    title: 'Discussion topics: Food and cooking',
     intro: 'Discuss the following questions in greater depth, giving reasons and examples.',
+    topics: [
+      {
+        title: 'Young people and cooking',
+        questions: [
+          'What kinds of things can children learn to cook?',
+          'Do you think it is important for children to learn to cook?',
+          'Do you think young people should learn to cook at home or at school?',
+        ],
+      },
+      {
+        title: 'Working as a chef',
+        questions: [
+          'How enjoyable do you think it would be to work as a professional chef?',
+          'What skills does a person need to be a great chef?',
+          'How much influence do celebrity/TV chefs have on what ordinary people cook?',
+        ],
+      },
+    ],
     questions: [
-      'What are the most popular kinds of holidays for people from your country?',
-      'Do most people prefer a holiday abroad rather than in their own country?',
-      'Why do some people want to do absolutely nothing when they go away on holiday?',
-      'What kinds of tourist attractions do visitors to your country like to see?',
-      'Should museums and similar attractions be free for local people?',
-      'What can make a tourist attraction disappointing for visitors?',
+      'What kinds of things can children learn to cook?',
+      'Do you think it is important for children to learn to cook?',
+      'Do you think young people should learn to cook at home or at school?',
+      'How enjoyable do you think it would be to work as a professional chef?',
+      'What skills does a person need to be a great chef?',
+      'How much influence do celebrity/TV chefs have on what ordinary people cook?',
     ],
   },
-} as const
+}
 
-function SpeakingExam({ currentPart, setCurrentPart, timeLeft, part, onRecording, onFinish }: SpeakingExamProps) {
+function SpeakingExam({ currentPart, setCurrentPart, timeLeft, part, onRecording, onFinishSpeaking, onFinish }: SpeakingExamProps) {
   const activePart = part ?? currentPart
-  const content = SPEAKING_CONTENT[activePart as keyof typeof SPEAKING_CONTENT]
+  const content = SPEAKING_CONTENT[activePart] ?? SPEAKING_CONTENT[1]
   const recorderRef = useRef<MediaRecorder | null>(null)
   const streamRef = useRef<MediaStream | null>(null)
   const chunksRef = useRef<Blob[]>([])
+  const recognitionRef = useRef<any>(null)
+  const blobsRef = useRef<Record<number, Blob>>({})
+
   const [recording, setRecording] = useState(false)
   const [recordingSeconds, setRecordingSeconds] = useState(0)
   const [recordings, setRecordings] = useState<Record<number, string>>({})
+  const [transcripts, setTranscripts] = useState<Record<number, string>>({})
+  const [durations, setDurations] = useState<Record<number, number>>({})
+  const [interimText, setInterimText] = useState('')
+  const [speechSupported, setSpeechSupported] = useState(true)
   const [microphoneError, setMicrophoneError] = useState('')
   const [prepLeft, setPrepLeft] = useState(0)
+
   const formatTime = (seconds: number) =>
     `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`
+
+  useEffect(() => {
+    const SpeechRec = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+    if (!SpeechRec) {
+      setSpeechSupported(false)
+    }
+  }, [])
 
   useEffect(() => {
     if (!recording) return
@@ -927,6 +981,9 @@ function SpeakingExam({ currentPart, setCurrentPart, timeLeft, part, onRecording
 
   useEffect(() => () => {
     streamRef.current?.getTracks().forEach(track => track.stop())
+    if (recognitionRef.current) {
+      try { recognitionRef.current.stop() } catch {}
+    }
     Object.values(recordings).forEach(url => URL.revokeObjectURL(url))
   }, [])
 
@@ -938,12 +995,15 @@ function SpeakingExam({ currentPart, setCurrentPart, timeLeft, part, onRecording
       streamRef.current = stream
       recorderRef.current = recorder
       chunksRef.current = []
+
       recorder.ondataavailable = event => {
         if (event.data.size) chunksRef.current.push(event.data)
       }
+
       recorder.onstop = () => {
         const blob = new Blob(chunksRef.current, { type: recorder.mimeType || 'audio/webm' })
         const url = URL.createObjectURL(blob)
+        blobsRef.current[activePart] = blob
         setRecordings(values => {
           if (values[activePart]) URL.revokeObjectURL(values[activePart])
           return { ...values, [activePart]: url }
@@ -951,17 +1011,81 @@ function SpeakingExam({ currentPart, setCurrentPart, timeLeft, part, onRecording
         onRecording?.(activePart, blob)
         stream.getTracks().forEach(track => track.stop())
       }
+
       setRecordingSeconds(0)
       recorder.start()
       setRecording(true)
+
+      // Start Web Speech Recognition
+      const SpeechRec = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+      if (SpeechRec) {
+        try {
+          const rec = new SpeechRec()
+          rec.continuous = true
+          rec.interimResults = true
+          rec.lang = 'en-US'
+
+          rec.onresult = (e: any) => {
+            let finalChunk = ''
+            let interimChunk = ''
+            for (let i = e.resultIndex; i < e.results.length; i++) {
+              const res = e.results[i]
+              if (res.isFinal) {
+                finalChunk += res[0].transcript + ' '
+              } else {
+                interimChunk += res[0].transcript
+              }
+            }
+            if (finalChunk) {
+              setTranscripts(prev => ({
+                ...prev,
+                [activePart]: (prev[activePart] ? prev[activePart].trim() + ' ' : '') + finalChunk.trim()
+              }))
+            }
+            setInterimText(interimChunk)
+          }
+
+          rec.onerror = (e: any) => {
+            console.warn('[SpeechRecognition]:', e.error)
+          }
+
+          rec.start()
+          recognitionRef.current = rec
+        } catch (recErr) {
+          console.warn('[SpeechRec init failed]:', recErr)
+        }
+      }
     } catch {
       setMicrophoneError('Microphone access was blocked. Allow microphone access in your browser and try again.')
     }
   }
 
   const stopRecording = () => {
-    recorderRef.current?.stop()
+    if (recorderRef.current && recorderRef.current.state !== 'inactive') {
+      recorderRef.current.stop()
+    }
+    if (recognitionRef.current) {
+      try { recognitionRef.current.stop() } catch {}
+      recognitionRef.current = null
+    }
+    setInterimText('')
     setRecording(false)
+    setDurations(prev => ({
+      ...prev,
+      [activePart]: Math.max(recordingSeconds, prev[activePart] || 0)
+    }))
+  }
+
+  const handleUploadAudio = (file?: File) => {
+    if (!file) return
+    const url = URL.createObjectURL(file)
+    blobsRef.current[activePart] = file
+    setRecordings(prev => {
+      if (prev[activePart]) URL.revokeObjectURL(prev[activePart])
+      return { ...prev, [activePart]: url }
+    })
+    onRecording?.(activePart, file)
+    setDurations(prev => ({ ...prev, [activePart]: 60 }))
   }
 
   const changePart = (nextPart: number) => {
@@ -969,6 +1093,21 @@ function SpeakingExam({ currentPart, setCurrentPart, timeLeft, part, onRecording
     setPrepLeft(0)
     setCurrentPart(nextPart)
   }
+
+  const handleFinishExam = () => {
+    if (recording) stopRecording()
+    onFinishSpeaking?.({
+      recordings,
+      transcripts,
+      durations,
+      blobs: blobsRef.current
+    })
+    onFinish()
+  }
+
+  const currentWords = (transcripts[activePart] || '').trim().split(/\s+/).filter(Boolean).length
+  const currentDuration = durations[activePart] || (recording ? recordingSeconds : 0)
+  const currentWpm = currentDuration > 0 ? Math.round((currentWords / currentDuration) * 60) : 0
 
   return (
     <main className="fixed inset-x-0 bottom-0 top-14 z-30 flex flex-col bg-paper">
@@ -979,7 +1118,7 @@ function SpeakingExam({ currentPart, setCurrentPart, timeLeft, part, onRecording
         </div>
         <div className="flex items-center gap-5">
           <div className="text-right"><div className={`font-mono text-sm font-semibold ${timeLeft < 60 ? 'text-accent' : 'text-ink'}`}>{formatTime(timeLeft)}</div><div className="font-mono text-xs uppercase text-graphite-light">Time left</div></div>
-          <button disabled={recording} onClick={onFinish} className="rounded-sm bg-navy px-4 py-2 font-plex text-xs font-semibold text-white disabled:opacity-40">Finish</button>
+          <button disabled={recording} onClick={handleFinishExam} className="rounded-sm bg-navy px-4 py-2 font-plex text-xs font-semibold text-white disabled:opacity-40">Finish</button>
         </div>
       </header>
 
@@ -993,14 +1132,42 @@ function SpeakingExam({ currentPart, setCurrentPart, timeLeft, part, onRecording
           <div className="font-mono text-xs uppercase tracking-widest text-accent">Speaking prompt</div>
           <h2 className="mt-3 font-plex text-xl font-bold leading-8 text-ink">{content.title}</h2>
           <p className="mt-3 border-l-2 border-electric-dim pl-4 font-plex text-sm leading-6 text-graphite-mid">{content.intro}</p>
-          <ul className="mt-6 space-y-3">
-            {content.questions.map((question, index) => (
-              <li key={question} className="flex gap-3 font-plex text-sm leading-6 text-ink">
-                <span className="font-mono text-xs font-semibold text-accent">{String(index + 1).padStart(2, '0')}</span>
-                <span>{activePart === 2 ? question : question}</span>
-              </li>
-            ))}
-          </ul>
+
+          {content.topics ? (
+            <div className="mt-6 space-y-6">
+              {content.topics.map((topicGroup, topicIdx) => (
+                <div key={topicGroup.title} className="rounded-sm border border-divider bg-paper-light/60 p-4">
+                  <h3 className="font-plex text-sm font-bold text-ink">{topicGroup.title}</h3>
+                  <div className="mt-1 font-plex text-xs italic text-graphite-mid">Example questions:</div>
+                  <ul className="mt-3 space-y-2.5">
+                    {topicGroup.questions.map((question, qIdx) => {
+                      const overallNum = topicIdx === 0 ? qIdx + 1 : qIdx + 1 + (content.topics?.[0]?.questions.length ?? 0)
+                      return (
+                        <li key={question} className="flex gap-3 font-plex text-sm leading-6 text-ink">
+                          <span className="font-mono text-xs font-semibold text-accent">{String(overallNum).padStart(2, '0')}</span>
+                          <span>{question}</span>
+                        </li>
+                      )
+                    })}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <>
+              {content.subheading && (
+                <p className="mt-6 font-plex text-sm font-semibold text-ink">{content.subheading}</p>
+              )}
+              <ul className={`${content.subheading ? 'mt-3' : 'mt-6'} space-y-3`}>
+                {content.questions.map((question, index) => (
+                  <li key={question} className="flex gap-3 font-plex text-sm leading-6 text-ink">
+                    <span className="font-mono text-xs font-semibold text-accent">{String(index + 1).padStart(2, '0')}</span>
+                    <span>{question}</span>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
           {activePart === 2 && (
             <div className="mt-7 border-t border-divider pt-5">
               <button disabled={prepLeft > 0 || recording} onClick={() => setPrepLeft(60)} className="rounded-sm border border-divider bg-surface px-4 py-2 font-plex text-sm font-semibold text-ink disabled:opacity-50">{prepLeft > 0 ? `Preparation: ${prepLeft}s` : 'Start 1-minute preparation'}</button>
@@ -1009,34 +1176,98 @@ function SpeakingExam({ currentPart, setCurrentPart, timeLeft, part, onRecording
           )}
         </section>
 
-        <aside className="theme-fixed border border-divider bg-navy p-6 text-white">
-          <div className="font-mono text-xs uppercase tracking-widest text-electric-light">Voice recorder</div>
-          <div className="mt-6 flex items-center gap-3">
-            <span className={`h-3 w-3 rounded-full ${recording ? 'animate-pulse bg-danger' : 'bg-navy-light'}`} />
-            <span className="font-plex text-sm font-semibold">{recording ? 'Recording in progress' : recordings[activePart] ? 'Response recorded' : 'Ready to record'}</span>
-          </div>
-          <div className="mt-3 font-mono text-3xl font-bold">{formatTime(recordingSeconds)}</div>
-          {recording ? (
-            <button onClick={stopRecording} className="mt-6 w-full rounded-sm bg-danger px-5 py-3 font-plex text-sm font-semibold text-white">Stop recording</button>
-          ) : (
-            <button onClick={startRecording} className="mt-6 w-full rounded-sm bg-electric px-5 py-3 font-plex text-sm font-semibold text-white">Start recording</button>
-          )}
-          {microphoneError && <p className="mt-4 border border-danger bg-danger/10 p-3 font-plex text-xs leading-5 text-white">{microphoneError}</p>}
-          {recordings[activePart] && !recording && (
-            <div className="mt-5 border-t border-navy-light pt-5">
-              <div className="mb-2 font-mono text-xs uppercase text-graphite-light">Playback</div>
-              <audio controls src={recordings[activePart]} className="w-full" />
-              <button onClick={startRecording} className="mt-3 font-plex text-xs text-electric-light hover:text-white">Record this part again</button>
+        <aside className="theme-fixed flex flex-col gap-4 border border-divider bg-navy p-6 text-white">
+          <div>
+            <div className="font-mono text-xs uppercase tracking-widest text-electric-light">Voice recorder · Part {activePart}</div>
+            <div className="mt-4 flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <span className={`h-3 w-3 rounded-full ${recording ? 'animate-pulse bg-danger' : recordings[activePart] ? 'bg-positive' : 'bg-navy-light'}`} />
+                <span className="font-plex text-xs font-semibold">{recording ? 'Recording audio...' : recordings[activePart] ? 'Response recorded' : 'Ready to record'}</span>
+              </div>
+              <div className="font-mono text-xs text-graphite-light">
+                {currentDuration > 0 ? `${currentDuration}s` : '0s'}
+              </div>
             </div>
-          )}
-          <p className="mt-5 font-plex text-xs leading-5 text-graphite-light">Record in a quiet room and speak naturally. Your recording remains in this browser session.</p>
+            <div className="mt-2 font-mono text-3xl font-bold">{formatTime(recording ? recordingSeconds : (durations[activePart] || 0))}</div>
+
+            {recording ? (
+              <button onClick={stopRecording} className="mt-4 w-full rounded-sm bg-danger px-4 py-2.5 font-plex text-xs font-bold uppercase tracking-wider text-white hover:bg-danger/90">■ Stop recording</button>
+            ) : (
+              <button onClick={startRecording} className="mt-4 w-full rounded-sm bg-electric px-4 py-2.5 font-plex text-xs font-bold uppercase tracking-wider text-white hover:bg-electric/90">● Start recording</button>
+            )}
+
+            {microphoneError && <p className="mt-3 border border-danger/40 bg-danger/20 p-2.5 font-plex text-xs leading-5 text-white">{microphoneError}</p>}
+
+            {recordings[activePart] && !recording && (
+              <div className="mt-4 border-t border-navy-light pt-3">
+                <div className="mb-1.5 flex items-center justify-between font-mono text-[11px] uppercase text-graphite-light">
+                  <span>Audio Playback</span>
+                  <span className="text-positive">✓ Captured</span>
+                </div>
+                <audio controls src={recordings[activePart]} className="w-full h-8" />
+                <button onClick={startRecording} className="mt-2 font-plex text-xs text-electric-light hover:text-white">Record this part again</button>
+              </div>
+            )}
+          </div>
+
+          {/* AI Voice Transcript & Speech-To-Text */}
+          <div className="mt-2 border-t border-navy-light pt-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-electric-light">
+                <span>AI Live Transcript</span>
+                {recording && (
+                  <span className="flex items-center gap-1 rounded-full bg-danger/20 px-2 py-0.5 text-[10px] text-danger animate-pulse">
+                    <span className="h-1.5 w-1.5 rounded-full bg-danger"></span>
+                    Transcribing
+                  </span>
+                )}
+              </div>
+              <div className="font-mono text-[11px] text-graphite-light">
+                {currentWords} words {currentWpm > 0 ? `· ${currentWpm} WPM` : ''}
+              </div>
+            </div>
+
+            <p className="mt-1 text-[11px] text-graphite-light font-plex">
+              {speechSupported
+                ? 'Your voice is transcribed automatically into text for Puku AI evaluation.'
+                : 'Microphone speech recognition is not supported in this browser. You can type or review your answer below:'}
+            </p>
+
+            <textarea
+              value={transcripts[activePart] || ''}
+              onChange={e => setTranscripts(prev => ({ ...prev, [activePart]: e.target.value }))}
+              placeholder={recording ? 'Listening... Speak into your microphone...' : 'Candidate speech transcript will appear here. You can also edit or paste words if needed.'}
+              rows={4}
+              className="mt-2 w-full rounded border border-navy-light bg-surface px-3 py-2 font-plex text-xs text-ink placeholder:text-graphite-light focus:border-electric focus:outline-none focus:ring-1 focus:ring-electric"
+            />
+
+            {interimText && (
+              <div className="mt-1.5 truncate font-plex text-xs italic text-electric-light animate-pulse">
+                Hearing: &ldquo;{interimText}&rdquo;
+              </div>
+            )}
+
+            <div className="mt-3 flex items-center justify-between text-[11px] text-graphite-light font-plex">
+              <span className="text-graphite-mid">Part {activePart} of 3</span>
+              <label className="cursor-pointer text-electric-light hover:text-white hover:underline">
+                <span>Upload audio file</span>
+                <input type="file" accept="audio/*" className="sr-only" onChange={e => handleUploadAudio(e.target.files?.[0])} />
+              </label>
+            </div>
+          </div>
         </aside>
       </div>
 
       <footer className="flex items-center justify-between border-t border-divider bg-surface px-4 py-3">
         <div className="flex gap-4">
           {(part ? [part] : [1, 2, 3]).map(partNumber => (
-            <button key={partNumber} onClick={() => changePart(partNumber)} className={`font-mono text-xs ${activePart === partNumber ? 'font-semibold text-accent' : 'text-graphite-mid'}`}>Part {partNumber} · {recordings[partNumber] ? 'recorded' : 'not started'}</button>
+            <button
+              key={partNumber}
+              onClick={() => changePart(partNumber)}
+              className={`font-mono text-xs ${activePart === partNumber ? 'font-semibold text-accent' : 'text-graphite-mid'}`}
+            >
+              Part {partNumber} · {recordings[partNumber] ? 'recorded' : (transcripts[partNumber]?.trim() ? 'transcribed' : 'not started')}
+            </button>
           ))}
         </div>
         <div className="flex gap-2">
@@ -1068,6 +1299,14 @@ export default function PracticeTest() {
   const [fullAttempt, setFullAttempt] = useState<FullTestAttempt>(emptyFullAttempt)
   const savedResultKey = useRef('')
   const [resultFilter, setResultFilter] = useState<'all' | 'incorrect' | 'correct'>('all')
+  const [speakingData, setSpeakingData] = useState<{
+    recordings: Record<number, string>
+    transcripts: Record<number, string>
+    durations: Record<number, number>
+  } | null>(null)
+  const [speakingEval, setSpeakingEval] = useState<SpeakingEvaluationResult | null>(null)
+  const [speakingLoading, setSpeakingLoading] = useState(false)
+  const [speakingError, setSpeakingError] = useState('')
 
   useEffect(() => {
     checkBackendHealth().then(status => {
@@ -1148,7 +1387,7 @@ export default function PracticeTest() {
   }
 
   useEffect(() => {
-    if (stage !== 'result' || selectedTest.type === 'Full Test') return
+    if (stage !== 'result' || selectedTest.type === 'Full Test' || selectedTest.type === 'Speaking') return
     const resultKey = `${selectedTest.id}-${timeLeft}`
     if (savedResultKey.current === resultKey) return
     savedResultKey.current = resultKey
@@ -1165,9 +1404,7 @@ export default function PracticeTest() {
       ? 'Review incorrect answers by section and practise predicting the required answer type before listening.'
       : selectedTest.type === 'Reading'
         ? 'Review passage evidence for missed questions and track which question types cause the most difficulty.'
-        : selectedTest.type === 'Writing'
-          ? 'Writing response submitted. Connect the Gemini evaluation endpoint for criterion-level comments and a band estimate.'
-          : 'Speaking practice submitted. Connect Gemini audio evaluation for transcript, pronunciation, and fluency comments.'
+        : 'Writing response submitted. Connect the Gemini evaluation endpoint for criterion-level comments and a band estimate.'
 
     const resultRecord = {
       id: `${selectedTest.id}-${Date.now()}`,
@@ -1188,6 +1425,74 @@ export default function PracticeTest() {
     saveExamResult(resultRecord as any)
     saveExamResultApi(resultRecord as any).catch(() => {})
   }, [listeningScore, readingScore, selectedTest, stage, timeLeft, user, answers])
+
+  const handleFinishSpeaking = async (data: {
+    recordings: Record<number, string>
+    transcripts: Record<number, string>
+    durations: Record<number, number>
+    blobs?: Record<number, Blob>
+  }) => {
+    setSpeakingData(data)
+    setStage('result')
+
+    const activePart = selectedTest.part
+    const partsToInclude = activePart ? [activePart] : [1, 2, 3]
+
+    const transcriptSegments = partsToInclude
+      .filter(p => data.transcripts[p]?.trim())
+      .map(p => `[Part ${p}]: ${data.transcripts[p].trim()}`)
+
+    const combinedTranscript = transcriptSegments.length > 0
+      ? transcriptSegments.join('\n\n')
+      : 'Candidate attempted speaking prompt.'
+
+    const totalDuration = partsToInclude.reduce((sum, p) => sum + (data.durations[p] || 0), 0) || 60
+
+    const allQuestions = activePart
+      ? (SPEAKING_CONTENT[activePart]?.questions || [])
+      : [1, 2, 3].flatMap(p => SPEAKING_CONTENT[p]?.questions || [])
+
+    setSpeakingLoading(true)
+    setSpeakingError('')
+
+    try {
+      const evalRes = await evaluateSpeakingApi({
+        part: activePart || 1,
+        title: selectedTest.title,
+        questions: allQuestions,
+        transcript: combinedTranscript,
+        durationSeconds: Math.max(15, totalDuration),
+        wordCount: combinedTranscript.split(/\s+/).filter(Boolean).length,
+        userId: user?.id || 'USR-1048',
+        userName: user?.name || 'Ayaan Rahman',
+        testTitle: selectedTest.title,
+      })
+      setSpeakingEval(evalRes)
+
+      // Save to results history
+      const record = {
+        id: `${selectedTest.id}-${Date.now()}`,
+        userId: user?.id || 'USR-1048',
+        userName: user?.name || 'Ayaan Rahman',
+        testTitle: selectedTest.title,
+        testType: 'Speaking',
+        completedAt: new Date().toISOString(),
+        overallBand: evalRes.overallBand,
+        skillBands: { Speaking: evalRes.overallBand },
+        correctAnswers: Math.round(evalRes.overallBand),
+        totalQuestions: 9,
+        userAnswers: { transcript: combinedTranscript, durationSeconds: totalDuration },
+        comment: evalRes.summary || 'Speaking practice evaluated by Puku AI.',
+        source: (evalRes.source?.includes('puku') ? 'AI' : 'Automatic') as any,
+      }
+      saveExamResult(record as any)
+      saveExamResultApi(record as any).catch(() => {})
+    } catch (err: any) {
+      setSpeakingError(err?.message || 'Failed to complete Speaking evaluation.')
+    } finally {
+      setSpeakingLoading(false)
+    }
+  }
 
   const advanceFullTest = () => {
     const currentIndex = FULL_TEST_ORDER.indexOf(fullModule)
@@ -1258,6 +1563,23 @@ export default function PracticeTest() {
     setAnswers({})
     setCurrentQ(1)
     setResultFilter('all')
+    setSpeakingData(null)
+    setSpeakingEval(null)
+    setSpeakingLoading(false)
+    setSpeakingError('')
+  }
+
+  const descriptorForSpeakingBand = (band: number) => {
+    if (band >= 8.5) return 'Expert User'
+    if (band >= 7.5) return 'Very Good User'
+    if (band >= 6.5) return 'Good User'
+    if (band >= 5.5) return 'Competent User'
+    if (band >= 4.5) return 'Modest User'
+    if (band >= 3.5) return 'Limited User'
+    if (band >= 2.5) return 'Extremely Limited User'
+    if (band >= 1.5) return 'Intermittent User'
+    if (band >= 0.5) return 'Non-User'
+    return 'Did Not Attempt / Off-Topic'
   }
 
   if (stage === 'result') {
@@ -1275,16 +1597,275 @@ export default function PracticeTest() {
     }
     if (selectedTest.type === 'Speaking') {
       return (
-        <main className="mx-auto max-w-4xl px-6 py-12">
-          <section className="corner-mark border border-divider bg-surface p-8">
-            <div className="label-tag mb-3">{selectedTest.title}</div>
-            <h1 className="font-plex text-3xl font-bold text-ink">Speaking practice complete</h1>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-graphite-mid">Speaking recordings are kept only for playback during the active browser session. A band score requires evaluation of fluency and coherence, lexical resource, grammatical range and accuracy, and pronunciation.</p>
-            <div className="mt-8 flex gap-3">
-              <button onClick={resetTest} className="rounded-card bg-electric px-6 py-3 font-plex text-sm font-semibold text-white">Return to test centre</button>
-              <button onClick={() => setStage('instructions')} className="rounded-card border border-divider px-6 py-3 font-plex text-sm font-semibold text-ink">Practice again</button>
+        <main className="mx-auto max-w-5xl px-6 py-12">
+          {speakingLoading && (
+            <div className="corner-mark border border-divider bg-surface p-12 text-center shadow-lg">
+              <div className="inline-flex h-20 w-20 items-center justify-center rounded-full bg-electric/10 text-electric mb-6 animate-pulse">
+                <svg className="w-10 h-10 animate-spin" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                </svg>
+              </div>
+              <div className="label-tag mb-2">PUKU AI 2.8 EXAMINER</div>
+              <h1 className="font-plex text-2xl font-bold text-ink">Evaluating Your Speaking Performance...</h1>
+              <p className="mt-3 text-sm text-graphite-mid max-w-lg mx-auto leading-relaxed">
+                Your spoken responses and audio transcripts are being analyzed across Fluency &amp; Coherence, Lexical Resource, Grammatical Range &amp; Accuracy, and Pronunciation against official IELTS standards.
+              </p>
+              <div className="mt-8 max-w-md mx-auto space-y-3 text-left">
+                <div className="flex items-center gap-3 text-xs font-plex text-graphite bg-surface-2 p-3 rounded border border-divider">
+                  <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-ping"></span>
+                  <span>Audio recordings &amp; transcribed responses verified</span>
+                </div>
+                <div className="flex items-center gap-3 text-xs font-plex text-graphite bg-surface-2 p-3 rounded border border-divider">
+                  <span className="h-2.5 w-2.5 rounded-full bg-electric animate-pulse"></span>
+                  <span>Measuring speech pace (Words Per Minute) &amp; coherence</span>
+                </div>
+                <div className="flex items-center gap-3 text-xs font-plex text-graphite bg-surface-2 p-3 rounded border border-divider">
+                  <span className="h-2.5 w-2.5 rounded-full bg-accent animate-pulse"></span>
+                  <span>Calculating official IELTS 9-band criteria breakdown</span>
+                </div>
+              </div>
             </div>
-          </section>
+          )}
+
+          {!speakingLoading && speakingError && (
+            <div className="corner-mark border border-danger/40 bg-surface p-8 text-center shadow">
+              <div className="label-tag text-danger mb-2">EVALUATION NOTICE</div>
+              <h2 className="font-plex text-2xl font-bold text-ink">Evaluation Could Not Complete</h2>
+              <p className="mt-2 text-sm text-danger max-w-lg mx-auto">{speakingError}</p>
+              <div className="mt-6 flex justify-center gap-3">
+                <button
+                  onClick={() => speakingData && handleFinishSpeaking(speakingData)}
+                  className="rounded-card bg-electric px-6 py-2.5 font-plex text-xs font-bold uppercase text-white hover:bg-electric/90"
+                >
+                  Retry Evaluation
+                </button>
+                <button
+                  onClick={resetTest}
+                  className="rounded-card border border-divider px-6 py-2.5 font-plex text-xs font-semibold text-ink hover:bg-surface-2"
+                >
+                  Back to Test Centre
+                </button>
+              </div>
+            </div>
+          )}
+
+          {!speakingLoading && speakingEval && (
+            <div className="space-y-8">
+              {/* Header Card */}
+              <section className="corner-mark border border-divider bg-surface p-8 shadow-sm">
+                <div className="flex flex-wrap items-center justify-between gap-4 border-b border-divider pb-6">
+                  <div>
+                    <div className="label-tag mb-1.5">{selectedTest.title}</div>
+                    <h1 className="font-plex text-3xl font-bold text-ink">Speaking Exam Result</h1>
+                    <p className="mt-1 font-plex text-xs text-graphite-mid">
+                      Assessed according to official British Council / IDP IELTS band descriptors
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <div className="text-right">
+                      <div className="font-mono text-xs uppercase tracking-wider text-graphite-light">Official Band</div>
+                      <div className="font-mono text-xs font-semibold text-accent">{descriptorForSpeakingBand(speakingEval.overallBand)}</div>
+                    </div>
+                    <div className={`flex h-20 w-24 flex-col items-center justify-center rounded border border-divider bg-surface-2 shadow-inner font-mono text-4xl font-extrabold ${
+                      speakingEval.overallBand >= 7.5 ? 'text-positive' : speakingEval.overallBand >= 6.0 ? 'text-accent' : speakingEval.overallBand >= 4.0 ? 'text-caution' : 'text-danger'
+                    }`}>
+                      {speakingEval.overallBand.toFixed(1)}
+                      <span className="font-mono text-[10px] uppercase font-normal text-graphite-mid">Overall Band</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Metrics bar */}
+                <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
+                  <div className="border border-divider bg-surface-2 p-3.5 rounded">
+                    <div className="font-mono text-[10px] uppercase tracking-wider text-graphite-light">Evaluation Engine</div>
+                    <div className="mt-1 font-plex text-xs font-bold text-ink truncate">{speakingEval.source}</div>
+                  </div>
+                  <div className="border border-divider bg-surface-2 p-3.5 rounded">
+                    <div className="font-mono text-[10px] uppercase tracking-wider text-graphite-light">Speech Pace</div>
+                    <div className="mt-1 font-mono text-base font-bold text-ink">{speakingEval.wpm} <span className="text-xs font-normal text-graphite-mid">WPM</span></div>
+                  </div>
+                  <div className="border border-divider bg-surface-2 p-3.5 rounded">
+                    <div className="font-mono text-[10px] uppercase tracking-wider text-graphite-light">Assessment Date</div>
+                    <div className="mt-1 font-plex text-xs font-bold text-ink">{new Date().toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</div>
+                  </div>
+                  <div className="border border-divider bg-surface-2 p-3.5 rounded">
+                    <div className="font-mono text-[10px] uppercase tracking-wider text-graphite-light">Status</div>
+                    <div className="mt-1 font-plex text-xs font-bold text-positive flex items-center gap-1.5">
+                      <span className="h-2 w-2 rounded-full bg-positive"></span>
+                      Verified &amp; Saved
+                    </div>
+                  </div>
+                </div>
+
+                {/* Summary */}
+                <div className="mt-6 rounded border border-divider bg-paper-light/50 p-4">
+                  <div className="font-mono text-xs uppercase tracking-wider text-accent mb-1">Examiner Assessment Summary</div>
+                  <p className="font-plex text-sm leading-6 text-graphite">{speakingEval.summary}</p>
+                </div>
+              </section>
+
+              {/* 4 IELTS Criteria Grid */}
+              <section className="grid gap-6 md:grid-cols-2">
+                {[
+                  {
+                    title: 'Fluency & Coherence',
+                    acronym: 'FC',
+                    crit: speakingEval.criteria.fluencyCoherence,
+                    desc: 'Speech rate, hesitation, continuity, and linking discourse markers'
+                  },
+                  {
+                    title: 'Lexical Resource',
+                    acronym: 'LR',
+                    crit: speakingEval.criteria.lexicalResource,
+                    desc: 'Range of vocabulary, precision, collocations, and idiomatic speech'
+                  },
+                  {
+                    title: 'Grammatical Range & Accuracy',
+                    acronym: 'GRA',
+                    crit: speakingEval.criteria.grammaticalAccuracy,
+                    desc: 'Complex sentences, grammatical variety, and error frequency'
+                  },
+                  {
+                    title: 'Pronunciation & Intonation',
+                    acronym: 'PR',
+                    crit: speakingEval.criteria.pronunciation,
+                    desc: 'Rhythm, natural sentence stress, clarity, and phonetic flow'
+                  }
+                ].map(item => (
+                  <div key={item.title} className="corner-mark border border-divider bg-surface p-6 shadow-sm flex flex-col justify-between">
+                    <div>
+                      <div className="flex items-center justify-between border-b border-divider pb-3">
+                        <div>
+                          <span className="font-mono text-xs text-accent font-semibold mr-2">{item.acronym}</span>
+                          <span className="font-plex text-sm font-bold text-ink">{item.title}</span>
+                          <div className="font-plex text-[11px] text-graphite-mid">{item.desc}</div>
+                        </div>
+                        <div className={`font-mono text-2xl font-bold px-3 py-1 rounded bg-surface-2 border border-divider ${
+                          item.crit.band >= 7.5 ? 'text-positive' : item.crit.band >= 6.0 ? 'text-accent' : item.crit.band >= 4.0 ? 'text-caution' : 'text-danger'
+                        }`}>
+                          {item.crit.band.toFixed(1)}
+                        </div>
+                      </div>
+                      <p className="mt-3.5 font-plex text-xs leading-5 text-graphite">{item.crit.feedback}</p>
+                    </div>
+                  </div>
+                ))}
+              </section>
+
+              {/* Strengths & Improvements */}
+              <section className="grid gap-6 md:grid-cols-2">
+                <div className="border border-divider bg-surface p-6 rounded shadow-sm">
+                  <div className="font-mono text-xs uppercase tracking-wider text-positive mb-3 flex items-center gap-2">
+                    <span className="h-2 w-2 rounded-full bg-positive"></span>
+                    Candidate Key Strengths
+                  </div>
+                  <ul className="space-y-2.5">
+                    {speakingEval.strengths.map((str, idx) => (
+                      <li key={idx} className="flex gap-2.5 text-xs font-plex leading-5 text-graphite">
+                        <span className="text-positive font-bold">✓</span>
+                        <span>{str}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div className="border border-divider bg-surface p-6 rounded shadow-sm">
+                  <div className="font-mono text-xs uppercase tracking-wider text-caution mb-3 flex items-center gap-2">
+                    <span className="h-2 w-2 rounded-full bg-caution"></span>
+                    Recommendations to Reach Next Band
+                  </div>
+                  <ul className="space-y-2.5">
+                    {speakingEval.improvements.map((imp, idx) => (
+                      <li key={idx} className="flex gap-2.5 text-xs font-plex leading-5 text-graphite">
+                        <span className="text-caution font-bold">→</span>
+                        <span>{imp}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </section>
+
+              {/* Sample Upgrades if provided */}
+              {speakingEval.sampleUpgrades && speakingEval.sampleUpgrades.length > 0 && (
+                <section className="border border-divider bg-surface p-6 rounded shadow-sm">
+                  <div className="font-mono text-xs uppercase tracking-wider text-accent mb-4">
+                    Sample Band 8+ Vocabulary &amp; Phrasing Upgrades
+                  </div>
+                  <div className="space-y-3">
+                    {speakingEval.sampleUpgrades.map((item, idx) => (
+                      <div key={idx} className="border border-divider bg-surface-2 p-3.5 rounded text-xs font-plex">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="font-mono text-[10px] uppercase text-graphite-mid">Original:</span>
+                          <span className="italic text-ink line-through opacity-80">&ldquo;{item.original}&rdquo;</span>
+                          <span className="font-mono text-[10px] uppercase text-positive font-bold ml-2">Band 8+ Alternative:</span>
+                          <span className="font-semibold text-positive">&ldquo;{item.improved}&rdquo;</span>
+                        </div>
+                        <div className="mt-1.5 text-graphite-mid text-[11px]">
+                          <strong>Why:</strong> {item.reason}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {/* Recorded Audio Playback & Transcripts per Part */}
+              {speakingData && (
+                <section className="border border-divider bg-surface p-6 rounded shadow-sm">
+                  <div className="font-mono text-xs uppercase tracking-wider text-accent mb-4">
+                    Recorded Audio &amp; Candidate Transcripts
+                  </div>
+                  <div className="space-y-4">
+                    {(selectedTest.part ? [selectedTest.part] : [1, 2, 3]).map(p => (
+                      <div key={p} className="border border-divider bg-paper-light/50 p-4 rounded">
+                        <div className="flex flex-wrap items-center justify-between gap-3 mb-2">
+                          <span className="font-plex text-xs font-bold text-ink">Speaking Part {p}</span>
+                          {speakingData.recordings[p] && (
+                            <audio controls src={speakingData.recordings[p]} className="h-8 max-w-xs" />
+                          )}
+                        </div>
+                        <div className="mt-2 font-plex text-xs leading-relaxed text-graphite bg-surface p-3 rounded border border-divider">
+                          {speakingData.transcripts[p]?.trim() || (
+                            <span className="italic text-graphite-mid">No transcript recorded for this part.</span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {/* Actions Footer */}
+              <div className="flex flex-wrap gap-4 pt-4 border-t border-divider">
+                <button
+                  onClick={resetTest}
+                  className="rounded-card bg-electric px-6 py-3 font-plex text-sm font-semibold text-white hover:bg-electric/90"
+                >
+                  Return to Test Centre
+                </button>
+                <button
+                  onClick={() => setStage('instructions')}
+                  className="rounded-card border border-divider px-6 py-3 font-plex text-sm font-semibold text-ink hover:bg-surface-2"
+                >
+                  Practice Speaking Again
+                </button>
+              </div>
+            </div>
+          )}
+
+          {!speakingLoading && !speakingEval && !speakingError && (
+            <section className="corner-mark border border-divider bg-surface p-8">
+              <div className="label-tag mb-3">{selectedTest.title}</div>
+              <h1 className="font-plex text-3xl font-bold text-ink">Speaking practice complete</h1>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-graphite-mid">Speaking response captured. Ready for evaluation.</p>
+              <div className="mt-8 flex gap-3">
+                <button onClick={resetTest} className="rounded-card bg-electric px-6 py-3 font-plex text-sm font-semibold text-white">Return to test centre</button>
+                <button onClick={() => setStage('instructions')} className="rounded-card border border-divider px-6 py-3 font-plex text-sm font-semibold text-ink">Practice again</button>
+              </div>
+            </section>
+          )}
         </main>
       )
     }
@@ -1569,7 +2150,22 @@ export default function PracticeTest() {
       if (fullModule === 'Writing') {
         return <WritingExam answers={answers} setAnswers={setAnswers} currentTask={currentQ} setCurrentTask={setCurrentQ} timeLeft={timeLeft} onFinish={advanceFullTest} />
       }
-      return <SpeakingExam currentPart={currentQ} setCurrentPart={setCurrentQ} timeLeft={timeLeft} onRecording={(part, recording) => setFullAttempt(current => ({ ...current, speaking: { ...current.speaking, [part]: recording } }))} onFinish={advanceFullTest} />
+      return (
+        <SpeakingExam
+          currentPart={currentQ}
+          setCurrentPart={setCurrentQ}
+          timeLeft={timeLeft}
+          onRecording={(part, recording) => setFullAttempt(current => ({ ...current, speaking: { ...current.speaking, [part]: recording } }))}
+          onFinishSpeaking={data => {
+            setFullAttempt(current => ({
+              ...current,
+              speaking: data.blobs,
+              speakingTranscripts: data.transcripts,
+            }))
+          }}
+          onFinish={advanceFullTest}
+        />
+      )
     }
     if (selectedTest.type === 'Speaking') {
       return (
@@ -1578,6 +2174,7 @@ export default function PracticeTest() {
           setCurrentPart={setCurrentQ}
           timeLeft={timeLeft}
           part={selectedTest.part}
+          onFinishSpeaking={handleFinishSpeaking}
           onFinish={() => setStage('result')}
         />
       )

@@ -10,6 +10,7 @@
     "format": "oxfmt"
   },
   "dependencies": {
+    "cse412-ielts-project": "file:..",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-router": "^8.4.0"

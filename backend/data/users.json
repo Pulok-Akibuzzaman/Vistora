@@ -87,12 +87,13 @@
     "country": "Bangladesh",
     "role": "Student",
     "status": "Active",
-    "targetBand": 7.5,
-    "currentBand": 6.5,
+    "targetBand": 6,
+    "currentBand": 3.5,
     "institution": "East West University",
     "bio": "IELTS candidate preparing for international academic opportunities.",
     "lastActive": "Just now",
-    "createdAt": "2026-09-26T18:25:08.209Z"
+    "createdAt": "2026-09-26T18:25:08.209Z",
+    "phone": ""
   },
   {
     "id": "USR-5603",

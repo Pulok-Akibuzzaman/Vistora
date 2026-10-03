@@ -1,183 +1,80 @@
 [
   {
-    "id": "l1-1790928521062",
-    "userId": "USR-1048",
-    "userName": "Ayaan Rahman",
-    "testTitle": "IELTS 18 — Listening Test 1 (Full 4 Parts)",
-    "testType": "Listening",
-    "completedAt": "2026-10-02T08:08:41.062Z",
-    "overallBand": 1.5,
+    "id": "s1-p1-1791041459626",
+    "userId": "USR-8209",
+    "userName": "Pulok519",
+    "testTitle": "IELTS 18 — Speaking Test 1 · Part 1",
+    "testType": "Speaking",
+    "completedAt": "2026-10-03T15:30:59.626Z",
+    "overallBand": 1,
     "skillBands": {
-      "Listening": 1.5
+      "Speaking": 1
     },
-    "correctAnswers": 2,
-    "totalQuestions": 40,
+    "correctAnswers": 1,
+    "totalQuestions": 9,
     "userAnswers": {
-      "21": "A",
-      "22": "D",
-      "23": "A",
-      "24": "B",
-      "25": "A",
-      "26": "B",
-      "27": "A",
-      "28": "B",
-      "29": "F",
-      "30": "C",
-      "31": "fdf",
-      "36": "gfgfg"
+      "transcript": "[Part 1]: Hello, 123 mic testing. Hello. 12. 456789101112131415161718192021. I'm checking. IELTS exam checking. Pte exam checking. GRE exam checking. English speaking exam checking. A speaking test Practice exam checking.",
+      "durationSeconds": 43
     },
-    "comment": "Review incorrect answers by section and practise predicting the required answer type before listening.",
-    "source": "Automatic"
+    "comment": "The candidate produced a microphone check rather than answering the IELTS questions. Under official IELTS criteria, no assessable language was provided, resulting in Band 1.0.",
+    "source": "AI"
   },
   {
-    "id": "r1-p3-1790603147944",
-    "userId": "USR-5603",
-    "userName": "Nusrat Rahman",
-    "testTitle": "IELTS 18 — Reading Test 1 · Part 3",
-    "testType": "Reading",
-    "completedAt": "2026-09-28T13:45:47.944Z",
-    "overallBand": 9,
+    "id": "s-1791041459623",
+    "userId": "USR-8209",
+    "userName": "Pulok519",
+    "testTitle": "IELTS 18 — Speaking Test 1 · Part 1",
+    "testType": "Speaking",
+    "completedAt": "2026-10-03T15:30:59.623Z",
+    "overallBand": 1,
     "skillBands": {
-      "Reading": 9
+      "Speaking": 1
     },
-    "correctAnswers": 14,
-    "totalQuestions": 14,
     "userAnswers": {
-      "27": "C",
-      "28": "F",
-      "29": "A",
-      "30": "E",
-      "31": "B",
-      "32": "sustainability",
-      "33": "fuel",
-      "34": "explosions",
-      "35": "bankrupt",
-      "36": "C",
-      "37": "D",
-      "38": "B",
-      "39": "D",
-      "40": "A"
+      "transcript": "[Part 1]: Hello, 123 mic testing. Hello. 12. 456789101112131415161718192021. I'm checking. IELTS exam checking. Pte exam checking. GRE exam checking. English speaking exam checking. A speaking test Practice exam checking.",
+      "durationSeconds": 43,
+      "wordCount": 30
     },
-    "comment": "Review passage evidence for missed questions and track which question types cause the most difficulty.",
-    "source": "Automatic"
+    "comment": "The candidate produced a microphone check rather than answering the IELTS questions. Under official IELTS criteria, no assessable language was provided, resulting in Band 1.0.",
+    "source": "AI"
   },
   {
-    "id": "r1-p2-1790602485305",
-    "userId": "USR-5603",
-    "userName": "Nusrat Rahman",
-    "testTitle": "IELTS 18 — Reading Test 1 · Part 2",
-    "testType": "Reading",
-    "completedAt": "2026-09-28T13:34:45.305Z",
-    "overallBand": 8.5,
+    "id": "s1-p1-1791040983896",
+    "userId": "USR-8209",
+    "userName": "Pulok519",
+    "testTitle": "IELTS 18 — Speaking Test 1 · Part 1",
+    "testType": "Speaking",
+    "completedAt": "2026-10-03T15:23:03.896Z",
+    "overallBand": 6,
     "skillBands": {
-      "Reading": 8.5
+      "Speaking": 6
     },
-    "correctAnswers": 12,
-    "totalQuestions": 13,
+    "correctAnswers": 6,
+    "totalQuestions": 9,
     "userAnswers": {
-      "14": "B",
-      "15": "A",
-      "16": "C",
-      "17": "E",
-      "18": "B",
-      "19": "B",
-      "20": "C",
-      "21": "C",
-      "22": "fire",
-      "23": "nutrients",
-      "24": "cavities",
-      "25": "a",
-      "26": "rare"
+      "transcript": "[Part 1]: Hello 123 mic testing. Hello 123 mic testing.",
+      "durationSeconds": 7
     },
-    "comment": "Review passage evidence for missed questions and track which question types cause the most difficulty.",
-    "source": "Automatic"
+    "comment": "The response is a mic check rather than an answer to any of the four IELTS Part 1 questions about bills. No content, vocabulary, grammar, or fluency is demonstrated. This response would receive a band 0 under the IELTS speaking scale, as the candidate made no attempt to address the prompt.",
+    "source": "AI"
   },
   {
-    "id": "r1-p1-1790601180797",
-    "userId": "USR-5603",
-    "userName": "Nusrat Rahman",
-    "testTitle": "IELTS 18 — Reading Test 1 · Part 1",
-    "testType": "Reading",
-    "completedAt": "2026-09-28T13:13:00.797Z",
-    "overallBand": 3,
+    "id": "s-1791040983893",
+    "userId": "USR-8209",
+    "userName": "Pulok519",
+    "testTitle": "IELTS 18 — Speaking Test 1 · Part 1",
+    "testType": "Speaking",
+    "completedAt": "2026-10-03T15:23:03.893Z",
+    "overallBand": 6,
     "skillBands": {
-      "Reading": 3
+      "Speaking": 6
     },
-    "correctAnswers": 2,
-    "totalQuestions": 13,
     "userAnswers": {
-      "1": "a",
-      "2": "b",
-      "3": "c",
-      "4": "d",
-      "5": "e",
-      "6": "f",
-      "7": "g",
-      "8": "TRUE",
-      "9": "FALSE",
-      "10": "NOT GIVEN",
-      "11": "FALSE",
-      "12": "TRUE",
-      "13": "NOT GIVEN"
+      "transcript": "[Part 1]: Hello 123 mic testing. Hello 123 mic testing.",
+      "durationSeconds": 15,
+      "wordCount": 10
     },
-    "comment": "Review passage evidence for missed questions and track which question types cause the most difficulty.",
-    "source": "Automatic"
-  },
-  {
-    "id": "r1-p1-1790599394562",
-    "userId": "USR-5603",
-    "userName": "Nusrat Rahman",
-    "testTitle": "IELTS 18 — Reading Test 1 · Part 1",
-    "testType": "Reading",
-    "completedAt": "2026-09-28T12:43:14.562Z",
-    "overallBand": 8.5,
-    "skillBands": {
-      "Reading": 8.5
-    },
-    "correctAnswers": 12,
-    "totalQuestions": 13,
-    "userAnswers": {
-      "1": "lettuces",
-      "2": "1000 kg",
-      "3": "consumption",
-      "4": "pesticides",
-      "5": "journeys",
-      "6": "producers",
-      "7": "flavor",
-      "8": "TRUE",
-      "9": "NOT GIVEN",
-      "10": "FALSE",
-      "11": "TRUE",
-      "12": "FALSE",
-      "13": "FALSE"
-    },
-    "comment": "Review passage evidence for missed questions and track which question types cause the most difficulty.",
-    "source": "Automatic"
-  },
-  {
-    "id": "l1-p1-1790524348990",
-    "userId": "USR-5603",
-    "userName": "Nusrat Rahman",
-    "testTitle": "IELTS 18 — Listening Test 1 · Part 1",
-    "testType": "Listening",
-    "completedAt": "2026-09-27T15:52:28.990Z",
-    "overallBand": 0,
-    "skillBands": {},
-    "correctAnswers": 0,
-    "totalQuestions": 10,
-    "userAnswers": {
-      "1": "DW30 7YZ",
-      "2": "abc",
-      "3": "abc",
-      "4": "xyz",
-      "5": "xyz",
-      "6": "123",
-      "7": "123",
-      "8": "abc",
-      "9": "abc",
-      "10": "abc"
-    },
-    "comment": "Review incorrect answers by section and practise predicting the required answer type before listening.",
-    "source": "Automatic"
+    "comment": "The response is a mic check rather than an answer to any of the four IELTS Part 1 questions about bills. No content, vocabulary, grammar, or fluency is demonstrated. This response would receive a band 0 under the IELTS speaking scale, as the candidate made no attempt to address the prompt.",
+    "source": "AI"
   }
 ]
