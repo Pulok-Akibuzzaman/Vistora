@@ -128,5 +128,24 @@
     "bio": "Dedicated learner preparing for IELTS Academic targeting Band 8 for United Kingdom.",
     "lastActive": "Just now",
     "createdAt": "2026-10-03T15:54:08.682Z"
+  },
+  {
+    "id": "USR-4391",
+    "name": "Aurna",
+    "email": "aurna@gmail.com",
+    "password": "123456",
+    "country": "Bangladesh",
+    "role": "Student",
+    "status": "Active",
+    "targetBand": 7,
+    "currentBand": 6,
+    "examModule": "Academic",
+    "targetTimeline": "1–3 months",
+    "targetCountry": "Germany",
+    "primaryFocus": "All Skills",
+    "institution": "East West University",
+    "bio": "Dedicated learner preparing for IELTS Academic targeting Band 7 for Germany.",
+    "lastActive": "Just now",
+    "createdAt": "2026-10-04T14:33:44.391Z"
   }
 ]

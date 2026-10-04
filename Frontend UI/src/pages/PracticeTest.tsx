@@ -1408,8 +1408,9 @@ export default function PracticeTest() {
 
     const resultRecord = {
       id: `${selectedTest.id}-${Date.now()}`,
-      userId: user?.id || 'USR-1048',
-      userName: user?.name || 'Ayaan Rahman',
+      userId: user?.id || '',
+      userName: user?.name || 'Student',
+      userEmail: user?.email || '',
       testTitle: selectedTest.title,
       testType: selectedTest.type,
       completedAt: new Date().toISOString(),
@@ -1422,7 +1423,7 @@ export default function PracticeTest() {
       source: (isObjective ? 'Automatic' : 'Pending AI') as any,
     }
 
-    saveExamResult(resultRecord as any)
+    saveExamResult(resultRecord as any, user?.email)
     saveExamResultApi(resultRecord as any).catch(() => {})
   }, [listeningScore, readingScore, selectedTest, stage, timeLeft, user, answers])
 
@@ -1472,8 +1473,9 @@ export default function PracticeTest() {
       // Save to local results cache
       const record = {
         id: `${selectedTest.id}-${Date.now()}`,
-        userId: user?.id || 'USR-1048',
-        userName: user?.name || 'Ayaan Rahman',
+        userId: user?.id || '',
+        userName: user?.name || 'Student',
+        userEmail: user?.email || '',
         testTitle: selectedTest.title,
         testType: 'Speaking',
         completedAt: new Date().toISOString(),
@@ -1483,7 +1485,8 @@ export default function PracticeTest() {
         comment: evalRes.summary || 'Speaking practice evaluated by Puku AI.',
         source: (evalRes.source?.includes('puku') ? 'AI' : 'Automatic') as any,
       }
-      saveExamResult(record as any)
+      saveExamResult(record as any, user?.email)
+      saveExamResultApi(record as any).catch(() => {})
     } catch (err: any) {
       setSpeakingError(err?.message || 'Failed to complete Speaking evaluation.')
     } finally {

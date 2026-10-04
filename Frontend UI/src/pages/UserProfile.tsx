@@ -18,8 +18,8 @@ export default function UserProfile() {
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
-    fetchResults().then(setResults).catch(() => {})
-  }, [])
+    fetchResults(user?.email, user?.id).then(setResults).catch(() => {})
+  }, [user?.email, user?.id])
 
   useEffect(() => {
     if (user) {

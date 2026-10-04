@@ -1,5 +1,8 @@
 export type StoredExamResult = {
   id: string
+  userId?: string
+  userName?: string
+  userEmail?: string
   testTitle: string
   testType: 'Full Test' | 'Reading' | 'Listening' | 'Writing' | 'Speaking'
   completedAt: string
@@ -13,32 +16,21 @@ export type StoredExamResult = {
 
 const STORAGE_KEY = 'vistora-exam-results'
 
-const DEFAULT_RESULTS: StoredExamResult[] = [
-  {
-    id: 'demo-full-1',
-    testTitle: 'IELTS 21 — Complete Academic Test 1',
-    testType: 'Full Test',
-    completedAt: '2026-09-22T10:30:00.000Z',
-    overallBand: 6.5,
-    skillBands: { Listening: 7.5, Reading: 6.5, Writing: 6, Speaking: 6.5 },
-    comment: 'A competent overall performance. Listening is the strongest skill; Writing needs more precise development and grammatical control.',
-    source: 'AI',
-  },
-  {
-    id: 'demo-reading-1',
-    testTitle: 'IELTS 21 — Reading Test 1 · Part 1',
-    testType: 'Reading',
-    completedAt: '2026-09-20T08:15:00.000Z',
-    overallBand: 7,
-    correctAnswers: 10,
-    totalQuestions: 13,
-    comment: 'Strong factual scanning. Review the distinction between FALSE and NOT GIVEN.',
-    source: 'Automatic',
-  },
-]
+const DEFAULT_RESULTS: StoredExamResult[] = []
 
-export function getExamResults(): StoredExamResult[] {
+export function getExamResults(userEmail?: string): StoredExamResult[] {
   try {
+    if (userEmail) {
+      const userStored = window.localStorage.getItem(`${STORAGE_KEY}_${userEmail}`)
+      if (userStored) return JSON.parse(userStored)
+      // Check global storage filtered strictly by userEmail
+      const globalStored = window.localStorage.getItem(STORAGE_KEY)
+      if (globalStored) {
+        const list: StoredExamResult[] = JSON.parse(globalStored)
+        return list.filter(r => r.userEmail && r.userEmail.toLowerCase() === userEmail.toLowerCase())
+      }
+      return []
+    }
     const stored = window.localStorage.getItem(STORAGE_KEY)
     return stored ? JSON.parse(stored) : DEFAULT_RESULTS
   } catch {
@@ -46,7 +38,17 @@ export function getExamResults(): StoredExamResult[] {
   }
 }
 
-export function saveExamResult(result: StoredExamResult) {
-  const results = getExamResults().filter(item => item.id !== result.id)
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify([result, ...results].slice(0, 30)))
+export function saveExamResult(result: StoredExamResult, userEmail?: string) {
+  const email = result.userEmail || userEmail
+  if (email) {
+    const userKey = `${STORAGE_KEY}_${email}`
+    const userResults = getExamResults(email).filter(item => item.id !== result.id)
+    window.localStorage.setItem(userKey, JSON.stringify([result, ...userResults].slice(0, 50)))
+  }
+  try {
+    const globalRaw = window.localStorage.getItem(STORAGE_KEY)
+    const globalResults: StoredExamResult[] = globalRaw ? JSON.parse(globalRaw) : []
+    const updated = [result, ...globalResults.filter(item => item.id !== result.id)].slice(0, 100)
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(updated))
+  } catch {}
 }

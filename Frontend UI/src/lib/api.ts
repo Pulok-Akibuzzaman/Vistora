@@ -79,6 +79,7 @@ export interface StoredExamResult {
   id: string
   userId?: string
   userName?: string
+  userEmail?: string
   testTitle: string
   testType: 'Full Test' | 'Reading' | 'Listening' | 'Writing' | 'Speaking'
   completedAt: string
@@ -329,10 +330,14 @@ export async function toggleUserStatus(id: string): Promise<UserProfile> {
 // Exam Results & Dashboard Analytics
 // --------------------------------------------------------------------------
 
-export async function fetchResults(): Promise<StoredExamResult[]> {
+export async function fetchResults(email?: string, userId?: string): Promise<StoredExamResult[]> {
   let backendResults: StoredExamResult[] = []
   try {
-    const res = await fetch(`${API_BASE}/results`)
+    const params = new URLSearchParams()
+    if (email) params.append('email', email)
+    if (userId) params.append('userId', userId)
+    const queryString = params.toString() ? `?${params.toString()}` : ''
+    const res = await fetch(`${API_BASE}/results${queryString}`)
     if (res.ok) {
       const data = await res.json()
       backendResults = data.results || []
@@ -340,8 +345,31 @@ export async function fetchResults(): Promise<StoredExamResult[]> {
   } catch {}
 
   try {
-    const raw = window.localStorage.getItem('vistora-exam-results')
-    const local: StoredExamResult[] = raw ? JSON.parse(raw) : []
+    let local: StoredExamResult[] = []
+    if (email) {
+      const userKey = `vistora-exam-results_${email}`
+      const rawUser = window.localStorage.getItem(userKey)
+      if (rawUser) {
+        local = JSON.parse(rawUser)
+      } else {
+        const globalRaw = window.localStorage.getItem('vistora-exam-results')
+        if (globalRaw) {
+          const allLocal: StoredExamResult[] = JSON.parse(globalRaw)
+          local = allLocal.filter(r => (r.userEmail && r.userEmail.toLowerCase() === email.toLowerCase()) || (userId && r.userId === userId))
+        }
+      }
+    } else {
+      const raw = window.localStorage.getItem('vistora-exam-results')
+      local = raw ? JSON.parse(raw) : []
+    }
+
+    if (email) {
+      backendResults = backendResults.filter(r => 
+        (r.userEmail && r.userEmail.toLowerCase() === email.toLowerCase()) || 
+        (userId && r.userId === userId)
+      )
+    }
+
     const seen = new Set(backendResults.map(r => r.id))
     const combined = [...backendResults]
     for (const item of local) {
@@ -357,6 +385,17 @@ export async function fetchResults(): Promise<StoredExamResult[]> {
 }
 
 export async function saveExamResultApi(result: StoredExamResult): Promise<StoredExamResult> {
+  // Save to user-scoped local storage immediately
+  if (result.userEmail) {
+    try {
+      const userKey = `vistora-exam-results_${result.userEmail}`
+      const raw = window.localStorage.getItem(userKey)
+      const list: StoredExamResult[] = raw ? JSON.parse(raw) : []
+      const updated = [result, ...list.filter(r => r.id !== result.id)].slice(0, 50)
+      window.localStorage.setItem(userKey, JSON.stringify(updated))
+    } catch {}
+  }
+
   try {
     const res = await fetch(`${API_BASE}/results`, {
       method: 'POST',
@@ -371,9 +410,17 @@ export async function saveExamResultApi(result: StoredExamResult): Promise<Store
   return result
 }
 
-export async function deleteExamResultApi(id: string): Promise<boolean> {
+export async function deleteExamResultApi(id: string, userEmail?: string): Promise<boolean> {
   // 1. Remove from local storage cache immediately
   try {
+    if (userEmail) {
+      const userKey = `vistora-exam-results_${userEmail}`
+      const rawUser = window.localStorage.getItem(userKey)
+      if (rawUser) {
+        const local: StoredExamResult[] = JSON.parse(rawUser)
+        window.localStorage.setItem(userKey, JSON.stringify(local.filter(item => item.id !== id)))
+      }
+    }
     const raw = window.localStorage.getItem('vistora-exam-results')
     if (raw) {
       const local: StoredExamResult[] = JSON.parse(raw)

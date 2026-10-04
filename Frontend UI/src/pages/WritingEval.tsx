@@ -76,8 +76,9 @@ export default function WritingEval() {
       const promptSnippet = prompt.trim().slice(0, 45).replace(/\s+/g, ' ')
       await saveExamResultApi({
         id: `eval-${Date.now()}`,
-        userId: user?.id || 'USR-1048',
-        userName: user?.name || 'Ayaan Rahman',
+        userId: user?.id || '',
+        userName: user?.name || 'Student',
+        userEmail: user?.email || '',
         testTitle: `Writing Task ${task} — ${promptSnippet || 'Custom Prompt'}...`,
         testType: 'Writing',
         completedAt: new Date().toISOString(),

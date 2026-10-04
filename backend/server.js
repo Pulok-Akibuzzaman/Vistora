@@ -536,7 +536,16 @@ app.patch('/api/users/:id/status', (req, res) => {
 
 /** Get exam results */
 app.get('/api/results', (req, res) => {
+  const { email, userId } = req.query
   const results = readData('results.json', [])
+  if (email || userId) {
+    const filtered = results.filter(r => {
+      const matchEmail = email && r.userEmail && r.userEmail.toLowerCase() === email.toLowerCase()
+      const matchId = userId && r.userId && r.userId === userId
+      return matchEmail || matchId
+    })
+    return res.json({ results: filtered })
+  }
   res.json({ results })
 })
 
@@ -544,8 +553,9 @@ app.get('/api/results', (req, res) => {
 app.post('/api/results', (req, res) => {
   const newResult = {
     id: req.body.id || `res-${Date.now()}`,
-    userId: req.body.userId || 'USR-1048',
+    userId: req.body.userId || '',
     userName: req.body.userName || 'Student',
+    userEmail: req.body.userEmail || '',
     testTitle: req.body.testTitle || 'IELTS Practice Session',
     testType: req.body.testType || 'Listening',
     completedAt: req.body.completedAt || new Date().toISOString(),
@@ -567,10 +577,18 @@ app.post('/api/results', (req, res) => {
   // Update user's currentBand if overallBand is available
   if (typeof newResult.overallBand === 'number') {
     const users = readData('users.json', [])
-    const user = users.find(u => u.id === newResult.userId || u.name === newResult.userName)
+    const user = users.find(u => 
+      (newResult.userEmail && u.email && u.email.toLowerCase() === newResult.userEmail.toLowerCase()) ||
+      (newResult.userId && u.id === newResult.userId) ||
+      (newResult.userName && u.name === newResult.userName)
+    )
     if (user) {
       // Recalculate average band across all completed tests for this user
-      const userTests = filtered.filter(r => (r.userId === user.id || r.userName === user.name) && typeof r.overallBand === 'number')
+      const userTests = filtered.filter(r => 
+        ((r.userEmail && user.email && r.userEmail.toLowerCase() === user.email.toLowerCase()) ||
+         (r.userId && user.id && r.userId === user.id)) && 
+        typeof r.overallBand === 'number'
+      )
       if (userTests.length > 0) {
         const sum = userTests.reduce((acc, t) => acc + t.overallBand, 0)
         user.currentBand = Number((sum / userTests.length).toFixed(2))
@@ -596,11 +614,13 @@ app.get('/api/dashboard/stats', (req, res) => {
   const { email } = req.query
   const results = readData('results.json', [])
   const users = readData('users.json', [])
-  const user = (email ? users.find(u => u.email === email) : null) || users[0] || { targetBand: 8.0, currentBand: 7.0 }
-  const userTarget = typeof user.targetBand === 'number' ? user.targetBand : 8.0
+  const user = email ? users.find(u => u.email.toLowerCase() === email.toLowerCase()) : null
+  const userTarget = user && typeof user.targetBand === 'number' ? user.targetBand : 8.0
 
-  // Filter results for this specific user if logged in
-  const userResults = results.filter(r => !r.userEmail || !email || r.userEmail === email)
+  // Filter results strictly for this specific user if logged in
+  const userResults = (email && user)
+    ? results.filter(r => (r.userEmail && r.userEmail.toLowerCase() === email.toLowerCase()) || (r.userId && r.userId === user.id))
+    : (email ? [] : results)
 
   // Calculate dynamic skill scores strictly from real records
   const skillScores = {

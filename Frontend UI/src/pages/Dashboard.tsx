@@ -68,11 +68,12 @@ export default function Dashboard() {
 
     fetchTasks().then(setTasks).catch(() => {})
 
-    fetchResults().then(results => {
+    fetchResults(user?.email, user?.id).then(results => {
       setExamResults(results)
       if (results.length > 0) setSelectedResultId(results[0].id)
+      else setSelectedResultId('')
     }).catch(() => {})
-  }, [user?.email])
+  }, [user?.email, user?.id])
 
   const addTask = async (event: FormEvent) => {
     event.preventDefault()

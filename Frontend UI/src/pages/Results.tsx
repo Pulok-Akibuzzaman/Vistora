@@ -659,17 +659,19 @@ export default function Results() {
 
   useEffect(() => {
     setIsLoading(true)
-    fetchResults()
+    fetchResults(user?.email, user?.id)
       .then(data => {
         setResults(data)
         if (data.length > 0) {
           setSelectedId(data[0].id)
+        } else {
+          setSelectedId('')
         }
       })
       .finally(() => {
         setIsLoading(false)
       })
-  }, [])
+  }, [user?.email, user?.id])
 
   // Filter items dynamically based on module
   const filteredResults = useMemo(() => {
@@ -705,10 +707,10 @@ export default function Results() {
     })
 
     // Persist deletion to localStorage and backend API
-    await deleteExamResultApi(id)
+    await deleteExamResultApi(id, user?.email)
   }
 
-  const currentUserName = user?.name || 'Ayaan Rahman'
+  const currentUserName = user?.name || 'Student'
 
   return (
     <main className="mx-auto max-w-[1400px] px-4 py-8 sm:px-6">

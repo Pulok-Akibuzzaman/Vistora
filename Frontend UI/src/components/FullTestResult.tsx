@@ -210,8 +210,9 @@ export default function FullTestResult({ listeningAnswers, readingAnswers, writi
     resultSaved.current = true
     const resultObj = {
       id: `full-${Date.now()}`,
-      userId: user?.id || 'USR-1048',
-      userName: user?.name || 'Ayaan Rahman',
+      userId: user?.id || '',
+      userName: user?.name || 'Student',
+      userEmail: user?.email || '',
       testTitle: 'IELTS 21 — Complete Academic Test 1',
       testType: 'Full Test' as const,
       completedAt: new Date().toISOString(),
@@ -225,7 +226,7 @@ export default function FullTestResult({ listeningAnswers, readingAnswers, writi
       comment: report.overallComment,
       source: (analysisState === 'complete' ? 'AI' : 'Automatic') as any,
     }
-    saveExamResult(resultObj)
+    saveExamResult(resultObj, user?.email)
     saveExamResultApi(resultObj).catch(() => {})
   }, [analysisState, report, user])
 
