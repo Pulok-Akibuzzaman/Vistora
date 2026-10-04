@@ -111,6 +111,73 @@ export function evaluateEssay(taskType, prompt, essayText) {
   const sentenceCount = Math.max(1, sentences.length)
   const avgSentenceLength = wordCount / sentenceCount
 
+  // Check Topic Relevance against Prompt
+  if (prompt && prompt.trim().length > 10 && cleanText.length > 20) {
+    const stopWords = new Set([
+      'a', 'about', 'above', 'after', 'again', 'against', 'all', 'am', 'an', 'and', 'any', 'are', 'aren\'t', 'as',
+      'at', 'be', 'because', 'been', 'before', 'being', 'below', 'between', 'both', 'but', 'by', 'can', 'can\'t',
+      'cannot', 'could', 'couldn\'t', 'did', 'didn\'t', 'do', 'does', 'doesn\'t', 'doing', 'don\'t', 'down', 'during',
+      'each', 'few', 'for', 'from', 'further', 'had', 'hadn\'t', 'has', 'hasn\'t', 'have', 'haven\'t', 'having',
+      'he', 'her', 'here', 'hers', 'him', 'his', 'how', 'i', 'if', 'in', 'into', 'is', 'isn\'t', 'it', 'its',
+      'me', 'more', 'most', 'my', 'no', 'nor', 'not', 'of', 'off', 'on', 'once', 'only', 'or', 'other', 'our',
+      'out', 'over', 'own', 'same', 'she', 'should', 'so', 'some', 'such', 'than', 'that', 'the', 'their', 'theirs',
+      'them', 'then', 'there', 'these', 'they', 'this', 'those', 'through', 'to', 'too', 'under', 'until', 'up',
+      'very', 'was', 'we', 'were', 'what', 'when', 'where', 'which', 'while', 'who', 'whom', 'why', 'with', 'you',
+      'your', 'yours', 'discuss', 'views', 'view', 'opinion', 'give', 'reasons', 'examples', 'agree', 'disagree',
+      'extent', 'think', 'believe', 'people', 'many', 'others', 'statement', 'question', 'task', 'essay', 'write',
+      'good', 'bad', 'thing', 'things', 'try', 'rather', 'daily', 'life', 'day', 'days', 'way', 'ways', 'time', 'world',
+      'much', 'many', 'well', 'also', 'even'
+    ])
+
+    const promptTokens = prompt
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, ' ')
+      .split(/\s+/)
+      .filter(w => w.length > 2 && !stopWords.has(w))
+
+    if (promptTokens.length >= 2) {
+      const essayLower = cleanText.toLowerCase()
+      let matchedCount = 0
+      promptTokens.forEach(token => {
+        const stem = token.slice(0, Math.min(5, token.length))
+        if (essayLower.includes(token) || (stem.length >= 4 && essayLower.includes(stem))) {
+          matchedCount++
+        }
+      })
+
+      const isOffTopic = matchedCount === 0 || (promptTokens.length >= 3 && (matchedCount / promptTokens.length) < 0.25)
+
+      if (isOffTopic) {
+        return {
+          band: 0.0,
+          ta: 0.0,
+          cc: 0.0,
+          lr: 0.0,
+          gra: 0.0,
+          wordCount,
+          paragraphCount,
+          academicWordCount: 0,
+          detectedAcademicWords: [],
+          grammar: [],
+          vocab: [],
+          summary: `OFF-TOPIC SUBMISSION (BAND 0.0): The submitted response does not address the question prompt. Under official IELTS assessment criteria, an answer that is completely unrelated to the assigned topic receives an Overall Band Score of 0.0, as no credit can be awarded for off-topic content regardless of vocabulary or sentence structure.`,
+          criteriaFeedback: {
+            ta: 'Completely off-topic. The response does not address the task or topic specified in the prompt.',
+            cc: 'No credit awarded. Coherence cannot be evaluated on an unrelated response.',
+            lr: 'No credit awarded. Lexical items must be relevant to the assigned topic.',
+            gra: 'No credit awarded. Grammatical control cannot earn IELTS band credit on an off-topic submission.'
+          },
+          strengths: [],
+          improvements: [
+            'Carefully analyze the question prompt to identify the core topic and required discussion points before writing.',
+            'Ensure every paragraph directly addresses the central question instead of an unrelated topic or narrative.',
+            'Follow formal IELTS essay structure: an introduction with a clear thesis, body paragraphs with topic sentences and evidence, and a conclusion.'
+          ]
+        }
+      }
+    }
+  }
+
   // 1. Task Achievement / Task Response (TA)
   let taScore = 7.0
   if (wordCount < 30) {

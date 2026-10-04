@@ -828,16 +828,24 @@ app.post('/api/writing/evaluate', async (req, res) => {
   try {
     const pukuEval = await evaluateWritingWithPuku(task === '1' ? 'Task 1' : 'Task 2', prompt, essay)
     if (pukuEval && typeof pukuEval.overallBand === 'number' && pukuEval.criteria) {
+      // If either Puku AI or local relevance engine detects the essay is completely off-topic, enforce Band 0.0 across all criteria
+      const isOffTopic = pukuEval.overallBand === 0 || localEval.band === 0
+      const finalBand = isOffTopic ? 0.0 : pukuEval.overallBand
+      const finalTa = isOffTopic ? 0.0 : (pukuEval.criteria.taskAchievement?.band ?? localEval.ta)
+      const finalCc = isOffTopic ? 0.0 : (pukuEval.criteria.coherenceCohesion?.band ?? localEval.cc)
+      const finalLr = isOffTopic ? 0.0 : (pukuEval.criteria.lexicalResource?.band ?? localEval.lr)
+      const finalGra = isOffTopic ? 0.0 : (pukuEval.criteria.grammaticalAccuracy?.band ?? localEval.gra)
+
       return res.json({
         ...localEval,
-        band: pukuEval.overallBand,
-        ta: pukuEval.criteria.taskAchievement?.band ?? localEval.ta,
-        cc: pukuEval.criteria.coherenceCohesion?.band ?? localEval.cc,
-        lr: pukuEval.criteria.lexicalResource?.band ?? localEval.lr,
-        gra: pukuEval.criteria.grammaticalAccuracy?.band ?? localEval.gra,
+        band: finalBand,
+        ta: finalTa,
+        cc: finalCc,
+        lr: finalLr,
+        gra: finalGra,
         summary: pukuEval.summary || localEval.summary,
         improvements: pukuEval.improvements && pukuEval.improvements.length ? pukuEval.improvements : localEval.improvements,
-        strengths: pukuEval.strengths,
+        strengths: isOffTopic ? [] : pukuEval.strengths,
         criteriaFeedback: {
           ta: pukuEval.criteria.taskAchievement?.feedback,
           cc: pukuEval.criteria.coherenceCohesion?.feedback,

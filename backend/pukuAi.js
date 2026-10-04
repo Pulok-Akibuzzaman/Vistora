@@ -107,6 +107,14 @@ Evaluate the candidate's IELTS essay strictly according to official IELTS band d
 3. Lexical Resource (LR)
 4. Grammatical Range and Accuracy (GRA)
 
+CRITICAL IELTS TOPIC RELEVANCE RULE:
+First evaluate whether the candidate's essay actually addresses the given TOPIC / PROMPT.
+- If the submission is COMPLETELY OFF-TOPIC, unrelated to the prompt, writes about an entirely different subject (e.g. submitting a creative/fictional story about a village or clockmaker when asked about competition vs cooperation, or pasting an unrelated memorized essay):
+  * You MUST assign 0.0 to overallBand, 0.0 to Task Achievement, 0.0 to Coherence, 0.0 to Lexical Resource, and 0.0 to Grammatical Accuracy.
+  * Under official IELTS examination criteria, an essay that fails to address the prompt or is completely off-topic CANNOT receive band score numbers for grammar or vocabulary.
+  * The summary MUST state: "OFF-TOPIC SUBMISSION (BAND 0.0): The essay is completely unrelated to the assigned question prompt..."
+  * Do NOT award partial numbers (such as 1.0, 2.0, 3.0, 4.0) for an answer that is completely wrong or unrelated to the prompt!
+
 Respond strictly in valid JSON with scores from 0.0 to 9.0 (in increments of 0.5):
 {
   "overallBand": 6.5,
@@ -153,6 +161,80 @@ Please evaluate the essay according to IELTS criteria and output JSON.`;
       overallBand = Math.round(avg * 2) / 2;
     }
 
+    // Check if the evaluation indicates a completely off-topic response
+    const combinedFeedback = `${parsed.summary || ''} ${ta.feedback || ''} ${cc.feedback || ''} ${parsed.general_comments || ''}`.toLowerCase();
+    const offTopicMarkers = [
+      'completely off-topic',
+      'entirely off-topic',
+      'completely off topic',
+      'entirely off topic',
+      'non-attempt',
+      'completely failed to address the task',
+      'completely failed to address the prompt',
+      'completely unrelated',
+      'entirely unrelated',
+      'no relevance to the ielts',
+      'no relevance to the prompt',
+      'no relevance to the task',
+      'fictional narrative about',
+      'does not address the prompt in any way',
+      'unrelated to the prompt',
+      'unrelated to the task'
+    ];
+
+    const isOffTopicFromAi = offTopicMarkers.some(m => combinedFeedback.includes(m)) || taBand === 0;
+
+    // Check keyword relevance between prompt and essay
+    let isOffTopicFromKeywords = false;
+    if (topic && topic.trim().length > 10 && essay && essay.trim().length > 20) {
+      const stopWords = new Set([
+        'a', 'about', 'above', 'after', 'again', 'against', 'all', 'am', 'an', 'and', 'any', 'are', 'as', 'at',
+        'be', 'because', 'been', 'before', 'being', 'both', 'but', 'by', 'can', 'could', 'did', 'do', 'does',
+        'down', 'during', 'each', 'few', 'for', 'from', 'further', 'had', 'has', 'have', 'having', 'he', 'her',
+        'here', 'him', 'his', 'how', 'i', 'if', 'in', 'into', 'is', 'it', 'its', 'me', 'more', 'most', 'my',
+        'no', 'nor', 'not', 'of', 'off', 'on', 'once', 'only', 'or', 'other', 'our', 'out', 'over', 'own',
+        'same', 'she', 'should', 'so', 'some', 'such', 'than', 'that', 'the', 'their', 'theirs', 'them', 'then',
+        'there', 'these', 'they', 'this', 'those', 'through', 'to', 'too', 'under', 'until', 'up', 'very', 'was',
+        'we', 'were', 'what', 'when', 'where', 'which', 'while', 'who', 'whom', 'why', 'with', 'you', 'your',
+        'discuss', 'views', 'view', 'opinion', 'give', 'reasons', 'examples', 'agree', 'disagree', 'extent',
+        'think', 'believe', 'people', 'many', 'others', 'statement', 'question', 'task', 'essay', 'write'
+      ]);
+      const promptWords = topic.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter(w => w.length > 2 && !stopWords.has(w));
+      if (promptWords.length >= 2) {
+        const essayLower = essay.toLowerCase();
+        let matched = 0;
+        promptWords.forEach(pw => {
+          const stem = pw.slice(0, Math.min(5, pw.length));
+          if (essayLower.includes(pw) || (stem.length >= 4 && essayLower.includes(stem))) {
+            matched++;
+          }
+        });
+        if (matched === 0) {
+          isOffTopicFromKeywords = true;
+        }
+      }
+    }
+
+    if (isOffTopicFromAi || isOffTopicFromKeywords) {
+      return {
+        overallBand: 0.0,
+        criteria: {
+          taskAchievement: { band: 0.0, feedback: ta.feedback || 'The submission is completely off-topic and fails to address the question prompt. Under official IELTS examination criteria, an unrelated response receives no band credit.' },
+          coherenceCohesion: { band: 0.0, feedback: 'Because the response fails to address the assigned question, coherence cannot be credited towards an IELTS band score.' },
+          lexicalResource: { band: 0.0, feedback: 'Lexical resource cannot be awarded for vocabulary produced in an off-topic submission.' },
+          grammaticalAccuracy: { band: 0.0, feedback: 'Grammar cannot receive IELTS band credit when the submission completely fails the task.' }
+        },
+        summary: `OFF-TOPIC SUBMISSION (BAND 0.0): The submitted response does not address the question prompt. Under official IELTS assessment criteria, an answer that is completely unrelated to the assigned topic receives an Overall Band Score of 0.0, as no credit can be awarded for off-topic content regardless of vocabulary or sentence structure. To receive a valid academic evaluation, your essay must directly analyze and discuss the specific prompt provided.`,
+        strengths: [],
+        improvements: [
+          'Carefully read the question prompt and identify the core topic and required discussion points before writing.',
+          'Ensure every paragraph directly addresses the central question instead of an unrelated topic or narrative.',
+          'Follow formal IELTS essay structure: an introduction with a clear thesis, body paragraphs with topic sentences and evidence, and a conclusion.'
+        ],
+        source: 'Puku.sh (puku-ai-2.8 Examiner)'
+      };
+    }
+
     return {
       overallBand,
       criteria: {
@@ -172,7 +254,7 @@ Please evaluate the essay according to IELTS criteria and output JSON.`;
         'Increase range of academic collocation and advanced idioms',
         'Incorporate more complex conditional and relative clauses'
       ],
-      source: 'puku.sh (puku-ai-2.8 Examiner)'
+      source: 'Puku.sh (puku-ai-2.8 Examiner)'
     };
   } catch (err) {
     console.warn(`[Puku.sh Writing] Failed to parse AI evaluation response: ${err.message}`);

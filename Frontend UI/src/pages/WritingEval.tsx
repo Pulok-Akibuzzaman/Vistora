@@ -104,7 +104,7 @@ export default function WritingEval() {
   const BandPill = ({ label, score }: { label: string; score: number }) => (
     <div className="bg-surface-2 border border-divider p-3 text-center" style={{ borderRadius: 3 }}>
       <div className="mono text-[9px] text-subtle tracking-widest mb-1">{label}</div>
-      <div className={`mono text-xl font-bold ${score >= 7.5 ? 'text-positive' : score >= 6.5 ? 'text-accent' : 'text-caution'}`}>
+      <div className={`mono text-xl font-bold ${score >= 7.5 ? 'text-positive' : score >= 6.5 ? 'text-accent' : score > 0 ? 'text-caution' : 'text-rose-600'}`}>
         {score.toFixed(1)}
       </div>
     </div>
@@ -275,16 +275,20 @@ export default function WritingEval() {
                 <div>
                   <div className="flex items-center gap-2 mb-1">
                     <span className="label-tag">OFFICIAL BAND PREDICTION</span>
-                    {feedback.aiEngine && (
+                    {feedback.band === 0 ? (
+                      <span className="text-[10px] font-mono font-bold bg-rose-100 text-rose-800 border border-rose-300 px-2 py-0.5 rounded">
+                        OFF-TOPIC / NON-RESPONSIVE
+                      </span>
+                    ) : feedback.aiEngine ? (
                       <span className="text-[10px] font-mono font-semibold bg-rose-50 text-accent border border-rose-200 px-2 py-0.5 rounded">
                         ⚡ {feedback.aiEngine}
                       </span>
-                    )}
+                    ) : null}
                   </div>
                   <h2 className="text-sm font-bold text-ink plex">Diagnostic Summary</h2>
                 </div>
                 <div className="text-right">
-                  <div className={`mono text-3xl font-bold ${feedback.band >= 7.5 ? 'text-positive' : feedback.band >= 6.5 ? 'text-accent' : 'text-caution'}`}>
+                  <div className={`mono text-3xl font-bold ${feedback.band >= 7.5 ? 'text-positive' : feedback.band >= 6.5 ? 'text-accent' : feedback.band > 0 ? 'text-caution' : 'text-rose-600'}`}>
                     {feedback.band.toFixed(1)}
                   </div>
                   <div className="mono text-[8px] text-subtle">OVERALL BAND</div>
