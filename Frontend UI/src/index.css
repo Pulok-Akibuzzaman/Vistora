@@ -621,3 +621,121 @@ select {
     overflow-y: auto;
   }
 }
+
+  :root:not([data-theme='dark']) .listening-exam {
+    color-scheme: light;
+    background: #F8FAFC;
+    color: #0F172A;
+  }
+
+  :root:not([data-theme='dark']) .listening-exam [class*="bg-[#080E1A]"],
+  :root:not([data-theme='dark']) .listening-exam [class*="bg-[#0B1320]"],
+  :root:not([data-theme='dark']) .listening-exam [class*="bg-[#0B1220]"],
+  :root:not([data-theme='dark']) .listening-exam [class*="bg-[#0A101C]"],
+  :root:not([data-theme='dark']) .listening-exam [class*="bg-[#090E17]"] {
+    background-color: #F1F5F9;
+  }
+
+  :root:not([data-theme='dark']) .listening-exam [class*="bg-[#111A2E]"],
+  :root:not([data-theme='dark']) .listening-exam [class*="bg-[#0F172A]"],
+  :root:not([data-theme='dark']) .listening-exam [class*="bg-[#111C30]"],
+  :root:not([data-theme='dark']) .listening-exam [class*="bg-[#152033]"],
+  :root:not([data-theme='dark']) .listening-exam [class*="bg-[#162238]"] {
+    background-color: #FFFFFF;
+  }
+
+  :root:not([data-theme='dark']) .listening-exam [class*="bg-slate-800"] {
+    background-color: #E2E8F0;
+  }
+
+  :root:not([data-theme='dark']) .listening-exam [class*="border-slate-800"],
+  :root:not([data-theme='dark']) .listening-exam [class*="border-slate-700"],
+  :root:not([data-theme='dark']) .listening-exam [class*="border-slate-600"] {
+    border-color: #CBD5E1;
+  }
+
+  :root:not([data-theme='dark']) .listening-exam .text-white,
+  :root:not([data-theme='dark']) .listening-exam .text-slate-100 {
+    color: #0F172A;
+  }
+
+  :root:not([data-theme='dark']) .listening-exam .text-slate-200 {
+    color: #334155;
+  }
+
+  :root:not([data-theme='dark']) .listening-exam .text-slate-300 {
+    color: #475569;
+  }
+
+  :root:not([data-theme='dark']) .listening-exam .text-slate-400,
+  :root:not([data-theme='dark']) .listening-exam .text-slate-500 {
+    color: #64748B;
+  }
+
+  :root:not([data-theme='dark']) .listening-exam .text-rose-100,
+  :root:not([data-theme='dark']) .listening-exam .text-rose-200,
+  :root:not([data-theme='dark']) .listening-exam .text-rose-300,
+  :root:not([data-theme='dark']) .listening-exam .text-rose-400 {
+    color: #BE123C;
+  }
+
+  :root:not([data-theme='dark']) .listening-exam .text-cyan-400 {
+    color: #0E7490;
+  }
+
+  :root:not([data-theme='dark']) .listening-exam .text-emerald-300,
+  :root:not([data-theme='dark']) .listening-exam .text-emerald-400 {
+    color: #047857;
+  }
+
+  :root:not([data-theme='dark']) .listening-exam [class*="bg-rose-500/"] {
+    background-color: rgba(225, 29, 72, 0.08);
+  }
+
+  :root:not([data-theme='dark']) .listening-exam [class*="bg-emerald-500/"] {
+    background-color: rgba(5, 150, 105, 0.1);
+  }
+
+  :root:not([data-theme='dark']) .listening-exam [class*="bg-amber-500/"] {
+    background-color: rgba(217, 119, 6, 0.08);
+  }
+
+  :root:not([data-theme='dark']) .listening-exam .listening-answer-row {
+    border-color: #CBD5E1;
+    background: #FFFFFF;
+  }
+
+  :root:not([data-theme='dark']) .listening-exam .listening-answer-row:focus-within,
+  :root:not([data-theme='dark']) .listening-exam .listening-answer-row[data-active='true'] {
+    border-color: #E11D48;
+    background: #FFF1F2;
+  }
+
+  :root:not([data-theme='dark']) .listening-exam .listening-answer-number {
+    border-color: #CBD5E1;
+    background: #F1F5F9;
+    color: #475569;
+  }
+
+  :root:not([data-theme='dark']) .listening-exam .listening-answer-input {
+    border-color: #CBD5E1;
+    background: #FFFFFF;
+    color: #0F172A;
+  }
+
+  :root:not([data-theme='dark']) .listening-exam .listening-answer-input:focus {
+    border-color: #E11D48;
+  }
+
+  :root:not([data-theme='dark']) .listening-exam .listening-audio-range::-webkit-slider-runnable-track,
+  :root:not([data-theme='dark']) .listening-exam .listening-audio-range::-moz-range-track {
+    background: #CBD5E1;
+  }
+
+  :root:not([data-theme='dark']) .listening-exam ::-webkit-scrollbar-track {
+    background: #F1F5F9;
+  }
+
+  :root:not([data-theme='dark']) .listening-exam ::-webkit-scrollbar-thumb {
+    background: #CBD5E1;
+  }
