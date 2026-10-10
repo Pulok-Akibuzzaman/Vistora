@@ -88,7 +88,7 @@
     "role": "Student",
     "status": "Active",
     "targetBand": 9,
-    "currentBand": 3.5,
+    "currentBand": 0,
     "institution": "East West University",
     "bio": "IELTS candidate preparing for international academic opportunities.",
     "lastActive": "Just now",

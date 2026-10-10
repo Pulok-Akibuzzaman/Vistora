@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { READING_ANSWERS, READING_PASSAGES } from '../data/readingTest1'
+import { READING_ANSWERS_2, READING_PASSAGES_2 } from '../data/readingTest2'
 import { LISTENING_ANSWERS } from '../data/listeningTest1'
+import { LISTENING_ANSWERS_2, LISTENING_PARTS_2 } from '../data/listeningTest2'
 import FullTestResult from '../components/FullTestResult'
 import { saveExamResult } from '../lib/results'
 import { checkBackendHealth, getStreamUrl, saveExamResultApi, evaluateSpeakingApi, type BackendHealth, type SpeakingEvaluationResult } from '../lib/api'
@@ -30,21 +32,37 @@ const TESTS: Test[] = [
   { id: 'r1-p1', type: 'Reading', module: 'Academic', title: 'IELTS 18 — Reading Test 1 · Part 1', questions: 13, duration: 20, difficulty: 'Passage practice', status: 'New', part: 1, book: '18', testNumber: 1 },
   { id: 'r1-p2', type: 'Reading', module: 'Academic', title: 'IELTS 18 — Reading Test 1 · Part 2', questions: 13, duration: 20, difficulty: 'Passage practice', status: 'New', part: 2, book: '18', testNumber: 1 },
   { id: 'r1-p3', type: 'Reading', module: 'Academic', title: 'IELTS 18 — Reading Test 1 · Part 3', questions: 14, duration: 20, difficulty: 'Passage practice', status: 'New', part: 3, book: '18', testNumber: 1 },
+  { id: 'r2', type: 'Reading', module: 'Academic', title: 'IELTS 18 — Academic Reading Test 2', questions: 40, duration: 60, difficulty: 'Official format', status: 'New', book: '18', testNumber: 2 },
+  { id: 'r2-p1', type: 'Reading', module: 'Academic', title: 'IELTS 18 — Reading Test 2 · Part 1', questions: 13, duration: 20, difficulty: 'Passage practice', status: 'New', part: 1, book: '18', testNumber: 2 },
+  { id: 'r2-p2', type: 'Reading', module: 'Academic', title: 'IELTS 18 — Reading Test 2 · Part 2', questions: 13, duration: 20, difficulty: 'Passage practice', status: 'New', part: 2, book: '18', testNumber: 2 },
+  { id: 'r2-p3', type: 'Reading', module: 'Academic', title: 'IELTS 18 — Reading Test 2 · Part 3', questions: 14, duration: 20, difficulty: 'Passage practice', status: 'New', part: 3, book: '18', testNumber: 2 },
   { id: 'l1', type: 'Listening', module: 'Academic', title: 'IELTS 18 — Listening Test 1 (Full 4 Parts)', questions: 40, duration: 40, difficulty: 'Official format', status: 'In progress', book: '18', testNumber: 1 },
   { id: 'l1-p1', type: 'Listening', module: 'Academic', title: 'IELTS 18 — Listening Test 1 · Part 1', questions: 10, duration: 10, difficulty: 'Section practice', status: 'New', part: 1, book: '18', testNumber: 1 },
   { id: 'l1-p2', type: 'Listening', module: 'Academic', title: 'IELTS 18 — Listening Test 1 · Part 2', questions: 10, duration: 10, difficulty: 'Section practice', status: 'New', part: 2, book: '18', testNumber: 1 },
   { id: 'l1-p3', type: 'Listening', module: 'Academic', title: 'IELTS 18 — Listening Test 1 · Part 3', questions: 10, duration: 10, difficulty: 'Section practice', status: 'New', part: 3, book: '18', testNumber: 1 },
   { id: 'l1-p4', type: 'Listening', module: 'Academic', title: 'IELTS 18 — Listening Test 1 · Part 4', questions: 10, duration: 10, difficulty: 'Section practice', status: 'New', part: 4, book: '18', testNumber: 1 },
+  { id: 'l2', type: 'Listening', module: 'Academic', title: 'IELTS 18 — Listening Test 2', questions: 40, duration: 40, difficulty: 'Official format', status: 'New', book: '18', testNumber: 2 },
+  { id: 'l2-p1', type: 'Listening', module: 'Academic', title: 'IELTS 18 — Listening Test 2 · Part 1', questions: 10, duration: 10, difficulty: 'Section practice', status: 'New', part: 1, book: '18', testNumber: 2 },
+  { id: 'l2-p2', type: 'Listening', module: 'Academic', title: 'IELTS 18 — Listening Test 2 · Part 2', questions: 10, duration: 10, difficulty: 'Section practice', status: 'New', part: 2, book: '18', testNumber: 2 },
+  { id: 'l2-p3', type: 'Listening', module: 'Academic', title: 'IELTS 18 — Listening Test 2 · Part 3', questions: 10, duration: 10, difficulty: 'Section practice', status: 'New', part: 3, book: '18', testNumber: 2 },
+  { id: 'l2-p4', type: 'Listening', module: 'Academic', title: 'IELTS 18 — Listening Test 2 · Part 4', questions: 10, duration: 10, difficulty: 'Section practice', status: 'New', part: 4, book: '18', testNumber: 2 },
   { id: 'l19', type: 'Listening', module: 'Academic', title: 'IELTS 19 — Listening Test 1 (Audio Stream)', questions: 40, duration: 40, difficulty: 'Official audio', status: 'New', book: '19', testNumber: 1 },
   { id: 'l20', type: 'Listening', module: 'Academic', title: 'IELTS 20 — Listening Test 1 (Audio Stream)', questions: 40, duration: 40, difficulty: 'Official audio', status: 'New', book: '20', testNumber: 1 },
   { id: 'l21', type: 'Listening', module: 'Academic', title: 'IELTS 21 — Listening Test 1 (Audio Stream)', questions: 40, duration: 40, difficulty: 'Official audio', status: 'New', book: '21', testNumber: 1 },
-  { id: 'w1', type: 'Writing', module: 'Academic', title: 'IELTS 18 — Academic Writing Test 1', questions: 2, duration: 60, difficulty: 'Official format', status: 'New' },
-  { id: 'w1-p1', type: 'Writing', module: 'Academic', title: 'IELTS 18 — Writing Test 1 · Task 1', questions: 1, duration: 20, difficulty: '150+ words', status: 'New', part: 1 },
-  { id: 'w1-p2', type: 'Writing', module: 'Academic', title: 'IELTS 18 — Writing Test 1 · Task 2', questions: 1, duration: 40, difficulty: '250+ words', status: 'New', part: 2 },
-  { id: 's1', type: 'Speaking', module: 'Academic', title: 'IELTS 18 — Speaking Test 1', questions: 3, duration: 14, difficulty: 'Official format', status: 'New' },
-  { id: 's1-p1', type: 'Speaking', module: 'Academic', title: 'IELTS 18 — Speaking Test 1 · Part 1', questions: 1, duration: 5, difficulty: 'Interview', status: 'New', part: 1 },
-  { id: 's1-p2', type: 'Speaking', module: 'Academic', title: 'IELTS 18 — Speaking Test 1 · Part 2', questions: 1, duration: 4, difficulty: 'Long turn', status: 'New', part: 2 },
-  { id: 's1-p3', type: 'Speaking', module: 'Academic', title: 'IELTS 18 — Speaking Test 1 · Part 3', questions: 1, duration: 5, difficulty: 'Discussion', status: 'New', part: 3 },
+  { id: 'w1', type: 'Writing', module: 'Academic', title: 'IELTS 18 — Academic Writing Test 1', questions: 2, duration: 60, difficulty: 'Official format', status: 'New', book: '18', testNumber: 1 },
+  { id: 'w1-p1', type: 'Writing', module: 'Academic', title: 'IELTS 18 — Writing Test 1 · Task 1', questions: 1, duration: 20, difficulty: '150+ words', status: 'New', part: 1, book: '18', testNumber: 1 },
+  { id: 'w1-p2', type: 'Writing', module: 'Academic', title: 'IELTS 18 — Writing Test 1 · Task 2', questions: 1, duration: 40, difficulty: '250+ words', status: 'New', part: 2, book: '18', testNumber: 1 },
+  { id: 'w2', type: 'Writing', module: 'Academic', title: 'IELTS 18 — Academic Writing Test 2', questions: 2, duration: 60, difficulty: 'Official format', status: 'New', book: '18', testNumber: 2 },
+  { id: 'w2-p1', type: 'Writing', module: 'Academic', title: 'IELTS 18 — Writing Test 2 · Task 1', questions: 1, duration: 20, difficulty: '150+ words', status: 'New', part: 1, book: '18', testNumber: 2 },
+  { id: 'w2-p2', type: 'Writing', module: 'Academic', title: 'IELTS 18 — Writing Test 2 · Task 2', questions: 1, duration: 40, difficulty: '250+ words', status: 'New', part: 2, book: '18', testNumber: 2 },
+  { id: 's1', type: 'Speaking', module: 'Academic', title: 'IELTS 18 — Speaking Test 1', questions: 3, duration: 14, difficulty: 'Official format', status: 'New', book: '18', testNumber: 1 },
+  { id: 's1-p1', type: 'Speaking', module: 'Academic', title: 'IELTS 18 — Speaking Test 1 · Part 1', questions: 1, duration: 5, difficulty: 'Interview', status: 'New', part: 1, book: '18', testNumber: 1 },
+  { id: 's1-p2', type: 'Speaking', module: 'Academic', title: 'IELTS 18 — Speaking Test 1 · Part 2', questions: 1, duration: 4, difficulty: 'Long turn', status: 'New', part: 2, book: '18', testNumber: 1 },
+  { id: 's1-p3', type: 'Speaking', module: 'Academic', title: 'IELTS 18 — Speaking Test 1 · Part 3', questions: 1, duration: 5, difficulty: 'Discussion', status: 'New', part: 3, book: '18', testNumber: 1 },
+  { id: 's2', type: 'Speaking', module: 'Academic', title: 'IELTS 18 — Speaking Test 2', questions: 3, duration: 14, difficulty: 'Official format', status: 'New', book: '18', testNumber: 2 },
+  { id: 's2-p1', type: 'Speaking', module: 'Academic', title: 'IELTS 18 — Speaking Test 2 · Part 1', questions: 1, duration: 5, difficulty: 'Interview', status: 'New', part: 1, book: '18', testNumber: 2 },
+  { id: 's2-p2', type: 'Speaking', module: 'Academic', title: 'IELTS 18 — Speaking Test 2 · Part 2', questions: 1, duration: 4, difficulty: 'Long turn', status: 'New', part: 2, book: '18', testNumber: 2 },
+  { id: 's2-p3', type: 'Speaking', module: 'Academic', title: 'IELTS 18 — Speaking Test 2 · Part 3', questions: 1, duration: 5, difficulty: 'Discussion', status: 'New', part: 3, book: '18', testNumber: 2 },
 ]
 
 const FILTERS = ['All', 'Full Test', 'Reading', 'Listening', 'Writing', 'Speaking'] as const
@@ -293,8 +311,12 @@ function ListeningExam({
     }, 0)
   }
 
-  const partTitle = ['Oyster Bay Sailing Club Courses', 'Working as a makeup trainee', 'Ocean biodiversity research', 'Sources of rubber'][currentPart - 1]
-  const partInstruction = currentPart === 1
+  const partTitle = selectedTestNumber === 2 
+    ? LISTENING_PARTS_2[currentPart - 1]?.title || `Part ${currentPart}`
+    : ['Oyster Bay Sailing Club Courses', 'Working as a makeup trainee', 'Ocean biodiversity research', 'Sources of rubber'][currentPart - 1]
+  const partInstruction = selectedTestNumber === 2
+    ? 'Follow the specific instructions for each question below.'
+    : currentPart === 1
     ? 'Write ONE WORD AND/OR A NUMBER for each answer.'
     : currentPart === 2
       ? 'Choose the correct letter, A, B or C, then complete the matching questions.'
@@ -464,6 +486,35 @@ function ListeningExam({
               <p className="mt-1 text-xs text-slate-400">Listen to the recording and complete each response in this section.</p>
             </div>
 
+            {selectedTestNumber === 2 ? (
+              <section className="space-y-4 rounded-2xl border border-slate-800/90 bg-[#0F172A] p-4 shadow-xl sm:p-6">
+                <div className="flex items-center gap-2.5 border-b border-slate-800/80 pb-3">
+                  <h2 className="text-[11px] font-extrabold uppercase tracking-wider text-rose-400">
+                    {LISTENING_PARTS_2[currentPart - 1]?.title}
+                  </h2>
+                </div>
+                <div className="space-y-4">
+                  {LISTENING_PARTS_2[currentPart - 1]?.questions.map(q => (
+                    <div key={q.id} id={`listening-question-${q.id}`} className={`rounded-xl border p-4 transition ${currentQ === q.id ? 'border-rose-500/80 bg-[#111C30] shadow-[0_0_15px_rgba(225,29,72,0.12)]' : 'border-slate-800/70 bg-[#090E17]/80'}`}>
+                      <div className="mb-2 text-sm font-semibold text-slate-100">{q.id}. {q.prompt}</div>
+                      {q.instruction && <div className="mb-3 text-[11px] font-bold uppercase tracking-wider text-amber-400/80">{q.instruction}</div>}
+                      {q.options && (
+                        <div className="mb-4 grid gap-2 sm:grid-cols-1">
+                          {q.options.map(opt => (
+                            <div key={opt} className="rounded-lg border border-slate-700 bg-[#111A2E] px-3 py-2 text-xs text-slate-300">{opt}</div>
+                          ))}
+                        </div>
+                      )}
+                      <div className="flex flex-wrap items-center gap-3">
+                        <span className="text-xs text-slate-400">Your Answer:</span>
+                        <input aria-label={`Answer ${q.id}`} type="text" value={answers[q.id] || ''} onFocus={() => setCurrentQ(q.id)} onChange={event => setAnswer(q.id, event.target.value)} className="w-full max-w-[200px] border-b border-dashed border-slate-600 bg-[#0A101C] px-2 py-1.5 font-mono text-sm font-bold text-rose-300 placeholder-slate-600 focus:border-rose-400 focus:outline-none" placeholder="..." />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            ) : (
+              <>
             {currentPart === 1 && (
               <>
                 <section className="space-y-4 rounded-2xl border border-slate-800/90 bg-[#0F172A] p-4 shadow-xl sm:p-6">
@@ -556,6 +607,8 @@ function ListeningExam({
                 <ul className="space-y-3">{PART_4_PROMPTS.map(completionRow)}</ul>
               </section>
             )}
+            </>
+            )}
 
             <div className="flex items-center justify-between border-t border-slate-800 py-4 text-xs text-slate-500">
               <span>{partAnswered} of 10 questions answered in this section</span>
@@ -578,12 +631,14 @@ type ReadingExamProps = {
   setCurrentQ: React.Dispatch<React.SetStateAction<number>>
   timeLeft: number
   part?: number
+  selectedTestNumber?: number
   onFinish: () => void
 }
 
-function ReadingExam({ answers, setAnswers, currentQ, setCurrentQ, timeLeft, part, onFinish }: ReadingExamProps) {
+function ReadingExam({ answers, setAnswers, currentQ, setCurrentQ, timeLeft, part, selectedTestNumber = 1, onFinish }: ReadingExamProps) {
   const passageIndex = currentQ <= 13 ? 0 : currentQ <= 26 ? 1 : 2
-  const passage = READING_PASSAGES[passageIndex]
+  const activePassages = selectedTestNumber === 2 ? READING_PASSAGES_2 : READING_PASSAGES
+  const passage = activePassages[passageIndex]
   const answered = Object.keys(answers).filter(key => {
     const num = Number(key)
     if (part !== undefined) {
@@ -607,7 +662,7 @@ function ReadingExam({ answers, setAnswers, currentQ, setCurrentQ, timeLeft, par
           <div className="border-r border-divider pr-5 font-plex text-2xl font-bold tracking-tight text-accent">IELTS</div>
           <div>
             <div className="font-plex text-xs font-semibold text-ink">Test taker ID</div>
-            <div className="font-plex text-xs text-graphite-mid">Academic Reading · Test 1{part ? ` · Passage ${part}` : ''}</div>
+            <div className="font-plex text-xs text-graphite-mid">Academic Reading · Test {selectedTestNumber}{part ? ` · Passage ${part}` : ''}</div>
           </div>
         </div>
         <div className="flex items-center gap-5">
@@ -726,6 +781,7 @@ type WritingExamProps = {
   setCurrentTask: React.Dispatch<React.SetStateAction<number>>
   timeLeft: number
   part?: number
+  selectedTestNumber?: number
   onFinish: () => void
 }
 
@@ -770,7 +826,58 @@ function WritingChart() {
   )
 }
 
-function WritingExam({ answers, setAnswers, currentTask, setCurrentTask, timeLeft, part, onFinish }: WritingExamProps) {
+function WritingChart2() {
+  const series = [
+    { name: 'Less than $25,000', values: [25, 29, 28], color: '#334155' },
+    { name: '$25,000–$49,999', values: [27, 30, 29], color: '#f8fafc' },
+    { name: '$50,000–$74,999', values: [21, 21, 21], color: '#cbd5e1' },
+    { name: '$75,000–$99,999', values: [14, 14, 15], color: '#94a3b8' },
+    { name: '$100,000 or more', values: [29, 28, 33], color: '#475569' },
+  ]
+  const years = ['2007', '2011', '2015']
+  const y = (val: number) => 240 - (val / 35) * 200
+
+  return (
+    <svg viewBox="0 0 600 320" role="img" aria-label="Bar chart showing the number of US households by annual income" className="mx-auto mt-6 w-full max-w-2xl bg-surface">
+      <text x="300" y="24" textAnchor="middle" className="fill-ink font-plex text-sm font-semibold">Number of US households (in millions), by annual income</text>
+      {[0, 5, 10, 15, 20, 25, 30, 35].map(value => (
+        <g key={value}>
+          <line x1="50" x2="580" y1={y(value)} y2={y(value)} className="stroke-divider" />
+          <text x="40" y={y(value) + 4} textAnchor="end" className="fill-graphite-mid font-mono text-xs">{value}</text>
+        </g>
+      ))}
+      <line x1="50" x2="50" y1="40" y2="240" className="stroke-ink" />
+      <text x="20" y="140" transform="rotate(-90, 20, 140)" textAnchor="middle" className="fill-ink font-plex text-sm font-semibold">Number of households (millions)</text>
+      
+      {years.map((year, i) => {
+        const xOffset = 90 + i * 160
+        return (
+          <g key={year}>
+            <text x={xOffset + 60} y="260" textAnchor="middle" className="fill-graphite-mid font-mono text-sm">{year}</text>
+            {series.map((s, j) => {
+              const val = s.values[i]
+              const barHeight = (val / 35) * 200
+              return (
+                <rect key={j} x={xOffset + j * 24} y={y(val)} width="20" height={barHeight} fill={s.color} stroke="#1e293b" />
+              )
+            })}
+          </g>
+        )
+      })}
+      
+      <g transform="translate(50, 290)">
+        {series.map((s, i) => (
+          <g key={i} transform={`translate(${i * 105}, 0)`}>
+            <rect x="0" y="-8" width="12" height="12" fill={s.color} stroke="#1e293b" />
+            <text x="16" y="2" className="fill-graphite-mid font-mono text-[9px]">{s.name}</text>
+          </g>
+        ))}
+      </g>
+    </svg>
+  )
+}
+
+function WritingExam({ answers, setAnswers, currentTask, setCurrentTask, timeLeft, part, selectedTestNumber = 1, onFinish }: WritingExamProps) {
   const task = part ?? currentTask
   const response = answers[task] || ''
   const wordCount = response.trim() ? response.trim().split(/\s+/).length : 0
@@ -800,20 +907,39 @@ function WritingExam({ answers, setAnswers, currentTask, setCurrentTask, timeLef
         <article className="overflow-y-auto border-b border-divider p-5 md:border-b-0 md:border-r md:p-7">
           <div className="mx-auto max-w-3xl font-plex text-sm leading-7 text-ink">
             {task === 1 ? (
-              <>
-                <p className="font-semibold">The graph below gives information about the number of jobs in four sectors of the economy in the US between 1960 and 2020.</p>
-                <p className="mt-4 font-semibold">Summarise the information by selecting and reporting the main features, and make comparisons where relevant.</p>
-                <WritingChart />
-              </>
+              selectedTestNumber === 2 ? (
+                <>
+                  <p className="font-semibold">The chart below shows the number of households in the US by their annual income in 2007, 2011 and 2015.</p>
+                  <p className="mt-4 font-semibold">Summarise the information by selecting and reporting the main features, and make comparisons where relevant.</p>
+                  <WritingChart2 />
+                </>
+              ) : (
+                <>
+                  <p className="font-semibold">The graph below gives information about the number of jobs in four sectors of the economy in the US between 1960 and 2020.</p>
+                  <p className="mt-4 font-semibold">Summarise the information by selecting and reporting the main features, and make comparisons where relevant.</p>
+                  <WritingChart />
+                </>
+              )
             ) : (
-              <>
-                <p>You should write about the following topic:</p>
-                <div className="mt-5 border-y border-divider bg-surface-2 p-6">
-                  <p className="font-plex text-lg font-semibold leading-8 text-ink">The best way to provide enough homes in large cities is to build tall apartment blocks.</p>
-                  <p className="mt-4 font-plex text-base font-semibold text-ink">To what extent do you agree or disagree with this statement?</p>
-                </div>
-                <p className="mt-5">Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>
-              </>
+              selectedTestNumber === 2 ? (
+                <>
+                  <p>You should write about the following topic:</p>
+                  <div className="mt-5 border-y border-divider bg-surface-2 p-6">
+                    <p className="font-plex text-lg font-semibold leading-8 text-ink">Some university students want to learn about other subjects in addition to their main subjects. Others believe it is more important to give all their time and attention to studying for a qualification.</p>
+                    <p className="mt-4 font-plex text-base font-semibold text-ink">Discuss both these views and give your own opinion.</p>
+                  </div>
+                  <p className="mt-5">Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>
+                </>
+              ) : (
+                <>
+                  <p>You should write about the following topic:</p>
+                  <div className="mt-5 border-y border-divider bg-surface-2 p-6">
+                    <p className="font-plex text-lg font-semibold leading-8 text-ink">The best way to provide enough homes in large cities is to build tall apartment blocks.</p>
+                    <p className="mt-4 font-plex text-base font-semibold text-ink">To what extent do you agree or disagree with this statement?</p>
+                  </div>
+                  <p className="mt-5">Give reasons for your answer and include any relevant examples from your own knowledge or experience.</p>
+                </>
+              )
             )}
           </div>
         </article>
@@ -857,6 +983,7 @@ type SpeakingExamProps = {
   setCurrentPart: React.Dispatch<React.SetStateAction<number>>
   timeLeft: number
   part?: number
+  selectedTestNumber?: number
   onRecording?: (part: number, recording: Blob) => void
   onFinishSpeaking?: (data: {
     recordings: Record<number, string>
@@ -865,6 +992,56 @@ type SpeakingExamProps = {
     blobs: Record<number, Blob>
   }) => void
   onFinish: () => void
+}
+
+const SPEAKING_CONTENT_2: Record<number, SpeakingContentItem> = {
+  1: {
+    label: 'Introduction and interview',
+    title: 'Science',
+    intro: 'The examiner asks you about yourself, your home, work or studies and other familiar topics.',
+    questions: [
+      'Did you like studying science when you were at school? [Why/Why not?]',
+      'What do you remember about your science teachers at school?',
+      'How interested are you in science now? [Why/Why not?]',
+      'What do you think has been an important recent scientific development? [Why?]',
+    ],
+  },
+  2: {
+    label: 'Individual long turn',
+    title: 'Describe a tourist attraction in your country that you would recommend.',
+    intro: 'You will have to talk about the topic for one to two minutes. You have one minute to think about what you are going to say. You can make some notes to help you if you wish.',
+    subheading: 'You should say:',
+    questions: [
+      'what the tourist attraction is',
+      'where in your country this tourist attraction is',
+      'what visitors can see and do at this tourist attraction',
+      'and explain why you would recommend this tourist attraction.',
+    ],
+  },
+  3: {
+    label: 'Two-way discussion',
+    title: 'Museums & Holidays',
+    intro: 'Discussion topics:',
+    questions: [],
+    topics: [
+      {
+        title: 'Museums and art galleries',
+        questions: [
+          'What are the most popular museums and art galleries in ... / where you live?',
+          'Do you believe that all museums and art galleries should be free?',
+          'What kinds of things make a museum or art gallery an interesting place to visit?',
+        ]
+      },
+      {
+        title: 'The holiday industry',
+        questions: [
+          'Why, do you think, do some people book package holidays rather than travelling independently?',
+          'Would you say that large numbers of tourists cause problems for local people?',
+          'What sort of impact can large holiday resorts have on the environment?',
+        ]
+      }
+    ]
+  },
 }
 
 type SpeakingTopic = {
@@ -938,9 +1115,10 @@ const SPEAKING_CONTENT: Record<number, SpeakingContentItem> = {
   },
 }
 
-function SpeakingExam({ currentPart, setCurrentPart, timeLeft, part, onRecording, onFinishSpeaking, onFinish }: SpeakingExamProps) {
+function SpeakingExam({ currentPart, setCurrentPart, timeLeft, part, onRecording, onFinishSpeaking, onFinish, selectedTestNumber = 1 }: SpeakingExamProps) {
   const activePart = part ?? currentPart
-  const content = SPEAKING_CONTENT[activePart] ?? SPEAKING_CONTENT[1]
+  const activeContent = selectedTestNumber === 2 ? SPEAKING_CONTENT_2 : SPEAKING_CONTENT
+  const content = activeContent[activePart] ?? activeContent[1]
   const recorderRef = useRef<MediaRecorder | null>(null)
   const streamRef = useRef<MediaStream | null>(null)
   const chunksRef = useRef<Blob[]>([])
@@ -1327,22 +1505,35 @@ export default function PracticeTest() {
   const visibleTests = filter === 'All' ? TESTS : TESTS.filter(test => test.type === filter)
   const answered = Object.keys(answers).filter(key => answers[Number(key)]?.trim()).length
   const listeningScore = useMemo(() => {
-    const regularScore = Object.entries(LISTENING_ANSWERS).reduce((total, [key, accepted]) => {
+    const isTest2 = selectedTest.testNumber === 2
+    const activeAnswers = isTest2 ? LISTENING_ANSWERS_2 : LISTENING_ANSWERS
+    const paired = isTest2 ? [11, 12, 13, 14, 25, 26] : [21, 22, 23, 24]
+    
+    const regularScore = Object.entries(activeAnswers).reduce((total, [key, accepted]) => {
       const id = Number(key)
-      if ([21, 22, 23, 24].includes(id)) return total
+      if (paired.includes(id)) return total
       const response = answers[id]?.trim().toLowerCase()
       return total + (accepted.some(value => value.toLowerCase() === response) ? 1 : 0)
     }, 0)
+    
     const pairScore = ([first, second]: number[], expected: string[]) => {
       const responses = new Set([answers[first]?.toUpperCase(), answers[second]?.toUpperCase()].filter(Boolean))
       return expected.filter(value => responses.has(value)).length
     }
+    
+    if (isTest2) {
+      return regularScore + pairScore([11, 12], ['B', 'E']) + pairScore([13, 14], ['B', 'C']) + pairScore([25, 26], ['A', 'B'])
+    }
     return regularScore + pairScore([21, 22], ['B', 'D']) + pairScore([23, 24], ['C', 'E'])
-  }, [answers])
-  const readingScore = useMemo(() => Object.entries(READING_ANSWERS).reduce((total, [key, accepted]) => {
-    const response = answers[Number(key)]?.trim().toLowerCase().replace(/\s+/g, ' ')
-    return total + (accepted.some(value => value.toLowerCase() === response) ? 1 : 0)
-  }, 0), [answers])
+  }, [answers, selectedTest.testNumber])
+
+  const readingScore = useMemo(() => {
+    const activeAnswers = selectedTest.testNumber === 2 ? READING_ANSWERS_2 : READING_ANSWERS
+    return Object.entries(activeAnswers).reduce((total, [key, accepted]) => {
+      const response = answers[Number(key)]?.trim().toLowerCase().replace(/\s+/g, ' ')
+      return total + (accepted.some(value => value.toLowerCase() === response) ? 1 : 0)
+    }, 0)
+  }, [answers, selectedTest.testNumber])
 
   const listeningBand = (raw: number) => {
     if (raw >= 39) return 9.0
@@ -1904,10 +2095,13 @@ export default function PracticeTest() {
     const displayedBand = isListening ? listeningBand(projectedListeningScore) : readingBand(projectedReadingScore)
     const correctAnswers = isListening ? listeningScore : readingScore
 
+    const activePassages = selectedTest.testNumber === 2 ? READING_PASSAGES_2 : READING_PASSAGES
+    const activeAnswers = selectedTest.testNumber === 2 ? READING_ANSWERS_2 : READING_ANSWERS
+
     const readingQuestions = selectedTest.type === 'Reading'
       ? selectedTest.part !== undefined
-        ? READING_PASSAGES[selectedTest.part - 1]?.questions || []
-        : READING_PASSAGES.flatMap(p => p.questions)
+        ? activePassages[selectedTest.part - 1]?.questions || []
+        : activePassages.flatMap(p => p.questions)
       : []
 
     const isAnswerCorrect = (userAns: string | undefined, accepted: string[]) => {
@@ -1918,7 +2112,7 @@ export default function PracticeTest() {
 
     const questionReviewItems = readingQuestions.map(q => {
       const userAns = answers[q.id]?.trim() || ''
-      const accepted = READING_ANSWERS[q.id] || []
+      const accepted = activeAnswers[q.id] || []
       const correct = isAnswerCorrect(userAns, accepted)
       const unanswered = !userAns
       return {
@@ -2145,16 +2339,17 @@ export default function PracticeTest() {
         )
       }
       if (fullModule === 'Reading') {
-        return <ReadingExam answers={answers} setAnswers={setAnswers} currentQ={currentQ} setCurrentQ={setCurrentQ} timeLeft={timeLeft} onFinish={advanceFullTest} />
+        return <ReadingExam answers={answers} setAnswers={setAnswers} currentQ={currentQ} setCurrentQ={setCurrentQ} timeLeft={timeLeft} selectedTestNumber={selectedTest.testNumber || 1} onFinish={advanceFullTest} />
       }
       if (fullModule === 'Writing') {
-        return <WritingExam answers={answers} setAnswers={setAnswers} currentTask={currentQ} setCurrentTask={setCurrentQ} timeLeft={timeLeft} onFinish={advanceFullTest} />
+        return <WritingExam answers={answers} setAnswers={setAnswers} currentTask={currentQ} setCurrentTask={setCurrentQ} timeLeft={timeLeft} selectedTestNumber={selectedTest.testNumber || 1} onFinish={advanceFullTest} />
       }
       return (
         <SpeakingExam
           currentPart={currentQ}
           setCurrentPart={setCurrentQ}
           timeLeft={timeLeft}
+          selectedTestNumber={selectedTest.testNumber || 1}
           onRecording={(part, recording) => setFullAttempt(current => ({ ...current, speaking: { ...current.speaking, [part]: recording } }))}
           onFinishSpeaking={data => {
             setFullAttempt(current => ({
@@ -2174,6 +2369,7 @@ export default function PracticeTest() {
           setCurrentPart={setCurrentQ}
           timeLeft={timeLeft}
           part={selectedTest.part}
+          selectedTestNumber={selectedTest.testNumber || 1}
           onFinishSpeaking={handleFinishSpeaking}
           onFinish={() => setStage('result')}
         />
@@ -2188,6 +2384,7 @@ export default function PracticeTest() {
           setCurrentTask={setCurrentQ}
           timeLeft={timeLeft}
           part={selectedTest.part}
+          selectedTestNumber={selectedTest.testNumber || 1}
           onFinish={() => setStage('result')}
         />
       )
@@ -2220,6 +2417,7 @@ export default function PracticeTest() {
           setCurrentQ={setCurrentQ}
           timeLeft={timeLeft}
           part={selectedTest.part}
+          selectedTestNumber={selectedTest.testNumber || 1}
           onFinish={() => setStage('result')}
         />
       )
