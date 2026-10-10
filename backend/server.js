@@ -232,6 +232,14 @@ app.get('/api/audio/catalog', (req, res) => {
   res.json(catalog)
 })
 
+// External fallback links for audio files not stored locally
+const EXTERNAL_AUDIO_LINKS = {
+  '18-1-1': 'https://ewubd-my.sharepoint.com/:u:/g/personal/2023-3-60-051_std_ewubd_edu/IQBv4a8twI6ZQLolwjxkN-7MASimYUsDU31TgXkZG9mXYZk?download=1',
+  '18-1-2': 'https://ewubd-my.sharepoint.com/:u:/g/personal/2023-3-60-051_std_ewubd_edu/IQCbL_fftHuJSKq31i6znV0vAVxjS5jbTBb-6Hf40V-Hiu0?download=1',
+  '18-1-3': 'https://ewubd-my.sharepoint.com/:u:/g/personal/2023-3-60-051_std_ewubd_edu/IQB74jD5Za3RR4kn_Na0IhfZARX7Msfm4dop2PJ7QiodC1o?download=1',
+  '18-1-4': 'https://ewubd-my.sharepoint.com/:u:/g/personal/2023-3-60-051_std_ewubd_edu/IQBgEvfdh6wzQoYrgngcZDO9ATyTga285kJXlj60U5hN7wg?download=1',
+}
+
 /** Stream audio by Book, Test, and Part */
 app.get('/api/audio/stream/:book/:test/:part', (req, res) => {
   const { book, test, part } = req.params
@@ -248,6 +256,13 @@ app.get('/api/audio/stream/:book/:test/:part', (req, res) => {
   )
 
   if (!match) {
+    // Check if we have an external fallback link
+    const fallbackKey = `${bookNum}-${testNum}-${partNum}`
+    if (EXTERNAL_AUDIO_LINKS[fallbackKey]) {
+      console.log(`[Audio] Redirecting to external link for ${fallbackKey}`)
+      return res.redirect(EXTERNAL_AUDIO_LINKS[fallbackKey])
+    }
+
     return res.status(404).json({
       error: `Audio not found for IELTS Book ${book}, Test ${test}, Part ${part}`,
       availableBooks: Object.keys(catalog.books)
