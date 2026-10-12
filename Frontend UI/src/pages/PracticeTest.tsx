@@ -38,6 +38,7 @@ const TESTS: Test[] = [
   { id: 'r2-p2', type: 'Reading', module: 'Academic', title: 'IELTS 18 — Reading Test 2 · Part 2', questions: 13, duration: 20, difficulty: 'Passage practice', status: 'New', part: 2, book: '18', testNumber: 2 },
   { id: 'r2-p3', type: 'Reading', module: 'Academic', title: 'IELTS 18 — Reading Test 2 · Part 3', questions: 14, duration: 20, difficulty: 'Passage practice', status: 'New', part: 3, book: '18', testNumber: 2 },
   { id: 'r3-p1', type: 'Reading', module: 'Academic', title: 'IELTS 18 — Reading Test 3 · Part 1', questions: 13, duration: 20, difficulty: 'Passage practice', status: 'New', part: 1, book: '18', testNumber: 3 },
+  { id: 'r3-p2', type: 'Reading', module: 'Academic', title: 'IELTS 18 — Reading Test 3 · Part 2', questions: 13, duration: 20, difficulty: 'Passage practice', status: 'New', part: 2, book: '18', testNumber: 3 },
   { id: 'l1', type: 'Listening', module: 'Academic', title: 'IELTS 18 — Listening Test 1 (Full 4 Parts)', questions: 40, duration: 40, difficulty: 'Official format', status: 'In progress', book: '18', testNumber: 1 },
   { id: 'l1-p1', type: 'Listening', module: 'Academic', title: 'IELTS 18 — Listening Test 1 · Part 1', questions: 10, duration: 10, difficulty: 'Section practice', status: 'New', part: 1, book: '18', testNumber: 1 },
   { id: 'l1-p2', type: 'Listening', module: 'Academic', title: 'IELTS 18 — Listening Test 1 · Part 2', questions: 10, duration: 10, difficulty: 'Section practice', status: 'New', part: 2, book: '18', testNumber: 1 },
@@ -655,7 +656,10 @@ function ReadingExam({ answers, setAnswers, currentQ, setCurrentQ, timeLeft, par
     setAnswers(values => ({ ...values, [id]: value }))
     setCurrentQ(id)
   }
-  const optionValue = (option: string) => /^[A-I] ·/.test(option) ? option.charAt(0) : option
+  const optionValue = (option: string) => {
+    const match = option.match(/^([A-I]|(?:i|ii|iii|iv|v|vi|vii|viii|ix|x))\s*·/)
+    return match ? match[1] : option
+  }
 
   return (
     <main className="fixed inset-x-0 bottom-0 top-14 z-30 flex flex-col bg-surface">
