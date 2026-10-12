@@ -42,6 +42,7 @@ const TESTS: Test[] = [
   { id: 'r3-p2', type: 'Reading', module: 'Academic', title: 'IELTS 18 — Reading Test 3 · Part 2', questions: 13, duration: 20, difficulty: 'Passage practice', status: 'New', part: 2, book: '18', testNumber: 3 },
   { id: 'r3-p3', type: 'Reading', module: 'Academic', title: 'IELTS 18 — Reading Test 3 · Part 3', questions: 14, duration: 20, difficulty: 'Passage practice', status: 'New', part: 3, book: '18', testNumber: 3 },
   { id: 'r4-p1', type: 'Reading', module: 'Academic', title: 'IELTS 18 — Reading Test 4 · Part 1', questions: 13, duration: 20, difficulty: 'Passage practice', status: 'New', part: 1, book: '18', testNumber: 4 },
+  { id: 'r4-p2', type: 'Reading', module: 'Academic', title: 'IELTS 18 — Reading Test 4 · Part 2', questions: 13, duration: 20, difficulty: 'Passage practice', status: 'New', part: 2, book: '18', testNumber: 4 },
   { id: 'l1', type: 'Listening', module: 'Academic', title: 'IELTS 18 — Listening Test 1 (Full 4 Parts)', questions: 40, duration: 40, difficulty: 'Official format', status: 'In progress', book: '18', testNumber: 1 },
   { id: 'l1-p1', type: 'Listening', module: 'Academic', title: 'IELTS 18 — Listening Test 1 · Part 1', questions: 10, duration: 10, difficulty: 'Section practice', status: 'New', part: 1, book: '18', testNumber: 1 },
   { id: 'l1-p2', type: 'Listening', module: 'Academic', title: 'IELTS 18 — Listening Test 1 · Part 2', questions: 10, duration: 10, difficulty: 'Section practice', status: 'New', part: 2, book: '18', testNumber: 1 },
@@ -695,9 +696,9 @@ function ReadingExam({ answers, setAnswers, currentQ, setCurrentQ, timeLeft, par
             {passage.subtitle && <p className="mt-2 font-plex text-sm font-semibold italic leading-6 text-graphite">{passage.subtitle}</p>}
             <div className="mt-5 space-y-5 font-plex text-sm leading-7 text-ink">
               {passage.paragraphs.map((paragraph, index) => {
-                const match = paragraph.match(/^([A-Z]\.?)\s+([\s\S]*)$/)
+                const match = paragraph.match(/^([A-Z]\.)\s+([\s\S]*)$/)
                 if (match) {
-                  const label = match[1].endsWith('.') ? match[1] : `${match[1]}.`
+                  const label = match[1]
                   return (
                     <p key={index} className="whitespace-pre-line">
                       <strong className="mr-2 inline-block font-bold text-ink">{label}</strong>
