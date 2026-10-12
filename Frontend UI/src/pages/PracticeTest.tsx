@@ -1503,6 +1503,40 @@ export default function PracticeTest() {
     })
   }, [])
 
+  // Synchronize stages with browser history so clicking browser back navigates between stages
+  useEffect(() => {
+    // Ensure initial entry has stage state
+    if (!window.history.state || window.history.state.vistoraStage === undefined) {
+      window.history.replaceState({ ...(window.history.state || {}), vistoraStage: stage }, '')
+    }
+
+    const handlePopState = (event: PopStateEvent) => {
+      const targetStage = event.state?.vistoraStage
+      if (targetStage) {
+        setStage(targetStage)
+        if (targetStage === 'select') {
+          if (soundTestAudioRef.current) {
+            soundTestAudioRef.current.pause()
+            setSoundTestPlaying(false)
+          }
+        }
+      } else if (stage !== 'select') {
+        // Fallback: if browser popped to a history entry without stage state, return to select rather than leaving
+        setStage('select')
+      }
+    }
+
+    window.addEventListener('popstate', handlePopState)
+    return () => window.removeEventListener('popstate', handlePopState)
+  }, [stage])
+
+  const goToStage = (nextStage: 'select' | 'instructions' | 'test' | 'result') => {
+    if (nextStage !== stage) {
+      window.history.pushState({ ...(window.history.state || {}), vistoraStage: nextStage }, '')
+      setStage(nextStage)
+    }
+  }
+
   // Sync book/test when test selection changes
   useEffect(() => {
     if (selectedTest.book) setSelectedBook(selectedTest.book)
@@ -1632,7 +1666,7 @@ export default function PracticeTest() {
     blobs?: Record<number, Blob>
   }) => {
     setSpeakingData(data)
-    setStage('result')
+    goToStage('result')
 
     const activePart = selectedTest.part
     const partsToInclude = activePart ? [activePart] : [1, 2, 3]
@@ -1699,7 +1733,7 @@ export default function PracticeTest() {
     if (fullModule === 'Writing') setFullAttempt(current => ({ ...current, writing: { ...answers } }))
     setFullCompleted(current => current.includes(fullModule) ? current : [...current, fullModule])
     if (currentIndex === FULL_TEST_ORDER.length - 1) {
-      setStage('result')
+      goToStage('result')
       return
     }
     const nextModule = FULL_TEST_ORDER[currentIndex + 1]
@@ -1713,7 +1747,7 @@ export default function PracticeTest() {
     if (stage !== 'test') return
     if (timeLeft <= 0) {
       if (selectedTest.type === 'Full Test') advanceFullTest()
-      else setStage('result')
+      else goToStage('result')
       return
     }
     const timer = window.setInterval(() => setTimeLeft(value => value - 1), 1000)
@@ -1747,7 +1781,7 @@ export default function PracticeTest() {
     } else {
       setTimeLeft(selectedTest.duration * 60)
     }
-    setStage('test')
+    goToStage('test')
   }
 
   const connectAudio = (file?: File) => {
@@ -1758,7 +1792,7 @@ export default function PracticeTest() {
   }
 
   const resetTest = () => {
-    setStage('select')
+    goToStage('select')
     setAnswers({})
     setCurrentQ(1)
     setResultFilter('all')
@@ -1790,7 +1824,7 @@ export default function PracticeTest() {
           writingAnswers={fullAttempt.writing}
           speakingRecordings={fullAttempt.speaking}
           onExit={resetTest}
-          onRetake={() => setStage('instructions')}
+          onRetake={() => goToStage('instructions')}
         />
       )
     }
@@ -2045,7 +2079,7 @@ export default function PracticeTest() {
                   Return to Test Centre
                 </button>
                 <button
-                  onClick={() => setStage('instructions')}
+                  onClick={() => goToStage('instructions')}
                   className="rounded-card border border-divider px-6 py-3 font-plex text-sm font-semibold text-ink hover:bg-surface-2"
                 >
                   Practice Speaking Again
@@ -2061,7 +2095,7 @@ export default function PracticeTest() {
               <p className="mt-2 max-w-2xl text-sm leading-6 text-graphite-mid">Speaking response captured. Ready for evaluation.</p>
               <div className="mt-8 flex gap-3">
                 <button onClick={resetTest} className="rounded-card bg-electric px-6 py-3 font-plex text-sm font-semibold text-white">Return to test centre</button>
-                <button onClick={() => setStage('instructions')} className="rounded-card border border-divider px-6 py-3 font-plex text-sm font-semibold text-ink">Practice again</button>
+                <button onClick={() => goToStage('instructions')} className="rounded-card border border-divider px-6 py-3 font-plex text-sm font-semibold text-ink">Practice again</button>
               </div>
             </section>
           )}
@@ -2091,7 +2125,7 @@ export default function PracticeTest() {
             </div>
             <div className="mt-8 flex gap-3">
               <button onClick={resetTest} className="rounded-card bg-electric px-6 py-3 font-plex text-sm font-semibold text-white">Return to test centre</button>
-              <button onClick={() => setStage('instructions')} className="rounded-card border border-divider px-6 py-3 font-plex text-sm font-semibold text-ink">Retake test</button>
+              <button onClick={() => goToStage('instructions')} className="rounded-card border border-divider px-6 py-3 font-plex text-sm font-semibold text-ink">Retake test</button>
             </div>
           </section>
         </main>
@@ -2174,7 +2208,7 @@ export default function PracticeTest() {
             <button onClick={resetTest} className="rounded-card border border-divider bg-surface px-6 py-3 font-plex text-sm font-semibold text-ink transition-colors hover:border-graphite-light">
               Return to test centre
             </button>
-            <button onClick={() => setStage('instructions')} className="rounded-card border border-divider bg-surface px-6 py-3 font-plex text-sm font-semibold text-ink transition-colors hover:border-graphite-light">
+            <button onClick={() => goToStage('instructions')} className="rounded-card border border-divider bg-surface px-6 py-3 font-plex text-sm font-semibold text-ink transition-colors hover:border-graphite-light">
               Retake test
             </button>
           </div>
@@ -2379,7 +2413,7 @@ export default function PracticeTest() {
           part={selectedTest.part}
           selectedTestNumber={selectedTest.testNumber || 1}
           onFinishSpeaking={handleFinishSpeaking}
-          onFinish={() => setStage('result')}
+          onFinish={() => goToStage('result')}
         />
       )
     }
@@ -2393,7 +2427,7 @@ export default function PracticeTest() {
           timeLeft={timeLeft}
           part={selectedTest.part}
           selectedTestNumber={selectedTest.testNumber || 1}
-          onFinish={() => setStage('result')}
+          onFinish={() => goToStage('result')}
         />
       )
     }
@@ -2412,7 +2446,7 @@ export default function PracticeTest() {
           selectedTestNumber={selectedTestNum}
           backendConnected={backendHealth.connected}
           onAudioFile={connectAudio}
-          onFinish={() => setStage('result')}
+          onFinish={() => goToStage('result')}
         />
       )
     }
@@ -2426,7 +2460,7 @@ export default function PracticeTest() {
           timeLeft={timeLeft}
           part={selectedTest.part}
           selectedTestNumber={selectedTest.testNumber || 1}
-          onFinish={() => setStage('result')}
+          onFinish={() => goToStage('result')}
         />
       )
     }
@@ -2439,7 +2473,7 @@ export default function PracticeTest() {
     const isFullTest = selectedTest.type === 'Full Test'
     return (
       <main className="mx-auto max-w-5xl px-6 py-10">
-        <button onClick={() => setStage('select')} className="mb-6 font-mono text-xs uppercase tracking-wide text-graphite-mid hover:text-accent">← Back to test centre</button>
+        <button onClick={() => goToStage('select')} className="mb-6 font-mono text-xs uppercase tracking-wide text-graphite-mid hover:text-accent">← Back to test centre</button>
         <div className="grid gap-6 md:grid-cols-3">
           <section className="border border-divider bg-surface p-6 md:col-span-2">
             <div className="label-tag">Before you begin</div>
@@ -2653,7 +2687,7 @@ export default function PracticeTest() {
           <div className="mt-1 font-plex text-sm font-semibold text-ink">{selectedTest.title}</div>
           <div className="mt-1 font-mono text-xs text-graphite-light">{selectedTest.module} · {selectedTest.questions} questions · {selectedTest.duration} minutes</div>
         </div>
-        <button onClick={() => setStage('instructions')} className="rounded-card bg-electric px-7 py-3 font-plex text-sm font-semibold text-white transition-colors hover:bg-electric-light">View instructions and begin →</button>
+        <button onClick={() => goToStage('instructions')} className="rounded-card bg-electric px-7 py-3 font-plex text-sm font-semibold text-white transition-colors hover:bg-electric-light">View instructions and begin →</button>
       </section>
     </main>
   )
