@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { READING_ANSWERS, READING_PASSAGES } from '../data/readingTest1'
 import { READING_ANSWERS_2, READING_PASSAGES_2 } from '../data/readingTest2'
 import { READING_ANSWERS_3, READING_PASSAGES_3 } from '../data/readingTest3'
+import { READING_ANSWERS_4, READING_PASSAGES_4 } from '../data/readingTest4'
 import { LISTENING_ANSWERS } from '../data/listeningTest1'
 import { LISTENING_ANSWERS_2, LISTENING_PARTS_2 } from '../data/listeningTest2'
 import FullTestResult from '../components/FullTestResult'
@@ -40,6 +41,7 @@ const TESTS: Test[] = [
   { id: 'r3-p1', type: 'Reading', module: 'Academic', title: 'IELTS 18 — Reading Test 3 · Part 1', questions: 13, duration: 20, difficulty: 'Passage practice', status: 'New', part: 1, book: '18', testNumber: 3 },
   { id: 'r3-p2', type: 'Reading', module: 'Academic', title: 'IELTS 18 — Reading Test 3 · Part 2', questions: 13, duration: 20, difficulty: 'Passage practice', status: 'New', part: 2, book: '18', testNumber: 3 },
   { id: 'r3-p3', type: 'Reading', module: 'Academic', title: 'IELTS 18 — Reading Test 3 · Part 3', questions: 14, duration: 20, difficulty: 'Passage practice', status: 'New', part: 3, book: '18', testNumber: 3 },
+  { id: 'r4-p1', type: 'Reading', module: 'Academic', title: 'IELTS 18 — Reading Test 4 · Part 1', questions: 13, duration: 20, difficulty: 'Passage practice', status: 'New', part: 1, book: '18', testNumber: 4 },
   { id: 'l1', type: 'Listening', module: 'Academic', title: 'IELTS 18 — Listening Test 1 (Full 4 Parts)', questions: 40, duration: 40, difficulty: 'Official format', status: 'In progress', book: '18', testNumber: 1 },
   { id: 'l1-p1', type: 'Listening', module: 'Academic', title: 'IELTS 18 — Listening Test 1 · Part 1', questions: 10, duration: 10, difficulty: 'Section practice', status: 'New', part: 1, book: '18', testNumber: 1 },
   { id: 'l1-p2', type: 'Listening', module: 'Academic', title: 'IELTS 18 — Listening Test 1 · Part 2', questions: 10, duration: 10, difficulty: 'Section practice', status: 'New', part: 2, book: '18', testNumber: 1 },
@@ -641,7 +643,7 @@ type ReadingExamProps = {
 
 function ReadingExam({ answers, setAnswers, currentQ, setCurrentQ, timeLeft, part, selectedTestNumber = 1, onFinish }: ReadingExamProps) {
   const passageIndex = currentQ <= 13 ? 0 : currentQ <= 26 ? 1 : 2
-  const activePassages = selectedTestNumber === 3 ? READING_PASSAGES_3 : selectedTestNumber === 2 ? READING_PASSAGES_2 : READING_PASSAGES
+  const activePassages = selectedTestNumber === 4 ? READING_PASSAGES_4 : selectedTestNumber === 3 ? READING_PASSAGES_3 : selectedTestNumber === 2 ? READING_PASSAGES_2 : READING_PASSAGES
   const passage = activePassages[passageIndex] || activePassages[0]
   const answered = Object.keys(answers).filter(key => {
     const num = Number(key)
@@ -1569,11 +1571,23 @@ export default function PracticeTest() {
   }, [answers, selectedTest.testNumber])
 
   const readingScore = useMemo(() => {
-    const activeAnswers = selectedTest.testNumber === 3 ? READING_ANSWERS_3 : selectedTest.testNumber === 2 ? READING_ANSWERS_2 : READING_ANSWERS
-    return Object.entries(activeAnswers).reduce((total, [key, accepted]) => {
-      const response = answers[Number(key)]?.trim().toLowerCase().replace(/\s+/g, ' ')
+    const isTest4 = selectedTest.testNumber === 4
+    const activeAnswers = isTest4 ? READING_ANSWERS_4 : selectedTest.testNumber === 3 ? READING_ANSWERS_3 : selectedTest.testNumber === 2 ? READING_ANSWERS_2 : READING_ANSWERS
+    const paired = isTest4 ? [10, 11, 12, 13] : []
+    const regularScore = Object.entries(activeAnswers).reduce((total, [key, accepted]) => {
+      const id = Number(key)
+      if (paired.includes(id)) return total
+      const response = answers[id]?.trim().toLowerCase().replace(/\s+/g, ' ')
       return total + (accepted.some(value => value.toLowerCase() === response) ? 1 : 0)
     }, 0)
+    if (isTest4) {
+      const pairScore = ([first, second]: number[], expected: string[]) => {
+        const responses = new Set([answers[first]?.toUpperCase(), answers[second]?.toUpperCase()].filter(Boolean))
+        return expected.filter(value => responses.has(value)).length
+      }
+      return regularScore + pairScore([10, 11], ['C', 'D']) + pairScore([12, 13], ['A', 'D'])
+    }
+    return regularScore
   }, [answers, selectedTest.testNumber])
 
   const listeningBand = (raw: number) => {
@@ -1764,7 +1778,7 @@ export default function PracticeTest() {
     }
     savedResultKey.current = ''
     setAnswers({})
-    const activeReadingPassages = selectedTest.testNumber === 3 ? READING_PASSAGES_3 : selectedTest.testNumber === 2 ? READING_PASSAGES_2 : READING_PASSAGES
+    const activeReadingPassages = selectedTest.testNumber === 4 ? READING_PASSAGES_4 : selectedTest.testNumber === 3 ? READING_PASSAGES_3 : selectedTest.testNumber === 2 ? READING_PASSAGES_2 : READING_PASSAGES
     const partStart = selectedTest.part
       ? selectedTest.type === 'Reading'
         ? (activeReadingPassages[selectedTest.part - 1]?.range[0] || 1)
@@ -2137,8 +2151,8 @@ export default function PracticeTest() {
     const displayedBand = isListening ? listeningBand(projectedListeningScore) : readingBand(projectedReadingScore)
     const correctAnswers = isListening ? listeningScore : readingScore
 
-    const activePassages = selectedTest.testNumber === 3 ? READING_PASSAGES_3 : selectedTest.testNumber === 2 ? READING_PASSAGES_2 : READING_PASSAGES
-    const activeAnswers = selectedTest.testNumber === 3 ? READING_ANSWERS_3 : selectedTest.testNumber === 2 ? READING_ANSWERS_2 : READING_ANSWERS
+    const activePassages = selectedTest.testNumber === 4 ? READING_PASSAGES_4 : selectedTest.testNumber === 3 ? READING_PASSAGES_3 : selectedTest.testNumber === 2 ? READING_PASSAGES_2 : READING_PASSAGES
+    const activeAnswers = selectedTest.testNumber === 4 ? READING_ANSWERS_4 : selectedTest.testNumber === 3 ? READING_ANSWERS_3 : selectedTest.testNumber === 2 ? READING_ANSWERS_2 : READING_ANSWERS
 
     const readingQuestions = selectedTest.type === 'Reading'
       ? selectedTest.part !== undefined
