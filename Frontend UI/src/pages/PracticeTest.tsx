@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { READING_ANSWERS, READING_PASSAGES } from '../data/readingTest1'
 import { READING_ANSWERS_2, READING_PASSAGES_2 } from '../data/readingTest2'
+import { READING_ANSWERS_3, READING_PASSAGES_3 } from '../data/readingTest3'
 import { LISTENING_ANSWERS } from '../data/listeningTest1'
 import { LISTENING_ANSWERS_2, LISTENING_PARTS_2 } from '../data/listeningTest2'
 import FullTestResult from '../components/FullTestResult'
@@ -36,6 +37,7 @@ const TESTS: Test[] = [
   { id: 'r2-p1', type: 'Reading', module: 'Academic', title: 'IELTS 18 — Reading Test 2 · Part 1', questions: 13, duration: 20, difficulty: 'Passage practice', status: 'New', part: 1, book: '18', testNumber: 2 },
   { id: 'r2-p2', type: 'Reading', module: 'Academic', title: 'IELTS 18 — Reading Test 2 · Part 2', questions: 13, duration: 20, difficulty: 'Passage practice', status: 'New', part: 2, book: '18', testNumber: 2 },
   { id: 'r2-p3', type: 'Reading', module: 'Academic', title: 'IELTS 18 — Reading Test 2 · Part 3', questions: 14, duration: 20, difficulty: 'Passage practice', status: 'New', part: 3, book: '18', testNumber: 2 },
+  { id: 'r3-p1', type: 'Reading', module: 'Academic', title: 'IELTS 18 — Reading Test 3 · Part 1', questions: 13, duration: 20, difficulty: 'Passage practice', status: 'New', part: 1, book: '18', testNumber: 3 },
   { id: 'l1', type: 'Listening', module: 'Academic', title: 'IELTS 18 — Listening Test 1 (Full 4 Parts)', questions: 40, duration: 40, difficulty: 'Official format', status: 'In progress', book: '18', testNumber: 1 },
   { id: 'l1-p1', type: 'Listening', module: 'Academic', title: 'IELTS 18 — Listening Test 1 · Part 1', questions: 10, duration: 10, difficulty: 'Section practice', status: 'New', part: 1, book: '18', testNumber: 1 },
   { id: 'l1-p2', type: 'Listening', module: 'Academic', title: 'IELTS 18 — Listening Test 1 · Part 2', questions: 10, duration: 10, difficulty: 'Section practice', status: 'New', part: 2, book: '18', testNumber: 1 },
@@ -637,8 +639,8 @@ type ReadingExamProps = {
 
 function ReadingExam({ answers, setAnswers, currentQ, setCurrentQ, timeLeft, part, selectedTestNumber = 1, onFinish }: ReadingExamProps) {
   const passageIndex = currentQ <= 13 ? 0 : currentQ <= 26 ? 1 : 2
-  const activePassages = selectedTestNumber === 2 ? READING_PASSAGES_2 : READING_PASSAGES
-  const passage = activePassages[passageIndex]
+  const activePassages = selectedTestNumber === 3 ? READING_PASSAGES_3 : selectedTestNumber === 2 ? READING_PASSAGES_2 : READING_PASSAGES
+  const passage = activePassages[passageIndex] || activePassages[0]
   const answered = Object.keys(answers).filter(key => {
     const num = Number(key)
     if (part !== undefined) {
@@ -760,12 +762,12 @@ function ReadingExam({ answers, setAnswers, currentQ, setCurrentQ, timeLeft, par
             <span className="hidden whitespace-nowrap font-mono text-xs text-graphite-mid lg:inline">{answered}/{totalQuestions} answered</span>
           </div>
           <div className="flex items-center gap-2">
-            <button aria-label="Previous reading passage" disabled={passage.part === 1 || part !== undefined} onClick={() => setCurrentQ(READING_PASSAGES[passageIndex - 1].range[0])} className="h-11 w-11 rounded-sm bg-divider font-plex text-xl font-bold text-white disabled:cursor-not-allowed disabled:opacity-40">←</button>
-            <button aria-label="Next reading passage" disabled={passage.part === 3 || part !== undefined} onClick={() => setCurrentQ(READING_PASSAGES[passageIndex + 1].range[0])} className="h-11 w-11 rounded-sm bg-navy font-plex text-xl font-bold text-white disabled:cursor-not-allowed disabled:opacity-40">→</button>
+            <button aria-label="Previous reading passage" disabled={passage.part === 1 || part !== undefined || !activePassages[passageIndex - 1]} onClick={() => setCurrentQ(activePassages[passageIndex - 1].range[0])} className="h-11 w-11 rounded-sm bg-divider font-plex text-xl font-bold text-white disabled:cursor-not-allowed disabled:opacity-40">←</button>
+            <button aria-label="Next reading passage" disabled={passage.part === activePassages.length || part !== undefined || !activePassages[passageIndex + 1]} onClick={() => setCurrentQ(activePassages[passageIndex + 1].range[0])} className="h-11 w-11 rounded-sm bg-navy font-plex text-xl font-bold text-white disabled:cursor-not-allowed disabled:opacity-40">→</button>
           </div>
         </div>
         <div className="mt-2 flex gap-4 border-t border-divider pt-2">
-          {READING_PASSAGES.filter(item => part === undefined || item.part === part).map(item => (
+          {activePassages.filter(item => part === undefined || item.part === part).map(item => (
             <button key={item.part} onClick={() => setCurrentQ(item.range[0])} className={`font-mono text-xs ${item.part === passage.part ? 'font-semibold text-accent' : 'text-graphite-mid hover:text-ink'}`}>Part {item.part} · {Object.keys(answers).filter(key => Number(key) >= item.range[0] && Number(key) <= item.range[1] && answers[Number(key)]).length}/{item.range[1] - item.range[0] + 1}</button>
           ))}
         </div>
@@ -1528,7 +1530,7 @@ export default function PracticeTest() {
   }, [answers, selectedTest.testNumber])
 
   const readingScore = useMemo(() => {
-    const activeAnswers = selectedTest.testNumber === 2 ? READING_ANSWERS_2 : READING_ANSWERS
+    const activeAnswers = selectedTest.testNumber === 3 ? READING_ANSWERS_3 : selectedTest.testNumber === 2 ? READING_ANSWERS_2 : READING_ANSWERS
     return Object.entries(activeAnswers).reduce((total, [key, accepted]) => {
       const response = answers[Number(key)]?.trim().toLowerCase().replace(/\s+/g, ' ')
       return total + (accepted.some(value => value.toLowerCase() === response) ? 1 : 0)
@@ -1723,9 +1725,10 @@ export default function PracticeTest() {
     }
     savedResultKey.current = ''
     setAnswers({})
+    const activeReadingPassages = selectedTest.testNumber === 3 ? READING_PASSAGES_3 : selectedTest.testNumber === 2 ? READING_PASSAGES_2 : READING_PASSAGES
     const partStart = selectedTest.part
       ? selectedTest.type === 'Reading'
-        ? READING_PASSAGES[selectedTest.part - 1].range[0]
+        ? (activeReadingPassages[selectedTest.part - 1]?.range[0] || 1)
         : selectedTest.type === 'Writing' || selectedTest.type === 'Speaking'
           ? selectedTest.part
         : (selectedTest.part - 1) * 10 + 1
@@ -2095,8 +2098,8 @@ export default function PracticeTest() {
     const displayedBand = isListening ? listeningBand(projectedListeningScore) : readingBand(projectedReadingScore)
     const correctAnswers = isListening ? listeningScore : readingScore
 
-    const activePassages = selectedTest.testNumber === 2 ? READING_PASSAGES_2 : READING_PASSAGES
-    const activeAnswers = selectedTest.testNumber === 2 ? READING_ANSWERS_2 : READING_ANSWERS
+    const activePassages = selectedTest.testNumber === 3 ? READING_PASSAGES_3 : selectedTest.testNumber === 2 ? READING_PASSAGES_2 : READING_PASSAGES
+    const activeAnswers = selectedTest.testNumber === 3 ? READING_ANSWERS_3 : selectedTest.testNumber === 2 ? READING_ANSWERS_2 : READING_ANSWERS
 
     const readingQuestions = selectedTest.type === 'Reading'
       ? selectedTest.part !== undefined
