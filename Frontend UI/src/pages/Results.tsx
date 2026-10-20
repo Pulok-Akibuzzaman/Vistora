@@ -3,9 +3,30 @@ import { NavLink } from 'react-router'
 import { fetchResults, deleteExamResultApi, type StoredExamResult } from '../lib/api'
 import { useAuth } from '../lib/authContext'
 import { READING_ANSWERS, READING_PASSAGES } from '../data/readingTest1'
+import { READING_ANSWERS_2, READING_PASSAGES_2 } from '../data/readingTest2'
+import { READING_ANSWERS_3, READING_PASSAGES_3 } from '../data/readingTest3'
+import { READING_ANSWERS_4, READING_PASSAGES_4 } from '../data/readingTest4'
 import { LISTENING_ANSWERS } from '../data/listeningTest1'
+import { LISTENING_ANSWERS_2 } from '../data/listeningTest2'
 
 const FILTERS = ['All', 'Full Test', 'Reading', 'Listening', 'Writing', 'Speaking'] as const
+
+const READING_TESTS: Record<number, { passages: typeof READING_PASSAGES; answers: Record<number, string[]> }> = {
+  1: { passages: READING_PASSAGES, answers: READING_ANSWERS },
+  2: { passages: READING_PASSAGES_2, answers: READING_ANSWERS_2 },
+  3: { passages: READING_PASSAGES_3, answers: READING_ANSWERS_3 },
+  4: { passages: READING_PASSAGES_4, answers: READING_ANSWERS_4 },
+}
+
+// Older results don't store testNumber/part, so fall back to the title, e.g. "IELTS 18 — Reading Test 3 · Part 1"
+function getResultTest(result: StoredExamResult) {
+  const titleTest = result.testTitle.match(/Test (\d+)/)
+  const titlePart = result.testTitle.match(/Part (\d+)/)
+  return {
+    testNumber: result.testNumber ?? (titleTest ? Number(titleTest[1]) : 1),
+    part: result.part ?? (titlePart ? Number(titlePart[1]) : undefined),
+  }
+}
 
 function getTestTypeBadge(testType: string) {
   switch (testType) {
@@ -70,22 +91,19 @@ function ResultDetail({ result, userName }: { result: StoredExamResult; userName
   // Reading Questions & Diagnostics
   // --------------------------------------------------------------------------
   const isReading = result.testType === 'Reading'
+  const { testNumber, part } = getResultTest(result)
+  const readingTest = READING_TESTS[testNumber]
   const readingQuestions = useMemo(() => {
-    if (!isReading || !result.userAnswers) return []
-    const isPart1 = result.testTitle.includes('Part 1')
-    const isPart2 = result.testTitle.includes('Part 2')
-    const isPart3 = result.testTitle.includes('Part 3')
-    if (isPart1) return READING_PASSAGES[0]?.questions || []
-    if (isPart2) return READING_PASSAGES[1]?.questions || []
-    if (isPart3) return READING_PASSAGES[2]?.questions || []
-    return READING_PASSAGES.flatMap(p => p.questions)
-  }, [isReading, result.testTitle, result.userAnswers])
+    if (!isReading || !result.userAnswers || !readingTest) return []
+    if (part !== undefined) return readingTest.passages[part - 1]?.questions || []
+    return readingTest.passages.flatMap(p => p.questions)
+  }, [isReading, readingTest, part, result.userAnswers])
 
   const readingReviewItems = useMemo(() => {
     if (!isReading || !result.userAnswers || readingQuestions.length === 0) return []
     return readingQuestions.map(q => {
       const userAns = result.userAnswers ? (result.userAnswers[q.id] || result.userAnswers[String(q.id)] || '') : ''
-      const accepted = READING_ANSWERS[q.id] || []
+      const accepted = readingTest?.answers[q.id] || []
       const norm = userAns.trim().toLowerCase().replace(/\s+/g, ' ')
       const correct = accepted.some(val => val.trim().toLowerCase().replace(/\s+/g, ' ') === norm)
       return {
@@ -99,7 +117,7 @@ function ResultDetail({ result, userName }: { result: StoredExamResult; userName
         passageReference: q.passageReference,
       }
     })
-  }, [isReading, readingQuestions, result.userAnswers])
+  }, [isReading, readingQuestions, readingTest, result.userAnswers])
 
   // --------------------------------------------------------------------------
   // Listening Questions & Diagnostics
@@ -107,7 +125,12 @@ function ResultDetail({ result, userName }: { result: StoredExamResult; userName
   const isListening = result.testType === 'Listening'
   const listeningReviewItems = useMemo(() => {
     if (!isListening || !result.userAnswers) return []
-    return Object.entries(LISTENING_ANSWERS).map(([key, accepted]) => {
+    // Listening tests other than Test 2 show Test 1's questions in the practice centre
+    const listeningAnswers = testNumber === 2 ? LISTENING_ANSWERS_2 : LISTENING_ANSWERS
+    return Object.entries(listeningAnswers).filter(([key]) => {
+      const id = Number(key)
+      return part === undefined || (id >= (part - 1) * 10 + 1 && id <= part * 10)
+    }).map(([key, accepted]) => {
       const id = Number(key)
       const userAns = result.userAnswers ? (result.userAnswers[id] || result.userAnswers[key] || '') : ''
       const norm = userAns.trim().toLowerCase().replace(/\s+/g, ' ')
@@ -120,7 +143,7 @@ function ResultDetail({ result, userName }: { result: StoredExamResult; userName
         unanswered: !userAns.trim(),
       }
     })
-  }, [isListening, result.userAnswers])
+  }, [isListening, testNumber, part, result.userAnswers])
 
   const activeReviewItems = isReading ? readingReviewItems : isListening ? listeningReviewItems : []
 

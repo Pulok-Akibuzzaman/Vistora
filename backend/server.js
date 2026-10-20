@@ -573,6 +573,8 @@ app.post('/api/results', (req, res) => {
     userEmail: req.body.userEmail || '',
     testTitle: req.body.testTitle || 'IELTS Practice Session',
     testType: req.body.testType || 'Listening',
+    testNumber: req.body.testNumber,
+    part: req.body.part,
     completedAt: req.body.completedAt || new Date().toISOString(),
     overallBand: req.body.overallBand !== undefined ? req.body.overallBand : null,
     skillBands: req.body.skillBands || {},

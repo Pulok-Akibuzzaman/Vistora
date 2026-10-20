@@ -5,6 +5,8 @@ export type StoredExamResult = {
   userEmail?: string
   testTitle: string
   testType: 'Full Test' | 'Reading' | 'Listening' | 'Writing' | 'Speaking'
+  testNumber?: number
+  part?: number
   completedAt: string
   overallBand: number | null
   skillBands?: Partial<Record<'Listening' | 'Reading' | 'Writing' | 'Speaking', number>>

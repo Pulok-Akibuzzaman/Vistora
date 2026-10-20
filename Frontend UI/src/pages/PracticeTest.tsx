@@ -1655,13 +1655,20 @@ export default function PracticeTest() {
         ? 'Review passage evidence for missed questions and track which question types cause the most difficulty.'
         : 'Writing response submitted. Connect the Gemini evaluation endpoint for criterion-level comments and a band estimate.'
 
+    // The listening audio source can switch the test, so record the one that was actually taken
+    const takenTestNumber = selectedTest.type === 'Listening' ? selectedTestNum : selectedTest.testNumber
+    const listeningSwitched = selectedTest.type === 'Listening' && selectedTestNum !== selectedTest.testNumber
     const resultRecord = {
       id: `${selectedTest.id}-${Date.now()}`,
       userId: user?.id || '',
       userName: user?.name || 'Student',
       userEmail: user?.email || '',
-      testTitle: selectedTest.title,
+      testTitle: listeningSwitched
+        ? `IELTS ${selectedBook} — Listening Test ${selectedTestNum}${selectedTest.part ? ` · Part ${selectedTest.part}` : ''}`
+        : selectedTest.title,
       testType: selectedTest.type,
+      testNumber: takenTestNumber,
+      part: selectedTest.part,
       completedAt: new Date().toISOString(),
       overallBand,
       skillBands: overallBand ? { [selectedTest.type]: overallBand } : {},
@@ -1674,7 +1681,7 @@ export default function PracticeTest() {
 
     saveExamResult(resultRecord as any, user?.email)
     saveExamResultApi(resultRecord as any).catch(() => {})
-  }, [listeningScore, readingScore, selectedTest, stage, timeLeft, user, answers])
+  }, [listeningScore, readingScore, selectedTest, selectedTestNum, selectedBook, stage, timeLeft, user, answers])
 
   const handleFinishSpeaking = async (data: {
     recordings: Record<number, string>
