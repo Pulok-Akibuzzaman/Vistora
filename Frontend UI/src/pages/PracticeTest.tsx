@@ -1550,7 +1550,8 @@ export default function PracticeTest() {
   const visibleTests = filter === 'All' ? TESTS : TESTS.filter(test => test.type === filter)
   const answered = Object.keys(answers).filter(key => answers[Number(key)]?.trim()).length
   const listeningScore = useMemo(() => {
-    const isTest2 = selectedTest.testNumber === 2
+    // Score against the test whose questions were shown, which follows the audio source selection
+    const isTest2 = selectedTestNum === 2
     const activeAnswers = isTest2 ? LISTENING_ANSWERS_2 : LISTENING_ANSWERS
     const paired = isTest2 ? [11, 12, 13, 14, 25, 26] : [21, 22, 23, 24]
     
@@ -1570,7 +1571,7 @@ export default function PracticeTest() {
       return regularScore + pairScore([11, 12], ['B', 'E']) + pairScore([13, 14], ['B', 'C']) + pairScore([25, 26], ['A', 'B'])
     }
     return regularScore + pairScore([21, 22], ['B', 'D']) + pairScore([23, 24], ['C', 'E'])
-  }, [answers, selectedTest.testNumber])
+  }, [answers, selectedTestNum])
 
   const readingScore = useMemo(() => {
     const isTest4 = selectedTest.testNumber === 4
@@ -1836,6 +1837,7 @@ export default function PracticeTest() {
       return (
         <FullTestResult
           listeningAnswers={fullAttempt.listening}
+          listeningTestNumber={selectedTestNum}
           readingAnswers={fullAttempt.reading}
           writingAnswers={fullAttempt.writing}
           speakingRecordings={fullAttempt.speaking}

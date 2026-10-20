@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { READING_ANSWERS } from '../data/readingTest1'
 import { LISTENING_ANSWERS } from '../data/listeningTest1'
+import { LISTENING_ANSWERS_2 } from '../data/listeningTest2'
 import { saveExamResult } from '../lib/results'
 import { saveExamResultApi } from '../lib/api'
 import { useAuth } from '../lib/authContext'
@@ -31,6 +32,7 @@ type AIReport = {
 
 type FullTestResultProps = {
   listeningAnswers: Record<number, string>
+  listeningTestNumber?: number
   readingAnswers: Record<number, string>
   writingAnswers: Record<number, string>
   speakingRecordings: Record<number, Blob>
@@ -98,7 +100,7 @@ function descriptorForBand(band: number) {
   return 'Did not attempt / Non User'
 }
 
-export default function FullTestResult({ listeningAnswers, readingAnswers, writingAnswers, speakingRecordings, onExit, onRetake }: FullTestResultProps) {
+export default function FullTestResult({ listeningAnswers, listeningTestNumber = 1, readingAnswers, writingAnswers, speakingRecordings, onExit, onRetake }: FullTestResultProps) {
   const { user } = useAuth()
   const [report, setReport] = useState<AIReport | null>(null)
   const [analysisState, setAnalysisState] = useState<'analysing' | 'complete' | 'fallback'>('analysing')
@@ -106,12 +108,12 @@ export default function FullTestResult({ listeningAnswers, readingAnswers, writi
   const [mistakesOnly, setMistakesOnly] = useState(true)
   const resultSaved = useRef(false)
 
-  const listeningReview = useMemo(() => Object.entries(LISTENING_ANSWERS).map(([key, accepted]) => {
+  const listeningReview = useMemo(() => Object.entries(listeningTestNumber === 2 ? LISTENING_ANSWERS_2 : LISTENING_ANSWERS).map(([key, accepted]) => {
     const id = Number(key)
     const response = listeningAnswers[id] || ''
     const correct = accepted.some(answer => normalize(answer) === normalize(response))
     return { id, response, accepted, correct }
-  }), [listeningAnswers])
+  }), [listeningAnswers, listeningTestNumber])
 
   const readingReview = useMemo(() => Object.entries(READING_ANSWERS).map(([key, accepted]) => {
     const id = Number(key)
