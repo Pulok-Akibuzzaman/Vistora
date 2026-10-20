@@ -560,9 +560,6 @@ export async function evaluateSpeakingApi(params: {
   transcript: string
   durationSeconds?: number
   wordCount?: number
-  userId?: string
-  userName?: string
-  testTitle?: string
 }): Promise<SpeakingEvaluationResult> {
   const res = await fetch(`${API_BASE}/speaking/evaluate`, {
     method: 'POST',

@@ -891,10 +891,7 @@ app.post('/api/speaking/evaluate', async (req, res) => {
     questions = [],
     transcript = '',
     durationSeconds = 60,
-    wordCount = 0,
-    userId,
-    userName,
-    testTitle
+    wordCount = 0
   } = req.body
 
   if (!transcript || !transcript.trim()) {
@@ -925,30 +922,6 @@ app.post('/api/speaking/evaluate', async (req, res) => {
       durationSeconds,
       wordCount
     })
-  }
-
-  // 3. Auto-save result if testTitle provided
-  if (testTitle && evalResult.overallBand) {
-    try {
-      const results = readData('results.json')
-      const newResult = {
-        id: `s-${Date.now()}`,
-        userId: userId || 'USR-1048',
-        userName: userName || 'Candidate',
-        testTitle,
-        testType: 'Speaking',
-        completedAt: new Date().toISOString(),
-        overallBand: evalResult.overallBand,
-        skillBands: { Speaking: evalResult.overallBand },
-        userAnswers: { transcript, durationSeconds, wordCount },
-        comment: evalResult.summary || 'Speaking practice evaluated by AI.',
-        source: evalResult.source?.includes('puku') ? 'AI' : 'Automatic'
-      }
-      results.unshift(newResult)
-      saveData('results.json', results.slice(0, 100))
-    } catch (saveErr) {
-      console.warn('[Speaking Result Save Error]:', saveErr.message)
-    }
   }
 
   res.json(evalResult)

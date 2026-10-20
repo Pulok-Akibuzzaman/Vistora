@@ -1136,6 +1136,16 @@ function SpeakingExam({ currentPart, setCurrentPart, timeLeft, part, onRecording
   const chunksRef = useRef<Blob[]>([])
   const recognitionRef = useRef<any>(null)
   const blobsRef = useRef<Record<number, Blob>>({})
+  // Refs mirror the latest recording data so finishing (including on timeout) never reads stale state
+  const recordingsRef = useRef<Record<number, string>>({})
+  const transcriptsRef = useRef<Record<number, string>>({})
+  const durationsRef = useRef<Record<number, number>>({})
+  const recordingRef = useRef(false)
+  const recordingPartRef = useRef(1)
+  const startedAtRef = useRef(0)
+  const recorderStoppedRef = useRef<Promise<void> | null>(null)
+  const recognitionEndedRef = useRef<Promise<void> | null>(null)
+  const finishedRef = useRef(false)
 
   const [recording, setRecording] = useState(false)
   const [recordingSeconds, setRecordingSeconds] = useState(0)
@@ -1170,14 +1180,33 @@ function SpeakingExam({ currentPart, setCurrentPart, timeLeft, part, onRecording
   }, [prepLeft])
 
   useEffect(() => () => {
+    recordingRef.current = false
+    const rec = recognitionRef.current
+    recognitionRef.current = null
     streamRef.current?.getTracks().forEach(track => track.stop())
-    if (recognitionRef.current) {
-      try { recognitionRef.current.stop() } catch {}
+    if (rec) {
+      try { rec.stop() } catch {}
     }
-    Object.values(recordings).forEach(url => URL.revokeObjectURL(url))
   }, [])
 
+  const setTranscript = (partNumber: number, text: string) => {
+    transcriptsRef.current = { ...transcriptsRef.current, [partNumber]: text }
+    setTranscripts(transcriptsRef.current)
+  }
+
+  const setDuration = (partNumber: number, seconds: number) => {
+    durationsRef.current = { ...durationsRef.current, [partNumber]: seconds }
+    setDurations(durationsRef.current)
+  }
+
+  const setRecordingUrl = (partNumber: number, url: string) => {
+    if (recordingsRef.current[partNumber]) URL.revokeObjectURL(recordingsRef.current[partNumber])
+    recordingsRef.current = { ...recordingsRef.current, [partNumber]: url }
+    setRecordings(recordingsRef.current)
+  }
+
   const startRecording = async () => {
+    const recordingPart = activePart
     try {
       setMicrophoneError('')
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
@@ -1190,19 +1219,23 @@ function SpeakingExam({ currentPart, setCurrentPart, timeLeft, part, onRecording
         if (event.data.size) chunksRef.current.push(event.data)
       }
 
-      recorder.onstop = () => {
-        const blob = new Blob(chunksRef.current, { type: recorder.mimeType || 'audio/webm' })
-        const url = URL.createObjectURL(blob)
-        blobsRef.current[activePart] = blob
-        setRecordings(values => {
-          if (values[activePart]) URL.revokeObjectURL(values[activePart])
-          return { ...values, [activePart]: url }
-        })
-        onRecording?.(activePart, blob)
-        stream.getTracks().forEach(track => track.stop())
-      }
+      recorderStoppedRef.current = new Promise(resolve => {
+        recorder.onstop = () => {
+          const blob = new Blob(chunksRef.current, { type: recorder.mimeType || 'audio/webm' })
+          blobsRef.current[recordingPart] = blob
+          setRecordingUrl(recordingPart, URL.createObjectURL(blob))
+          onRecording?.(recordingPart, blob)
+          stream.getTracks().forEach(track => track.stop())
+          resolve()
+        }
+      })
 
+      // A new take replaces the previous transcript for this part
+      setTranscript(recordingPart, '')
       setRecordingSeconds(0)
+      recordingPartRef.current = recordingPart
+      startedAtRef.current = Date.now()
+      recordingRef.current = true
       recorder.start()
       setRecording(true)
 
@@ -1227,17 +1260,32 @@ function SpeakingExam({ currentPart, setCurrentPart, timeLeft, part, onRecording
               }
             }
             if (finalChunk) {
-              setTranscripts(prev => ({
-                ...prev,
-                [activePart]: (prev[activePart] ? prev[activePart].trim() + ' ' : '') + finalChunk.trim()
-              }))
+              const previous = (transcriptsRef.current[recordingPart] || '').trim()
+              setTranscript(recordingPart, (previous ? previous + ' ' : '') + finalChunk.trim())
             }
             setInterimText(interimChunk)
           }
 
           rec.onerror = (e: any) => {
             console.warn('[SpeechRecognition]:', e.error)
+            // Don't keep restarting when the browser refuses or can't reach the speech service
+            if (['not-allowed', 'service-not-allowed', 'audio-capture', 'network'].includes(e.error) && recognitionRef.current === rec) {
+              recognitionRef.current = null
+            }
           }
+
+          recognitionEndedRef.current = new Promise(resolve => {
+            rec.onend = () => {
+              // Chrome ends recognition after a pause, so keep listening while the recording continues
+              if (recordingRef.current && recognitionRef.current === rec) {
+                try {
+                  rec.start()
+                  return
+                } catch {}
+              }
+              resolve()
+            }
+          })
 
           rec.start()
           recognitionRef.current = rec
@@ -1250,50 +1298,58 @@ function SpeakingExam({ currentPart, setCurrentPart, timeLeft, part, onRecording
     }
   }
 
-  const stopRecording = () => {
+  const stopRecording = async () => {
+    if (!recordingRef.current) return
+    recordingRef.current = false
+    setDuration(recordingPartRef.current, Math.round((Date.now() - startedAtRef.current) / 1000))
+    const rec = recognitionRef.current
+    recognitionRef.current = null
     if (recorderRef.current && recorderRef.current.state !== 'inactive') {
       recorderRef.current.stop()
     }
-    if (recognitionRef.current) {
-      try { recognitionRef.current.stop() } catch {}
-      recognitionRef.current = null
+    if (rec) {
+      try { rec.stop() } catch {}
     }
     setInterimText('')
     setRecording(false)
-    setDurations(prev => ({
-      ...prev,
-      [activePart]: Math.max(recordingSeconds, prev[activePart] || 0)
-    }))
+    // Wait for the last audio chunk and final speech results, without hanging if the browser never reports them
+    await Promise.race([
+      Promise.all([recorderStoppedRef.current, rec ? recognitionEndedRef.current : null]),
+      new Promise(resolve => window.setTimeout(resolve, 2500)),
+    ])
   }
 
   const handleUploadAudio = (file?: File) => {
     if (!file) return
-    const url = URL.createObjectURL(file)
     blobsRef.current[activePart] = file
-    setRecordings(prev => {
-      if (prev[activePart]) URL.revokeObjectURL(prev[activePart])
-      return { ...prev, [activePart]: url }
-    })
+    setRecordingUrl(activePart, URL.createObjectURL(file))
     onRecording?.(activePart, file)
-    setDurations(prev => ({ ...prev, [activePart]: 60 }))
+    setDuration(activePart, 60)
   }
 
   const changePart = (nextPart: number) => {
-    if (recording) stopRecording()
+    void stopRecording()
     setPrepLeft(0)
     setCurrentPart(nextPart)
   }
 
-  const handleFinishExam = () => {
-    if (recording) stopRecording()
+  const handleFinishExam = async () => {
+    if (finishedRef.current) return
+    finishedRef.current = true
+    await stopRecording()
     onFinishSpeaking?.({
-      recordings,
-      transcripts,
-      durations,
+      recordings: recordingsRef.current,
+      transcripts: transcriptsRef.current,
+      durations: durationsRef.current,
       blobs: blobsRef.current
     })
     onFinish()
   }
+
+  // Submit automatically when time runs out, keeping any recording in progress
+  useEffect(() => {
+    if (timeLeft <= 0) void handleFinishExam()
+  }, [timeLeft])
 
   const currentWords = (transcripts[activePart] || '').trim().split(/\s+/).filter(Boolean).length
   const currentDuration = durations[activePart] || (recording ? recordingSeconds : 0)
@@ -1425,7 +1481,7 @@ function SpeakingExam({ currentPart, setCurrentPart, timeLeft, part, onRecording
 
             <textarea
               value={transcripts[activePart] || ''}
-              onChange={e => setTranscripts(prev => ({ ...prev, [activePart]: e.target.value }))}
+              onChange={e => setTranscript(activePart, e.target.value)}
               placeholder={recording ? 'Listening... Speak into your microphone...' : 'Candidate speech transcript will appear here. You can also edit or paste words if needed.'}
               rows={4}
               className="mt-2 w-full rounded border border-navy-light bg-surface px-3 py-2 font-plex text-xs text-ink placeholder:text-graphite-light focus:border-electric focus:outline-none focus:ring-1 focus:ring-electric"
@@ -1659,7 +1715,8 @@ export default function PracticeTest() {
     blobs?: Record<number, Blob>
   }) => {
     setSpeakingData(data)
-    goToStage('result')
+    setSpeakingEval(null)
+    setSpeakingError('')
 
     const activePart = selectedTest.part
     const partsToInclude = activePart ? [activePart] : [1, 2, 3]
@@ -1668,18 +1725,21 @@ export default function PracticeTest() {
       .filter(p => data.transcripts[p]?.trim())
       .map(p => `[Part ${p}]: ${data.transcripts[p].trim()}`)
 
-    const combinedTranscript = transcriptSegments.length > 0
-      ? transcriptSegments.join('\n\n')
-      : 'Candidate attempted speaking prompt.'
+    if (transcriptSegments.length === 0) {
+      setSpeakingError('No speech was transcribed, so there is nothing to evaluate. Live transcription works in Chrome and Edge. In other browsers, or for uploaded audio, type what you said into the transcript box before finishing.')
+      return
+    }
 
+    const combinedTranscript = transcriptSegments.join('\n\n')
     const totalDuration = partsToInclude.reduce((sum, p) => sum + (data.durations[p] || 0), 0) || 60
 
-    const allQuestions = activePart
-      ? (SPEAKING_CONTENT[activePart]?.questions || [])
-      : [1, 2, 3].flatMap(p => SPEAKING_CONTENT[p]?.questions || [])
+    const speakingContent = selectedTest.testNumber === 2 ? SPEAKING_CONTENT_2 : SPEAKING_CONTENT
+    const allQuestions = partsToInclude.flatMap(p => {
+      const item = speakingContent[p]
+      return item?.topics ? item.topics.flatMap(topic => topic.questions) : item?.questions || []
+    })
 
     setSpeakingLoading(true)
-    setSpeakingError('')
 
     try {
       const evalRes = await evaluateSpeakingApi({
@@ -1689,9 +1749,6 @@ export default function PracticeTest() {
         transcript: combinedTranscript,
         durationSeconds: Math.max(15, totalDuration),
         wordCount: combinedTranscript.split(/\s+/).filter(Boolean).length,
-        userId: user?.id || 'USR-1048',
-        userName: user?.name || 'Ayaan Rahman',
-        testTitle: selectedTest.title,
       })
       setSpeakingEval(evalRes)
 
@@ -1708,7 +1765,7 @@ export default function PracticeTest() {
         skillBands: { Speaking: evalRes.overallBand },
         userAnswers: { transcript: combinedTranscript, durationSeconds: totalDuration, wordCount: combinedTranscript.split(/\s+/).filter(Boolean).length },
         comment: evalRes.summary || 'Speaking practice evaluated by Puku AI.',
-        source: (evalRes.source?.includes('puku') ? 'AI' : 'Automatic') as any,
+        source: (evalRes.source?.toLowerCase().includes('puku') ? 'AI' : 'Automatic') as any,
       }
       saveExamResult(record as any, user?.email)
       saveExamResultApi(record as any).catch(() => {})
@@ -1739,6 +1796,8 @@ export default function PracticeTest() {
   useEffect(() => {
     if (stage !== 'test') return
     if (timeLeft <= 0) {
+      // The speaking exam submits itself on timeout so recordings and transcripts aren't lost
+      if (selectedTest.type === 'Speaking' || (selectedTest.type === 'Full Test' && fullModule === 'Speaking')) return
       if (selectedTest.type === 'Full Test') advanceFullTest()
       else goToStage('result')
       return
