@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { NavLink } from 'react-router'
 import { fetchResults, deleteExamResultApi, type StoredExamResult } from '../lib/api'
 import { useAuth } from '../lib/authContext'
+import { listeningPairs, markAnswers, readingPairs } from '../lib/scoring'
 import { READING_ANSWERS, READING_PASSAGES } from '../data/readingTest1'
 import { READING_ANSWERS_2, READING_PASSAGES_2 } from '../data/readingTest2'
 import { READING_ANSWERS_3, READING_PASSAGES_3 } from '../data/readingTest3'
@@ -100,12 +101,12 @@ function ResultDetail({ result, userName }: { result: StoredExamResult; userName
   }, [isReading, readingTest, part, result.userAnswers])
 
   const readingReviewItems = useMemo(() => {
-    if (!isReading || !result.userAnswers || readingQuestions.length === 0) return []
+    if (!isReading || !result.userAnswers || !readingTest || readingQuestions.length === 0) return []
+    const marks = markAnswers(readingTest.answers, result.userAnswers, readingPairs(testNumber))
     return readingQuestions.map(q => {
       const userAns = result.userAnswers ? (result.userAnswers[q.id] || result.userAnswers[String(q.id)] || '') : ''
-      const accepted = readingTest?.answers[q.id] || []
-      const norm = userAns.trim().toLowerCase().replace(/\s+/g, ' ')
-      const correct = accepted.some(val => val.trim().toLowerCase().replace(/\s+/g, ' ') === norm)
+      const accepted = readingTest.answers[q.id] || []
+      const correct = !!marks[q.id]
       return {
         id: q.id,
         prompt: q.prompt,
@@ -117,7 +118,7 @@ function ResultDetail({ result, userName }: { result: StoredExamResult; userName
         passageReference: q.passageReference,
       }
     })
-  }, [isReading, readingQuestions, readingTest, result.userAnswers])
+  }, [isReading, readingQuestions, readingTest, testNumber, result.userAnswers])
 
   // --------------------------------------------------------------------------
   // Listening Questions & Diagnostics
@@ -127,14 +128,14 @@ function ResultDetail({ result, userName }: { result: StoredExamResult; userName
     if (!isListening || !result.userAnswers) return []
     // Listening tests other than Test 2 show Test 1's questions in the practice centre
     const listeningAnswers = testNumber === 2 ? LISTENING_ANSWERS_2 : LISTENING_ANSWERS
+    const marks = markAnswers(listeningAnswers, result.userAnswers, listeningPairs(testNumber))
     return Object.entries(listeningAnswers).filter(([key]) => {
       const id = Number(key)
       return part === undefined || (id >= (part - 1) * 10 + 1 && id <= part * 10)
     }).map(([key, accepted]) => {
       const id = Number(key)
       const userAns = result.userAnswers ? (result.userAnswers[id] || result.userAnswers[key] || '') : ''
-      const norm = userAns.trim().toLowerCase().replace(/\s+/g, ' ')
-      const correct = accepted.some(val => val.trim().toLowerCase().replace(/\s+/g, ' ') === norm)
+      const correct = !!marks[id]
       return {
         id,
         userAns: userAns.trim(),

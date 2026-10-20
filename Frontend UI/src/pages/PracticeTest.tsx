@@ -9,6 +9,7 @@ import FullTestResult from '../components/FullTestResult'
 import { saveExamResult } from '../lib/results'
 import { checkBackendHealth, getStreamUrl, saveExamResultApi, evaluateSpeakingApi, type BackendHealth, type SpeakingEvaluationResult } from '../lib/api'
 import { useAuth } from '../lib/authContext'
+import { countCorrect, listeningPairs, markAnswers, readingPairs } from '../lib/scoring'
 import { themeText } from '../lib/theme'
 import { NavLink } from 'react-router'
 
@@ -1551,47 +1552,15 @@ export default function PracticeTest() {
   const answered = Object.keys(answers).filter(key => answers[Number(key)]?.trim()).length
   const listeningScore = useMemo(() => {
     // Score against the test whose questions were shown, which follows the audio source selection
-    const isTest2 = selectedTestNum === 2
-    const activeAnswers = isTest2 ? LISTENING_ANSWERS_2 : LISTENING_ANSWERS
-    const paired = isTest2 ? [11, 12, 13, 14, 25, 26] : [21, 22, 23, 24]
-    
-    const regularScore = Object.entries(activeAnswers).reduce((total, [key, accepted]) => {
-      const id = Number(key)
-      if (paired.includes(id)) return total
-      const response = answers[id]?.trim().toLowerCase()
-      return total + (accepted.some(value => value.toLowerCase() === response) ? 1 : 0)
-    }, 0)
-    
-    const pairScore = ([first, second]: number[], expected: string[]) => {
-      const responses = new Set([answers[first]?.toUpperCase(), answers[second]?.toUpperCase()].filter(Boolean))
-      return expected.filter(value => responses.has(value)).length
-    }
-    
-    if (isTest2) {
-      return regularScore + pairScore([11, 12], ['B', 'E']) + pairScore([13, 14], ['B', 'C']) + pairScore([25, 26], ['A', 'B'])
-    }
-    return regularScore + pairScore([21, 22], ['B', 'D']) + pairScore([23, 24], ['C', 'E'])
+    const activeAnswers = selectedTestNum === 2 ? LISTENING_ANSWERS_2 : LISTENING_ANSWERS
+    return countCorrect(markAnswers(activeAnswers, answers, listeningPairs(selectedTestNum)))
   }, [answers, selectedTestNum])
 
-  const readingScore = useMemo(() => {
-    const isTest4 = selectedTest.testNumber === 4
-    const activeAnswers = isTest4 ? READING_ANSWERS_4 : selectedTest.testNumber === 3 ? READING_ANSWERS_3 : selectedTest.testNumber === 2 ? READING_ANSWERS_2 : READING_ANSWERS
-    const paired = isTest4 ? [10, 11, 12, 13] : []
-    const regularScore = Object.entries(activeAnswers).reduce((total, [key, accepted]) => {
-      const id = Number(key)
-      if (paired.includes(id)) return total
-      const response = answers[id]?.trim().toLowerCase().replace(/\s+/g, ' ')
-      return total + (accepted.some(value => value.toLowerCase() === response) ? 1 : 0)
-    }, 0)
-    if (isTest4) {
-      const pairScore = ([first, second]: number[], expected: string[]) => {
-        const responses = new Set([answers[first]?.toUpperCase(), answers[second]?.toUpperCase()].filter(Boolean))
-        return expected.filter(value => responses.has(value)).length
-      }
-      return regularScore + pairScore([10, 11], ['C', 'D']) + pairScore([12, 13], ['A', 'D'])
-    }
-    return regularScore
+  const readingMarks = useMemo(() => {
+    const activeAnswers = selectedTest.testNumber === 4 ? READING_ANSWERS_4 : selectedTest.testNumber === 3 ? READING_ANSWERS_3 : selectedTest.testNumber === 2 ? READING_ANSWERS_2 : READING_ANSWERS
+    return markAnswers(activeAnswers, answers, readingPairs(selectedTest.testNumber))
   }, [answers, selectedTest.testNumber])
+  const readingScore = countCorrect(readingMarks)
 
   const listeningBand = (raw: number) => {
     if (raw >= 39) return 9.0
@@ -2171,16 +2140,10 @@ export default function PracticeTest() {
         : activePassages.flatMap(p => p.questions)
       : []
 
-    const isAnswerCorrect = (userAns: string | undefined, accepted: string[]) => {
-      if (!userAns || !userAns.trim()) return false
-      const norm = userAns.trim().toLowerCase().replace(/\s+/g, ' ')
-      return accepted.some(v => v.trim().toLowerCase().replace(/\s+/g, ' ') === norm)
-    }
-
     const questionReviewItems = readingQuestions.map(q => {
       const userAns = answers[q.id]?.trim() || ''
       const accepted = activeAnswers[q.id] || []
-      const correct = isAnswerCorrect(userAns, accepted)
+      const correct = !!readingMarks[q.id]
       const unanswered = !userAns
       return {
         id: q.id,
