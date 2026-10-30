@@ -15,6 +15,7 @@ export const router = createBrowserRouter([
         children: [
           { path: 'dashboard', lazy: async () => ({ Component: (await import('./pages/Dashboard')).default }) },
           { path: 'practice', lazy: async () => ({ Component: (await import('./pages/PracticeTest')).default }) },
+          { path: 'practice-test', lazy: async () => ({ Component: (await import('./pages/PracticeTest')).default }) },
           { path: 'writing', lazy: async () => ({ Component: (await import('./pages/WritingEval')).default }) },
           { path: 'documents', lazy: async () => ({ Component: (await import('./pages/DocGenerator')).default }) },
           { path: 'resources', lazy: async () => ({ Component: (await import('./pages/ResourceLibrary')).default }) },

@@ -3,6 +3,7 @@ import { READING_ANSWERS, READING_PASSAGES } from '../data/readingTest1'
 import { READING_ANSWERS_2, READING_PASSAGES_2 } from '../data/readingTest2'
 import { READING_ANSWERS_3, READING_PASSAGES_3 } from '../data/readingTest3'
 import { READING_ANSWERS_4, READING_PASSAGES_4 } from '../data/readingTest4'
+import { READING_ANSWERS_21, READING_PASSAGES_21 } from '../data/readingTest21'
 import { LISTENING_ANSWERS } from '../data/listeningTest1'
 import { LISTENING_ANSWERS_2, LISTENING_PARTS_2 } from '../data/listeningTest2'
 import FullTestResult from '../components/FullTestResult'
@@ -39,9 +40,15 @@ const TESTS: Test[] = [
   { id: 'r2-p1', type: 'Reading', module: 'Academic', title: 'IELTS 18 — Reading Test 2 · Part 1', questions: 13, duration: 20, difficulty: 'Passage practice', status: 'New', part: 1, book: '18', testNumber: 2 },
   { id: 'r2-p2', type: 'Reading', module: 'Academic', title: 'IELTS 18 — Reading Test 2 · Part 2', questions: 13, duration: 20, difficulty: 'Passage practice', status: 'New', part: 2, book: '18', testNumber: 2 },
   { id: 'r2-p3', type: 'Reading', module: 'Academic', title: 'IELTS 18 — Reading Test 2 · Part 3', questions: 14, duration: 20, difficulty: 'Passage practice', status: 'New', part: 3, book: '18', testNumber: 2 },
+  { id: 'r21', type: 'Reading', module: 'Academic', title: 'IELTS 21 — Academic Reading Test 1 (From Cambridge PDF)', questions: 40, duration: 60, difficulty: 'Official format', status: 'New', book: '21', testNumber: 21 },
+  { id: 'r21-p1', type: 'Reading', module: 'Academic', title: 'IELTS 21 — Reading Test 1 · Part 1 (The Davies Sisters)', questions: 13, duration: 20, difficulty: 'Passage practice', status: 'New', part: 1, book: '21', testNumber: 21 },
+  { id: 'r21-p2', type: 'Reading', module: 'Academic', title: 'IELTS 21 — Reading Test 1 · Part 2 (Why We Need Silence)', questions: 13, duration: 20, difficulty: 'Passage practice', status: 'New', part: 2, book: '21', testNumber: 21 },
+  { id: 'r21-p3', type: 'Reading', module: 'Academic', title: 'IELTS 21 — Reading Test 1 · Part 3 (The World of Sugar)', questions: 14, duration: 20, difficulty: 'Passage practice', status: 'New', part: 3, book: '21', testNumber: 21 },
+  { id: 'r3', type: 'Reading', module: 'Academic', title: 'IELTS 18 — Academic Reading Test 3', questions: 40, duration: 60, difficulty: 'Official format', status: 'New', book: '18', testNumber: 3 },
   { id: 'r3-p1', type: 'Reading', module: 'Academic', title: 'IELTS 18 — Reading Test 3 · Part 1', questions: 13, duration: 20, difficulty: 'Passage practice', status: 'New', part: 1, book: '18', testNumber: 3 },
   { id: 'r3-p2', type: 'Reading', module: 'Academic', title: 'IELTS 18 — Reading Test 3 · Part 2', questions: 13, duration: 20, difficulty: 'Passage practice', status: 'New', part: 2, book: '18', testNumber: 3 },
   { id: 'r3-p3', type: 'Reading', module: 'Academic', title: 'IELTS 18 — Reading Test 3 · Part 3', questions: 14, duration: 20, difficulty: 'Passage practice', status: 'New', part: 3, book: '18', testNumber: 3 },
+  { id: 'r4', type: 'Reading', module: 'Academic', title: 'IELTS 18 — Academic Reading Test 4', questions: 40, duration: 60, difficulty: 'Official format', status: 'New', book: '18', testNumber: 4 },
   { id: 'r4-p1', type: 'Reading', module: 'Academic', title: 'IELTS 18 — Reading Test 4 · Part 1', questions: 13, duration: 20, difficulty: 'Passage practice', status: 'New', part: 1, book: '18', testNumber: 4 },
   { id: 'r4-p2', type: 'Reading', module: 'Academic', title: 'IELTS 18 — Reading Test 4 · Part 2', questions: 13, duration: 20, difficulty: 'Passage practice', status: 'New', part: 2, book: '18', testNumber: 4 },
   { id: 'r4-p3', type: 'Reading', module: 'Academic', title: 'IELTS 18 — Reading Test 4 · Part 3', questions: 14, duration: 20, difficulty: 'Passage practice', status: 'New', part: 3, book: '18', testNumber: 4 },
@@ -646,7 +653,7 @@ type ReadingExamProps = {
 
 function ReadingExam({ answers, setAnswers, currentQ, setCurrentQ, timeLeft, part, selectedTestNumber = 1, onFinish }: ReadingExamProps) {
   const passageIndex = currentQ <= 13 ? 0 : currentQ <= 26 ? 1 : 2
-  const activePassages = selectedTestNumber === 4 ? READING_PASSAGES_4 : selectedTestNumber === 3 ? READING_PASSAGES_3 : selectedTestNumber === 2 ? READING_PASSAGES_2 : READING_PASSAGES
+  const activePassages = selectedTestNumber === 21 ? READING_PASSAGES_21 : selectedTestNumber === 4 ? READING_PASSAGES_4 : selectedTestNumber === 3 ? READING_PASSAGES_3 : selectedTestNumber === 2 ? READING_PASSAGES_2 : READING_PASSAGES
   const passage = activePassages[passageIndex] || activePassages[0]
   const answered = Object.keys(answers).filter(key => {
     const num = Number(key)
@@ -1613,7 +1620,7 @@ export default function PracticeTest() {
   }, [answers, selectedTestNum])
 
   const readingMarks = useMemo(() => {
-    const activeAnswers = selectedTest.testNumber === 4 ? READING_ANSWERS_4 : selectedTest.testNumber === 3 ? READING_ANSWERS_3 : selectedTest.testNumber === 2 ? READING_ANSWERS_2 : READING_ANSWERS
+    const activeAnswers = selectedTest.testNumber === 21 ? READING_ANSWERS_21 : selectedTest.testNumber === 4 ? READING_ANSWERS_4 : selectedTest.testNumber === 3 ? READING_ANSWERS_3 : selectedTest.testNumber === 2 ? READING_ANSWERS_2 : READING_ANSWERS
     return markAnswers(activeAnswers, answers, readingPairs(selectedTest.testNumber))
   }, [answers, selectedTest.testNumber])
   const readingScore = countCorrect(readingMarks)
@@ -2190,8 +2197,8 @@ export default function PracticeTest() {
     const displayedBand = isListening ? listeningBand(projectedListeningScore) : readingBand(projectedReadingScore)
     const correctAnswers = isListening ? listeningScore : readingScore
 
-    const activePassages = selectedTest.testNumber === 4 ? READING_PASSAGES_4 : selectedTest.testNumber === 3 ? READING_PASSAGES_3 : selectedTest.testNumber === 2 ? READING_PASSAGES_2 : READING_PASSAGES
-    const activeAnswers = selectedTest.testNumber === 4 ? READING_ANSWERS_4 : selectedTest.testNumber === 3 ? READING_ANSWERS_3 : selectedTest.testNumber === 2 ? READING_ANSWERS_2 : READING_ANSWERS
+    const activePassages = selectedTest.testNumber === 21 ? READING_PASSAGES_21 : selectedTest.testNumber === 4 ? READING_PASSAGES_4 : selectedTest.testNumber === 3 ? READING_PASSAGES_3 : selectedTest.testNumber === 2 ? READING_PASSAGES_2 : READING_PASSAGES
+    const activeAnswers = selectedTest.testNumber === 21 ? READING_ANSWERS_21 : selectedTest.testNumber === 4 ? READING_ANSWERS_4 : selectedTest.testNumber === 3 ? READING_ANSWERS_3 : selectedTest.testNumber === 2 ? READING_ANSWERS_2 : READING_ANSWERS
 
     const readingQuestions = selectedTest.type === 'Reading'
       ? selectedTest.part !== undefined
