@@ -1,0 +1,4 @@
+# Ignore legacy folders on Vercel deployment
+backend/
+Frontend UI/
+Database/
