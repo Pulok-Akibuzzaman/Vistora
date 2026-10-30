@@ -241,4 +241,5 @@ The compiled, minified bundle will be output to the `dist/` directory.
 - **Course:** CSE412 — Software Engineering / Systems Project
 - **Institution:** East West University (EWU), Dhaka, Bangladesh
 - **Team Lead / Maintainer:** Pulok Akibuzzaman ([@Pulok-Akibuzzaman](https://github.com/Pulok-Akibuzzaman))
+- **Live Production URL:** [https://vistora-delta.vercel.app](https://vistora-delta.vercel.app)
 - **Official Repository:** [https://github.com/Pulok-Akibuzzaman/Vistora](https://github.com/Pulok-Akibuzzaman/Vistora)
