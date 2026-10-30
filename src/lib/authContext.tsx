@@ -44,24 +44,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Listen for Supabase auth state changes
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session?.user) {
         const email = session.user.email || ''
+        let profileData: any = null
+        try {
+          const { data } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single()
+          profileData = data
+        } catch {}
+
         const stored = window.localStorage.getItem('vistora-auth-user')
+        let parsed: any = {}
         if (stored) {
-          try {
-            setUser(JSON.parse(stored))
-          } catch {}
-        } else {
-          const profile: UserProfile = {
-            ...DEFAULT_USER,
-            id: session.user.id,
-            email,
-            name: session.user.user_metadata?.full_name || email.split('@')[0],
-          }
-          setUser(profile)
-          window.localStorage.setItem('vistora-auth-user', JSON.stringify(profile))
+          try { parsed = JSON.parse(stored) } catch {}
         }
+
+        const profile: UserProfile = {
+          ...DEFAULT_USER,
+          ...parsed,
+          id: session.user.id,
+          email,
+          name: profileData?.full_name || parsed.name || session.user.user_metadata?.full_name || email.split('@')[0],
+          targetBand: profileData?.target_band || parsed.targetBand || 7.5,
+          institution: profileData?.institution || parsed.institution || 'East West University',
+          country: profileData?.country || parsed.country || 'Bangladesh',
+          bio: profileData?.bio || parsed.bio || '',
+          role: (profileData?.role?.toLowerCase() === 'admin' ? 'Admin' : 'Student') as any,
+        }
+        setUser(profile)
+        window.localStorage.setItem('vistora-auth-user', JSON.stringify(profile))
       }
     }).catch(() => {})
   }, [])
@@ -72,11 +87,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // 1. Try Supabase Auth
       const { data, error } = await supabase.auth.signInWithPassword({ email, password })
       if (!error && data?.user) {
+        let profileData: any = null
+        try {
+          const { data: pData } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', data.user.id)
+            .single()
+          profileData = pData
+        } catch {}
+
         const profile: UserProfile = {
           ...DEFAULT_USER,
           id: data.user.id,
-          name: data.user.user_metadata?.full_name || email.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+          name: profileData?.full_name || data.user.user_metadata?.full_name || email.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
           email: data.user.email || email,
+          targetBand: profileData?.target_band || 7.5,
+          institution: profileData?.institution || 'East West University',
+          country: profileData?.country || 'Bangladesh',
+          bio: profileData?.bio || '',
+          role: (profileData?.role?.toLowerCase() === 'admin' ? 'Admin' : 'Student') as any,
         }
         setUser(profile)
         window.localStorage.setItem('vistora-auth-user', JSON.stringify(profile))
@@ -179,6 +209,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const updated = { ...user, ...data }
     setUser(updated)
     window.localStorage.setItem('vistora-auth-user', JSON.stringify(updated))
+
+    // Direct persistence to Supabase public.profiles
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session?.user?.id) {
+        const payload: Record<string, any> = {
+          updated_at: new Date().toISOString(),
+        }
+        if (data.name) payload.full_name = data.name
+        if (data.country) payload.country = data.country
+        if (typeof data.targetBand === 'number') payload.target_band = data.targetBand
+        if (data.institution) payload.institution = data.institution
+        if (data.bio !== undefined) payload.bio = data.bio
+
+        await supabase.from('profiles').update(payload).eq('id', session.user.id)
+      }
+    } catch (e) {
+      console.warn('Supabase profile update warning:', e)
+    }
+
     try {
       await updateUserProfile({ email: user.email, ...data })
     } catch (err) {

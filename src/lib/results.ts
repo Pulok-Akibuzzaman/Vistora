@@ -40,6 +40,8 @@ export function getExamResults(userEmail?: string): StoredExamResult[] {
   }
 }
 
+import { saveExamResultApi } from './api'
+
 export function saveExamResult(result: StoredExamResult, userEmail?: string) {
   const email = result.userEmail || userEmail
   if (email) {
@@ -53,4 +55,7 @@ export function saveExamResult(result: StoredExamResult, userEmail?: string) {
     const updated = [result, ...globalResults.filter(item => item.id !== result.id)].slice(0, 100)
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(updated))
   } catch {}
+
+  // Asynchronously synchronize directly to Supabase public.exam_results
+  saveExamResultApi(result as any).catch(() => {})
 }
