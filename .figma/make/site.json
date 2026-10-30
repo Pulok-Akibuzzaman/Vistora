@@ -1,0 +1,11 @@
+{
+  "title": "Vistora — Computer-Delivered IELTS Preparation",
+  "description": "Vistora is a dynamic, computer-delivered IELTS preparation and analytics platform with Cambridge listening audio streaming, AI writing evaluation, and diagnostic scoring.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

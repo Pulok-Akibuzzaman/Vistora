@@ -34,6 +34,9 @@ Thumbs.db
 # -----------------------------------------------------------------------------
 # Copyrighted Cambridge IELTS Media (Excluded from Public Git Commits)
 # -----------------------------------------------------------------------------
+*.pdf
+**/*.pdf
+src/imports/*.pdf
 Database/*.pdf
 Database/**/*.pdf
 Database/**/*.mp3
