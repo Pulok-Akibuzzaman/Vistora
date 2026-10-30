@@ -104,6 +104,30 @@ The platform integrates **Puku.sh AI (`puku-ai-2.8`)** for real-time document ge
 
 ---
 
+## 💡 Why These Languages? (In Simple Words)
+
+If anyone asks why we chose the specific programming languages and tools for Vistora, here is the simple explanation:
+
+- **TypeScript (`.ts`, `.tsx`)**:
+  - *Why we use it:* TypeScript is like JavaScript with a built-in safety net. In an IELTS exam simulator, there are hundreds of question numbers, user answers, scoring band formulas, and test settings. TypeScript checks our code while we write it and catches typos, misspelled names, or missing fields *before* the student ever encounters a bug on screen.
+
+- **React (`.tsx`)**:
+  - *Why we use it:* React lets us build the website out of reusable Lego-like pieces called "components" (for example: the audio timer, the split-screen reading passage, the 40-question button palette, and the AI document editor). When a student clicks an answer or types an essay, React updates just that specific part of the screen instantly without having to refresh or reload the whole page.
+
+- **HTML5 (`index.html`)**:
+  - *Why we use it:* HTML is the skeleton and foundation of the website. It provides the initial document shell that the web browser loads, sets the page title, configures the favicon logo, and defines where our React app mounts.
+
+- **CSS3 & Tailwind CSS (`index.css`)**:
+  - *Why we use it:* CSS is the styling that gives Vistora its authentic British Council & IDP exam-room look. It controls colors (like the red accent bars and dark/light mode), typography, buttons, and makes sure the split-screen layout adapts smoothly on laptops, tablets, and mobile devices.
+
+- **SQL (`supabase/schema.sql`)**:
+  - *Why we use it:* SQL is the universal language for databases. We use SQL to tell Supabase how to create secure tables for student accounts, exam band scores, study checklists, and community discussions. It also sets up Row Level Security (RLS) rules so students can only see their own private test scores.
+
+- **JSON (`package.json`, `vercel.json`)**:
+  - *Why we use it:* JSON is a clean, simple text format for storing settings and data. It lists what packages our project needs, tells Vercel how to build the site, and structures the AI requests sent to Puku.sh.
+
+---
+
 ## 📂 Project Directory Structure
 
 ```text
