@@ -1,10 +1,12 @@
-# 🎓 Vistora — Computer-Delivered IELTS Preparation Platform
+# 🎓 Vistora — Computer-Delivered IELTS Preparation & AI Platform
 
 [![GitHub Repository](https://img.shields.io/badge/GitHub-Pulok--Akibuzzaman%2FVistora-181717?style=flat&logo=github)](https://github.com/Pulok-Akibuzzaman/Vistora)
 [![Course](https://img.shields.io/badge/Course-CSE412-dc2626)](https://github.com/Pulok-Akibuzzaman/Vistora)
-[![Hosting](https://img.shields.io/badge/Hosting-Vercel%20Static%20Free-black)](https://vercel.com)
-[![Backend](https://img.shields.io/badge/Backend-Supabase%20BaaS-3ecf8e)](https://supabase.com)
-[![Audio](https://img.shields.io/badge/Audio-Institutional%20SharePoint-0078d4)](https://github.com/Pulok-Akibuzzaman/Vistora)
+[![Frontend](https://img.shields.io/badge/Frontend-React%2019%20%2B%20TypeScript-61dafb?logo=react)](https://react.dev)
+[![Build Tool](https://img.shields.io/badge/Bundler-Vite%208-646cff?logo=vite)](https://vitejs.dev)
+[![AI Engine](https://img.shields.io/badge/AI%20Engine-Puku.sh%20(puku--ai--2.8)-e11d48)](https://puku.sh)
+[![Backend](https://img.shields.io/badge/Backend-Supabase%20BaaS-3ecf8e?logo=supabase)](https://supabase.com)
+[![Hosting](https://img.shields.io/badge/Hosting-Vercel%20Edge-black?logo=vercel)](https://vercel.com)
 
 > **Official Repository:** [https://github.com/Pulok-Akibuzzaman/Vistora](https://github.com/Pulok-Akibuzzaman/Vistora)  
 > **Academic Institution:** East West University (EWU) — Department of Computer Science & Engineering  
@@ -14,56 +16,91 @@
 
 ## 📖 Project Overview
 
-**Vistora** is a production-grade, computer-delivered IELTS preparation platform built for **CSE412**. It is architected as a lightweight, zero-build static web application hosted on **Vercel's free subscription**, backed by a cloud-native **Supabase** backend (Authentication, PostgreSQL Database, and Row Level Security), and streaming official Cambridge IELTS listening audio directly from institutional SharePoint storage with an offline local MP3 upload fallback.
+**Vistora** is a state-of-the-art, computer-delivered IELTS preparation and academic application platform. Built with **React 19**, **TypeScript**, and **Vite**, Vistora delivers an authentic exam-room experience matching official British Council and IDP computer-delivered IELTS tests.
 
-### 🌟 Key Features
-- **Authentic Computer-Delivered IELTS Interface**: Exact layout, color scheme, split-pane passages, and 40-question navigation grids matching official British Council & IDP computer-delivered tests.
-- **Direct Cambridge Audio Streaming**: Instant playback of Cambridge IELTS Books 18, 19, and 20 listening tests with 1.0x/1.25x/1.5x speed control, timeline scrubbing, and robust fallback handling.
-- **Client-Side Deterministic Band 9.0 Scoring**: Bundled answer keys and scoring algorithms compute Listening and Reading band scores in-browser with zero backend lag.
-- **Supabase Cloud BaaS**: Secure user authentication, exam attempt persistence, study task checklists, and community forum discussions with Row Level Security (RLS) enforcement.
-- **Academic Writing Evaluator**: Live word counter, paragraph structure analysis, and Band 9.0 criterion estimation across TR, CC, LR, and GRA.
-- **Live Official Test Schedules**: Searchable and filterable British Council Bangladesh examination schedules across Dhaka, Chattogram, and Sylhet.
+The platform integrates **Puku.sh AI (`puku-ai-2.8`)** for real-time document generation (CV, Statement of Purpose, Personal Statement, Cover Letter) and IELTS Writing essay evaluation, backed by **Supabase** for cloud authentication, user profiles, and test attempt history, and deployed seamlessly on **Vercel**.
+
+---
+
+## 🌟 Key Features
+
+### 1. 🎧 Authentic Computer-Delivered Test Simulator
+- **Official Exam Blueprint**: Exact split-pane layout with independent scrolling, Cambridge IELTS typography, and 40-question navigation palette.
+- **Cambridge IELTS Datasets**:
+  - **Cambridge IELTS 21 Test 1**: Complete authentic reading passages (*The Davies Sisters*, *Why we need silence*, *The World of Sugar*) with 40 questions and verified answer keys.
+  - **Cambridge IELTS Books 18, 19, and 20**: Listening tests with direct SharePoint audio streaming, playback speed controls (1.0x, 1.25x, 1.5x), timeline scrubbing, and local MP3 fallback.
+- **Client-Side Deterministic Scoring**: Instant, zero-latency Band 9.0 calculation and diagnostic review with cited evidence.
+
+### 2. 📄 Puku.sh AI Document Generator (`/documents`, `/doc-generator`)
+- **Multi-Document Suite**: Tailored academic and career documents:
+  - **Curriculum Vitae (CV)**: Formatted for international university admissions and scholarship committees.
+  - **Statement of Purpose (SOP)**: Customized to target institution, program, research interests, and career goals.
+  - **Personal Statement (PS)**: Narrative-driven essay highlighting motivating experiences and extracurriculars.
+  - **Cover Letter (CL)**: Professional tone adapted for internships, graduate positions, or research roles.
+- **Live Dynamic Sync**: Real-time draft preview as candidate enters details.
+- **Puku AI Polish**: Powered by `puku-ai-2.8` via direct endpoint `https://api-cli.puku.sh/v1/messages`.
+- **Clean Export**: One-click symbol cleaning (removes markdown hashes/asterisks), `.txt` download, and Print/PDF generation.
+
+### 3. ✍️ Puku.sh AI Writing Evaluation (`/writing`)
+- **Task 1 & Task 2 Support**: Evaluates essays against official IELTS band descriptors:
+  - Task Achievement / Task Response (TA)
+  - Coherence and Cohesion (CC)
+  - Lexical Resource (LR)
+  - Grammatical Range and Accuracy (GRA)
+- **Instant Band Score**: Detailed criterion-by-criterion breakdown, vocabulary enhancements, and actionable suggestions.
+
+### 4. 📊 Student Dashboard & Analytics (`/dashboard`)
+- Overall Band Score radial visualization and skill-by-skill progress tracking.
+- Synced Study Task Tracker with live database synchronization.
+- Quick action launchers for Practice Tests, AI Writing Evaluation, and AI Document Generator.
+
+### 5. 🌐 Community Forum & Resource Library (`/community`, `/resources`)
+- Peer-to-peer discussion threads, category filters, and upvoting system.
+- Curated academic vocabulary lists, grammar guides, and official Cambridge prep links.
+
+### 6. 📅 Official Exam Dates (`/exam-dates`)
+- Searchable British Council Bangladesh official test schedules across Dhaka, Chattogram, and Sylhet.
 
 ---
 
 ## 🏗️ System Architecture
 
-The platform follows a modern, decoupled architecture requiring no continuously running server:
-
 ```text
-Vercel (Free Tier Static Hosting)
-├── Static HTML5 Pages (index.html + pages/*.html)
-├── Modern Vanilla CSS3 (Custom Design System with Glassmorphism)
-├── Modular Vanilla JavaScript (Native ES Modules)
-└── Supabase JavaScript Client (@supabase/supabase-js)
-
-Supabase (Free Tier BaaS Backend)
-├── Authentication (Supabase Auth: Sign up, Sign in, Session Persistence)
-├── PostgreSQL Relational Database (UUIDs, Foreign Keys, Indexes, Triggers)
-├── Row Level Security (RLS) on all 6 tables
-└── Optional Edge Functions (For privileged/administrative tasks)
-
-SharePoint (Institutional Storage)
-└── Cambridge IELTS 18, 19, 20 Listening Audio Files Only (Direct Range Streaming)
+┌─────────────────────────────────────────────────────────────────┐
+│                    Vercel Edge Cloud (Production)                │
+│                                                                 │
+│  React 19 SPA (Vite) ───► Client Router (Clean SPA Rewrites)    │
+│  ├── Dynamic UI Components & Exact IELTS Test Dimensions        │
+│  ├── Local Deterministic Scoring Engine (Zero Backend Lag)     │
+│  └── Real-Time Form State & LocalStorage Persistence            │
+└──────────────┬───────────────────────────────┬──────────────────┘
+               │                               │
+               ▼                               ▼
+┌──────────────────────────────┐ ┌────────────────────────────────┐
+│      Puku.sh AI Engine       │ │         Supabase BaaS          │
+│   (https://api-cli.puku.sh)  │ │  (Cloud PostgreSQL Database)   │
+│                              │ │                                │
+│ ├── Model: puku-ai-2.8       │ │ ├── Authentication (Auth)      │
+│ ├── Direct Client-Side CORS  │ │ ├── Row Level Security (RLS)   │
+│ ├── SOP / CV / PS Generation │ │ ├── User Profiles & Roles      │
+│ └── IELTS Essay Examiner     │ │ └── Exam Attempt History       │
+└──────────────────────────────┘ └────────────────────────────────┘
 ```
 
 ---
 
-## 💻 Tech Stack & Strict Constraints
+## 💻 Tech Stack
 
-| Layer | Technology | Role in Vistora |
+| Layer | Technology | Details |
 | :--- | :--- | :--- |
-| **Structure** | **HTML5** | Semantic, accessible test layouts and unique element IDs |
-| **Styling** | **Vanilla CSS3** | Custom design system (`css/main.css`, `css/test-player.css`), glassmorphism, responsive navigation |
-| **Logic** | **Vanilla JavaScript (ES Modules)** | DOM manipulation, state management, audio controller, local scoring engine |
-| **Backend / DB** | **Supabase** | Cloud PostgreSQL database, user profiles, exam records, forum threads, study tasks |
-| **Authentication** | **Supabase Auth** | Email/password sign-up, session restoration across refreshes, protected route guards |
-| **Security** | **PostgreSQL RLS** | Server-enforced Row Level Security policies protecting user isolation |
-| **Media** | **Institutional SharePoint** | HTTP streaming of official Cambridge audio tracks with local MP3 fallback |
-| **Hosting** | **Vercel** | Zero-build static deployment on Vercel's free plan with clean URL rewrites |
-
-> [!NOTE]
-> **Zero Frontend Framework Overhead**: The application deliberately avoids React, TypeScript, Tailwind, Next.js, or complex bundlers in production, ensuring instant page loads, zero build steps, and full compliance with Vercel's static free tier.
+| **Frontend Framework** | **React 19** | Modern functional components, hooks, and Concurrent Mode |
+| **Language** | **TypeScript** | Strict type safety across datasets, scoring models, and APIs |
+| **Bundler & Dev Server** | **Vite 8** | Sub-second HMR and optimized production bundling into `dist/` |
+| **Styling** | **Vanilla CSS + Tokens** | Custom academic blueprint theme, dark/light mode, responsive layouts |
+| **AI Integration** | **Puku.sh AI (`puku-ai-2.8`)** | Anthropic Messages API format with direct client-side CORS |
+| **Database & Auth** | **Supabase** | Cloud PostgreSQL, Row Level Security, email/password authentication |
+| **Audio Streaming** | **Institutional SharePoint** | HTTP range requests for Cambridge IELTS audio tracks with local fallback |
+| **Hosting** | **Vercel** | Automated Git deployments with single-page application routing |
 
 ---
 
@@ -71,197 +108,107 @@ SharePoint (Institutional Storage)
 
 ```text
 Vistora/
-├── index.html                   # 🏠 Main site entry point & landing page
-├── pages/                       # 📄 Dedicated application pages
-│   ├── practice-test.html       # IELTS test simulator (Listening & Reading)
-│   ├── dashboard.html           # Student overview & study tasks planner
-│   ├── results.html             # Past exam scores & question review
-│   ├── profile.html             # Student profile & target band score
-│   ├── forum.html               # Community discussions & upvote feed
-│   ├── writing-eval.html        # Academic Writing evaluator
-│   ├── exam-dates.html          # British Council exam schedules
-│   ├── resources.html           # Cambridge prep guides & AWL links
-│   ├── login.html               # Supabase sign in & registration portal
-│   └── admin.html               # System administration & stats
-├── css/                         # 🎨 Vanilla CSS design system
-│   ├── main.css                 # Core tokens, glassmorphism, responsive nav
-│   └── test-player.css          # Exam room split-view & audio controls
-├── js/                          # ⚡ Modular Vanilla JavaScript
-│   ├── lib/                     # Core libraries
-│   │   ├── supabaseClient.js    # Centralized Supabase client module
-│   │   ├── auth.js              # Session & profile management
-│   │   ├── scoring.js           # Local bundled IELTS scoring engine
-│   │   └── audioCatalog.js      # SharePoint audio links & duplicate URL flags
-│   ├── data/                    # Static test data
-│   │   ├── listeningData.js     # Listening tests 1 & 2 questions and keys
-│   │   ├── readingData.js       # Reading passages 1 to 4 and keys
-│   │   ├── examDatesData.js     # British Council Bangladesh exam dates
-│   │   └── resourcesData.js     # Cambridge prep guides
-│   └── pages/                   # Page-specific controllers
-│       └── practiceTest.js      # Exam room logic, timer, answer saving
-├── supabase/                    # 🔒 Database & RLS Migration
-│   └── schema.sql               # PostgreSQL tables, triggers & security policies
-├── archive/                     # 📦 Archived legacy code (Express & React)
-│   ├── backend/
-│   ├── Frontend UI/
-│   └── start-dev.js
-├── vercel.json                  # Clean URL rewrites (/dashboard, /practice-test, etc.)
-├── .vercelignore                # Excludes archive/ & Database/ from Vercel builds
-├── GEMINI_MASTER_PROMPT.md      # Comprehensive AI master prompt specification
-├── package.json                 # Dev static server scripts
-└── README.md                    # Complete project documentation
+├── src/
+│   ├── components/               # Reusable UI components
+│   │   ├── Layout.tsx            # Global header, responsive nav, & footer
+│   │   ├── RequireAuth.tsx       # Protected route authentication guard
+│   │   ├── Motion.tsx            # Smooth animations & transitions
+│   │   └── FullTestResult.tsx    # Comprehensive exam score summary
+│   ├── data/                     # Exam datasets & answer keys
+│   │   ├── readingTest21.ts      # Cambridge 21 Test 1 (Passages 1-3 & 40 Qs)
+│   │   ├── readingPassages18.ts  # Cambridge 18 Reading datasets
+│   │   └── examDatesData.ts      # British Council official dates
+│   ├── lib/                      # Core platform modules
+│   │   ├── pukuAi.ts             # Puku.sh AI client (puku-ai-2.8 & key integration)
+│   │   ├── api.ts                # Client API layer with AI & academic fallbacks
+│   │   ├── authContext.tsx       # Global user session & Supabase state
+│   │   ├── supabaseClient.ts     # Supabase client initialization
+│   │   └── theme.tsx             # Light / Dark theme controller
+│   ├── pages/                    # Application page views
+│   │   ├── Landing.tsx           # Interactive marketing & features showcase
+│   │   ├── Dashboard.tsx         # Student progress & study task planner
+│   │   ├── PracticeTest.tsx      # Computer-delivered exam room simulator
+│   │   ├── DocGenerator.tsx      # Puku AI Document Generator (CV, SOP, PS, CL)
+│   │   ├── WritingEval.tsx       # Puku AI IELTS Essay Evaluator
+│   │   ├── Results.tsx           # Historical exam attempt analytics
+│   │   ├── ExamDates.tsx         # British Council test schedule finder
+│   │   ├── ResourceLibrary.tsx   # Cambridge preparation guides & materials
+│   │   ├── CommunityForum.tsx    # Peer discussion forum & upvoting
+│   │   ├── UserProfile.tsx       # Student profile & target band score
+│   │   ├── AdminDashboard.tsx    # Administrative platform controls
+│   │   └── Auth.tsx              # Login & registration forms
+│   ├── App.tsx                   # Root application entry
+│   ├── main.tsx                  # React DOM mount
+│   └── routes.ts                 # Central router with comprehensive aliases
+├── supabase/
+│   └── schema.sql                # PostgreSQL database schema & RLS policies
+├── vercel.json                   # Vite build commands & clean SPA rewrites
+├── vite.config.ts                # Vite build configuration
+├── package.json                  # Dependencies & npm scripts
+└── README.md                     # Project documentation
 ```
 
 ---
 
-## 🔒 Supabase Setup & Database Migration
+## 🔑 Environment Configuration
 
-### Step 1: Create a Supabase Project
-1. Go to [https://supabase.com](https://supabase.com) and create a free account.
-2. Click **New Project**, choose a project name (e.g. `vistora-ielts`), and set a secure database password.
-3. Select a region close to your target users (e.g., `Singapore` or `Frankfurt`).
+Create a `.env.local` file in the project root (ignored by Git):
 
-### Step 2: Apply the SQL Schema & RLS Policies
-1. In your Supabase Dashboard, open the **SQL Editor** from the left sidebar.
-2. Open [`supabase/schema.sql`](supabase/schema.sql) from this repository.
-3. Paste the entire content into the SQL Editor and click **Run**.
-4. This automatically creates:
-   - `public.profiles` table with automatic user creation trigger on `auth.users`
-   - `public.exam_results` table for Band scores, raw scores, and user answers
-   - `public.study_tasks` table for personalized study checklists
-   - `public.forum_threads`, `public.forum_replies`, and `public.forum_upvotes` tables
-   - `public.is_admin()` helper function for role checks
-   - **Row Level Security (RLS)** policies on all tables ensuring students can only read/edit their own data and preventing duplicate forum upvotes.
+```env
+# Supabase Configuration
+VITE_SUPABASE_URL=https://your-project-ref.supabase.co
+VITE_SUPABASE_ANON_KEY=sb_publishable_your_key_here
 
-### Step 3: Configure Supabase Auth Redirect URLs
-1. Navigate to **Authentication > URL Configuration**.
-2. Set **Site URL** to:
-   ```text
-   https://<your-project>.vercel.app
-   ```
-3. In **Redirect URLs**, add:
-   ```text
-   http://localhost:3000/**
-   https://<your-project>.vercel.app/**
-   ```
-
-### Step 4: Retrieve Project API Credentials
-In **Project Settings > API**, copy:
-- **Project URL** (`https://<project-ref>.supabase.co`)
-- **Project API Anon Key** (`eyJhbGci...`)
+# Puku.sh AI Configuration
+VITE_PUKU_API_KEY=pk_live_your_puku_key_here
+VITE_PUKU_BASE_URL=https://api-cli.puku.sh
+VITE_PUKU_MODEL=puku-ai-2.8
+```
 
 ---
 
 ## 🚀 Running the Project Locally
 
-No build step or Node.js compilation is required. You can serve the static site using any local HTTP server:
+### Prerequisites
+- Node.js (v18.0.0 or higher recommended)
+- npm (v9.0.0 or higher)
 
-### Method 1: Using npm (Recommended)
+### Installation & Launch
 ```bash
-# Clone the repository
+# 1. Clone the repository
 git clone https://github.com/Pulok-Akibuzzaman/Vistora.git
 cd Vistora
 
-# Start local static server
+# 2. Install dependencies
+npm install
+
+# 3. Start local development server
 npm run dev
 ```
-Open your browser and navigate to:
-```text
-http://localhost:3000
-```
 
-### Method 2: Using Python or VS Code Live Server
+Open your browser at `http://localhost:3000` (or `http://localhost:5173`).
+
+### Building for Production
 ```bash
-# Python 3
-python -m http.server 3000
+npm run build
 ```
-Or open the project folder in VS Code and click **Go Live** with the Live Server extension.
+The compiled, minified bundle will be output to the `dist/` directory.
 
 ---
 
-## 🌐 Deploying to Vercel (Free Plan)
+## 🌐 Deploying to Vercel
 
-The repository is configured for immediate, zero-build deployment on Vercel's free subscription.
-
-### Option A: Connecting GitHub Repository (Recommended)
-1. Push your repository to GitHub.
-2. Go to [https://vercel.com](https://vercel.com) and click **Add New > Project**.
-3. Import your **Vistora** repository.
-4. In the configuration screen:
-   - **Root Directory:** `./`
-   - **Framework Preset:** `Other` (or static)
-   - **Build Command:** Leave empty / default
-   - **Output Directory:** Leave empty / default
-5. Under **Environment Variables**, add:
-   - `VITE_SUPABASE_URL` = `https://<your-project-id>.supabase.co`
-   - `VITE_SUPABASE_ANON_KEY` = `eyJhbGciOi...`
-6. Click **Deploy**.
-
-### Option B: Using the Vercel CLI
-```bash
-# Install Vercel CLI globally
-npm install -g vercel
-
-# Deploy directly from the project root
-vercel
-
-# Add environment variables
-vercel env add VITE_SUPABASE_URL production
-vercel env add VITE_SUPABASE_ANON_KEY production
-
-# Deploy to production
-vercel --prod
-```
-
----
-
-## 🎧 Audio Dataset & SharePoint Streaming
-
-Audio recordings for Cambridge IELTS Books 18, 19, and 20 are streamed directly via HTTP range requests from supplied institutional SharePoint links.
-
-### Audio Catalog Mapping (`js/lib/audioCatalog.js`)
-- **Cambridge 18**: Tests 1–4, Parts 1–4 mapped to official MP3 streams.
-- **Cambridge 19**: Tests 1–4, Parts 1–4 mapped to official MP3 streams.
-- **Cambridge 20**: Tests 1–4, Parts 1–4 mapped to official MP3 streams.
-
-### Flagged Duplicate URLs:
-In the official dataset, the following audio tracks intentionally share identical URLs:
-- `19 T1 A2` and `19 T1 A3`
-- `19 T2 A2` and `19 T2 A3`
-
-### Audio Resilience & Offline Fallback:
-1. When a test part is selected, the HTML5 audio element attempts direct playback from SharePoint.
-2. If SharePoint restricts playback due to CORS, authentication expiry, range-request limits, or network firewalls:
-   - The audio player displays an error notice:  
-     *"Unable to stream audio directly from institutional SharePoint (CORS/Range restriction). Please use the local MP3 fallback or verify access."*
-   - The **"📁 Select Local MP3"** override button allows the test taker to select any local MP3 file on their computer to proceed with the exam seamlessly.
-
----
-
-## 📊 Client Data-Storage vs. Supabase Rules
-
-| Data Category | Storage Location | Rationale |
-| :--- | :--- | :--- |
-| **User Accounts & Profiles** | **Supabase Auth & `profiles`** | Secure authentication and multi-user isolation |
-| **Completed Exam Results** | **Supabase `exam_results`** | Persistent historical progress tracking across devices |
-| **Study Tasks** | **Supabase `study_tasks`** | Cloud-synced personalized preparation checklist |
-| **Forum Threads & Replies** | **Supabase `forum_threads`** | Real-time peer discussions |
-| **Forum Upvotes** | **Supabase `forum_upvotes`** | Database-enforced duplicate vote prevention (`UNIQUE(thread_id, user_id)`) |
-| **In-Progress Answers** | **Browser `localStorage`** | Auto-saved per keystroke to prevent data loss on accidental reload |
-| **Live Exam Timer** | **Browser `localStorage`** | Preserves countdown state across tab refreshes |
-| **Scoring Keys & Logic** | **Bundled in `js/lib/scoring.js`** | Instant in-browser scoring with zero backend latency |
-
----
-
-## 🛡️ Security & Free-Plan Considerations
-
-1. **Service-Role Key Protection**: The Supabase service-role key is never included in client JavaScript or committed to GitHub.
-2. **Row Level Security (RLS)**: Enforced on all Supabase tables so students cannot inspect or modify other users' exam results or study tasks.
-3. **Admin Verification**: Privileged administrative actions verify `public.is_admin()` directly on the database level rather than trusting client-sent roles.
-4. **Free Tier Compatibility**:
-   - Zero continuously running backend server (saves 100% of compute costs).
-   - Static hosting on Vercel's free plan.
-   - Database and authentication run within Supabase's generous free tier limits.
+1. Push your repository to **GitHub**.
+2. In [Vercel Dashboard](https://vercel.com), select **Add New > Project** and import **Pulok-Akibuzzaman/Vistora**.
+3. Vercel automatically detects the Vite framework settings from `vercel.json`:
+   - **Framework:** `Vite`
+   - **Build Command:** `npm run build`
+   - **Output Directory:** `dist`
+4. Under **Environment Variables**, add:
+   - `VITE_SUPABASE_URL`
+   - `VITE_SUPABASE_ANON_KEY`
+   - `VITE_PUKU_API_KEY`
+5. Click **Deploy**.
 
 ---
 
