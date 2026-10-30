@@ -67,7 +67,7 @@ export default function Dashboard() {
         if (data) setStats(data)
       }).catch(() => {})
 
-      fetchTasks().then(setTasks).catch(() => {})
+      fetchTasks(user?.id).then(setTasks).catch(() => {})
 
       fetchResults(user?.email, user?.id).then(results => {
         setExamResults(results)

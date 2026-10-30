@@ -127,12 +127,15 @@ export interface ForumThread {
   replies: number
   views?: number
   upvotes: number
+  downvotes?: number
+  score?: number
   pinned: boolean
   solved: boolean
   preview: string
   content: string
   tags: string[]
   replyList?: ForumReply[]
+  userVote?: 'up' | 'down' | null
 }
 
 export interface DashboardStats {
@@ -439,18 +442,29 @@ export async function toggleUserStatus(id: string): Promise<UserProfile> {
 // --------------------------------------------------------------------------
 
 export async function fetchResults(email?: string, userId?: string): Promise<StoredExamResult[]> {
-  let supabaseResults: StoredExamResult[] = []
+  // Strict Privacy: If neither email nor userId is supplied, resolve active Supabase session
+  let targetEmail = email ? email.toLowerCase().trim() : ''
+  let targetUserId = userId && isValidUUID(userId) ? userId : null
 
-  // 1. Fetch live from Supabase
-  try {
-    let targetUserId = userId && isValidUUID(userId) ? userId : null
-    if (!targetUserId) {
+  if (!targetUserId && !targetEmail) {
+    try {
       const { data: { session } } = await supabase.auth.getSession()
       if (session?.user?.id && isValidUUID(session.user.id)) {
         targetUserId = session.user.id
+        if (session.user.email) targetEmail = session.user.email.toLowerCase().trim()
       }
-    }
+    } catch {}
+  }
 
+  // If the user is unauthenticated, NEVER expose any other user's exam results
+  if (!targetUserId && !targetEmail) {
+    return []
+  }
+
+  let supabaseResults: StoredExamResult[] = []
+
+  // 1. Fetch live from Supabase strictly scoped to this authenticated user
+  try {
     if (targetUserId) {
       const { data, error } = await supabase
         .from('exam_results')
@@ -463,7 +477,7 @@ export async function fetchResults(email?: string, userId?: string): Promise<Sto
           id: row.id,
           userId: row.user_id,
           userName: 'Candidate',
-          userEmail: email || '',
+          userEmail: targetEmail || '',
           testTitle: row.test_title,
           testType: row.test_type,
           completedAt: row.created_at,
@@ -481,33 +495,24 @@ export async function fetchResults(email?: string, userId?: string): Promise<Sto
     console.warn('[Supabase exam_results] Fetch error:', err)
   }
 
-  // 2. Fetch local storage cached results
+  // 2. Fetch user-scoped local storage cached results
   let localResults: StoredExamResult[] = []
   try {
-    if (email) {
-      const userKey = `vistora-exam-results_${email}`
+    if (targetEmail) {
+      const userKey = `vistora-exam-results_${targetEmail}`
       const rawUser = window.localStorage.getItem(userKey)
       if (rawUser) {
         localResults = JSON.parse(rawUser)
-      } else {
-        const globalRaw = window.localStorage.getItem('vistora-exam-results')
-        if (globalRaw) {
-          const allLocal: StoredExamResult[] = JSON.parse(globalRaw)
-          localResults = allLocal.filter(r => (r.userEmail && r.userEmail.toLowerCase() === email.toLowerCase()) || (userId && r.userId === userId))
-        }
       }
-    } else {
-      const raw = window.localStorage.getItem('vistora-exam-results')
-      localResults = raw ? JSON.parse(raw) : []
     }
   } catch {}
 
-  // 3. Fallback to Express backend if active locally
+  // 3. Fallback to Express backend if active locally (passing user-specific filters)
   let backendResults: StoredExamResult[] = []
   try {
     const params = new URLSearchParams()
-    if (email) params.append('email', email)
-    if (userId) params.append('userId', userId)
+    if (targetEmail) params.append('email', targetEmail)
+    if (targetUserId) params.append('userId', targetUserId)
     const queryString = params.toString() ? `?${params.toString()}` : ''
     const res = await fetch(`${API_BASE}/results${queryString}`, { signal: AbortSignal.timeout(1200) })
     if (res.ok) {
@@ -536,7 +541,7 @@ export async function fetchResults(email?: string, userId?: string): Promise<Sto
     }
   }
 
-  // Local storage cached results next; backfill any unsynced local results into Supabase!
+  // Local storage cached results next; backfill any unsynced local results into Supabase
   for (const item of localResults) {
     if (!seenIds.has(item.id)) {
       seenIds.add(item.id)
@@ -551,22 +556,18 @@ export async function fetchResults(email?: string, userId?: string): Promise<Sto
 }
 
 export async function saveExamResultApi(result: StoredExamResult): Promise<StoredExamResult> {
-  // 1. Immediately cache in user-scoped and global localStorage
+  // 1. Immediately cache strictly in user-scoped localStorage
   if (result.userEmail) {
     try {
-      const userKey = `vistora-exam-results_${result.userEmail}`
+      const cleanEmail = result.userEmail.toLowerCase().trim()
+      result.userEmail = cleanEmail
+      const userKey = `vistora-exam-results_${cleanEmail}`
       const raw = window.localStorage.getItem(userKey)
       const list: StoredExamResult[] = raw ? JSON.parse(raw) : []
       const updated = [result, ...list.filter(r => r.id !== result.id)].slice(0, 50)
       window.localStorage.setItem(userKey, JSON.stringify(updated))
     } catch {}
   }
-  try {
-    const globalRaw = window.localStorage.getItem('vistora-exam-results')
-    const globalList: StoredExamResult[] = globalRaw ? JSON.parse(globalRaw) : []
-    const updatedGlobal = [result, ...globalList.filter(r => r.id !== result.id)].slice(0, 100)
-    window.localStorage.setItem('vistora-exam-results', JSON.stringify(updatedGlobal))
-  } catch {}
 
   // 2. Direct Supabase insertion into public.exam_results
   try {
@@ -642,21 +643,15 @@ export async function saveExamResultApi(result: StoredExamResult): Promise<Store
 }
 
 export async function deleteExamResultApi(id: string, userEmail?: string): Promise<boolean> {
-  // 1. Remove from local storage cache immediately
+  // 1. Remove strictly from user-scoped local storage cache immediately
   try {
     if (userEmail) {
-      const userKey = `vistora-exam-results_${userEmail}`
+      const userKey = `vistora-exam-results_${userEmail.toLowerCase().trim()}`
       const rawUser = window.localStorage.getItem(userKey)
       if (rawUser) {
         const local: StoredExamResult[] = JSON.parse(rawUser)
         window.localStorage.setItem(userKey, JSON.stringify(local.filter(item => item.id !== id)))
       }
-    }
-    const raw = window.localStorage.getItem('vistora-exam-results')
-    if (raw) {
-      const local: StoredExamResult[] = JSON.parse(raw)
-      const updated = local.filter(item => item.id !== id)
-      window.localStorage.setItem('vistora-exam-results', JSON.stringify(updated))
     }
   } catch {}
 
@@ -743,8 +738,12 @@ export async function fetchDashboardStats(email?: string): Promise<DashboardStat
 }
 
 // --------------------------------------------------------------------------
-// Study Tasks (Supabase public.study_tasks + Local Cache Fallback)
+// Study Tasks (User-Scoped & Private)
 // --------------------------------------------------------------------------
+
+function getTaskKey(userId?: string) {
+  return `vistora-study-tasks_${userId || 'current'}`
+}
 
 export async function fetchTasks(userId?: string): Promise<StudyTask[]> {
   try {
@@ -775,18 +774,10 @@ export async function fetchTasks(userId?: string): Promise<StudyTask[]> {
     console.warn('[Supabase study_tasks] Fetch note:', err)
   }
 
-  // Fallback to Express backend if active
+  // Fallback to user-scoped localStorage cached tasks
   try {
-    const res = await fetch(`${API_BASE}/tasks`, { signal: AbortSignal.timeout(1200) })
-    if (res.ok) {
-      const data = await res.json()
-      if (data?.tasks?.length > 0) return data.tasks
-    }
-  } catch {}
-
-  // Fallback to localStorage cached tasks
-  try {
-    const stored = window.localStorage.getItem('vistora-study-tasks')
+    const key = getTaskKey(userId)
+    const stored = window.localStorage.getItem(key)
     if (stored) return JSON.parse(stored)
   } catch {}
 
@@ -798,9 +789,11 @@ export async function fetchTasks(userId?: string): Promise<StudyTask[]> {
 }
 
 export async function createTask(title: string, due = 'TODAY'): Promise<StudyTask> {
+  let sessionUserId: string | undefined
   try {
     const { data: { session } } = await supabase.auth.getSession()
     if (session?.user?.id && isValidUUID(session.user.id)) {
+      sessionUserId = session.user.id
       const { data, error } = await supabase
         .from('study_tasks')
         .insert({
@@ -820,11 +813,11 @@ export async function createTask(title: string, due = 'TODAY'): Promise<StudyTas
           due: data.due || due,
           complete: false,
         }
-        // Save to local cache
         try {
-          const stored = window.localStorage.getItem('vistora-study-tasks')
+          const key = getTaskKey(sessionUserId)
+          const stored = window.localStorage.getItem(key)
           const list: StudyTask[] = stored ? JSON.parse(stored) : []
-          window.localStorage.setItem('vistora-study-tasks', JSON.stringify([newTask, ...list]))
+          window.localStorage.setItem(key, JSON.stringify([newTask, ...list]))
         } catch {}
         return newTask
       }
@@ -833,12 +826,13 @@ export async function createTask(title: string, due = 'TODAY'): Promise<StudyTas
     console.warn('[Supabase study_tasks] Create note:', err)
   }
 
-  // Local storage fallback
+  // User-scoped Local storage fallback
   const fallbackTask: StudyTask = { id: Date.now(), title, due, complete: false }
   try {
-    const stored = window.localStorage.getItem('vistora-study-tasks')
+    const key = getTaskKey(sessionUserId)
+    const stored = window.localStorage.getItem(key)
     const list: StudyTask[] = stored ? JSON.parse(stored) : []
-    window.localStorage.setItem('vistora-study-tasks', JSON.stringify([fallbackTask, ...list]))
+    window.localStorage.setItem(key, JSON.stringify([fallbackTask, ...list]))
   } catch {}
   return fallbackTask
 }
@@ -849,21 +843,19 @@ export async function toggleTaskComplete(id: number, complete: boolean): Promise
   } catch {}
 
   try {
-    const stored = window.localStorage.getItem('vistora-study-tasks')
-    if (stored) {
-      const list: StudyTask[] = JSON.parse(stored)
-      const updated = list.map(t => t.id === id ? { ...t, complete } : t)
-      window.localStorage.setItem('vistora-study-tasks', JSON.stringify(updated))
+    for (let i = 0; i < window.localStorage.length; i++) {
+      const k = window.localStorage.key(i)
+      if (k && k.startsWith('vistora-study-tasks')) {
+        const stored = window.localStorage.getItem(k)
+        if (stored) {
+          const list: StudyTask[] = JSON.parse(stored)
+          if (list.some(t => t.id === id)) {
+            const updated = list.map(t => t.id === id ? { ...t, complete } : t)
+            window.localStorage.setItem(k, JSON.stringify(updated))
+          }
+        }
+      }
     }
-  } catch {}
-
-  try {
-    await fetch(`${API_BASE}/tasks/${id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ complete }),
-      signal: AbortSignal.timeout(1200),
-    })
   } catch {}
 
   return { id, title: '', due: '', complete }
@@ -875,10 +867,17 @@ export async function deleteTaskApi(id: number): Promise<boolean> {
   } catch {}
 
   try {
-    const stored = window.localStorage.getItem('vistora-study-tasks')
-    if (stored) {
-      const list: StudyTask[] = JSON.parse(stored)
-      window.localStorage.setItem('vistora-study-tasks', JSON.stringify(list.filter(t => t.id !== id)))
+    for (let i = 0; i < window.localStorage.length; i++) {
+      const k = window.localStorage.key(i)
+      if (k && k.startsWith('vistora-study-tasks')) {
+        const stored = window.localStorage.getItem(k)
+        if (stored) {
+          const list: StudyTask[] = JSON.parse(stored)
+          if (list.some(t => t.id === id)) {
+            window.localStorage.setItem(k, JSON.stringify(list.filter(t => t.id !== id)))
+          }
+        }
+      }
     }
   } catch {}
 
@@ -1199,8 +1198,11 @@ export async function evaluateSpeakingApi(params: {
 
 
 // --------------------------------------------------------------------------
-// Community Forum
+// Community Forum (Public Peer Learning, Upvoting/Downvoting, & Discussion)
 // --------------------------------------------------------------------------
+
+const FORUM_STORAGE_KEY = 'vistora_community_threads'
+const getVoteStorageKey = (uid?: string) => `vistora_forum_votes_${uid || 'guest'}`
 
 const SEED_FORUM_THREADS: ForumThread[] = [
   {
@@ -1213,13 +1215,16 @@ const SEED_FORUM_THREADS: ForumThread[] = [
     time: '2 hours ago',
     preview: 'If the passage directly contradicts the statement, it is FALSE. If the author never took a stance or information is absent, it is NOT GIVEN...',
     content: 'A foolproof method for TFNG questions:\n1. Underline keywords in the statement.\n2. Locate the corresponding evidence in the passage.\n3. Verify truth value: FALSE means factual contradiction. NOT GIVEN means the text does not supply enough information to decide.\n\nPractice with Cambridge 18 Test 1 Passage 1 on urban agriculture!',
-    replies: 5,
+    replies: 2,
     upvotes: 24,
+    downvotes: 1,
+    score: 23,
     tags: ['Reading', 'TFNG', 'Cambridge18'],
     solved: true,
     pinned: true,
     replyList: [
-      { id: 'r1', author: 'Ayaan R.', avatar: 'AR', time: '1 hour ago', content: 'This cleared up so much confusion on question 6!' }
+      { id: 'r1', author: 'Ayaan Rahman', avatar: 'AR', time: '1 hour ago', content: 'This cleared up so much confusion on question 6!' },
+      { id: 'r2', author: 'Nusrat Jahan', avatar: 'NJ', time: '45 mins ago', content: 'Tip #2 about locating passage evidence first saved my score in Test 3.' }
     ]
   },
   {
@@ -1231,13 +1236,18 @@ const SEED_FORUM_THREADS: ForumThread[] = [
     country: 'United Kingdom',
     time: 'Yesterday',
     preview: 'Introduction (paraphrase + thesis) -> Body 1 (first argument + example) -> Body 2 (counter/second argument) -> Conclusion.',
-    content: 'Avoid over-complicating Task 2 essays. A clean four-paragraph structure with strong cohesion markers and academic collocations consistently scores Band 8+.',
-    replies: 12,
+    content: 'Avoid over-complicating Task 2 essays. A clean four-paragraph structure with strong cohesion markers and academic collocations consistently scores Band 8+.\n\nParagraph 1: Background paraphrase + clear thesis statement\nParagraph 2: Main argument with concrete illustration\nParagraph 3: Counter-perspective or secondary argument with rebuttal\nParagraph 4: Concise conclusion reiterating your stance without new claims',
+    replies: 2,
     upvotes: 48,
+    downvotes: 2,
+    score: 46,
     tags: ['Writing', 'Task2', 'Band8'],
     solved: false,
     pinned: false,
-    replyList: []
+    replyList: [
+      { id: 'r3', author: 'Tahmid Chowdhury', avatar: 'TC', time: '18 hours ago', content: 'Can we use real-world statistics in Body Paragraph 1?' },
+      { id: 'r4', author: 'Dr. Sarah Jenkins', avatar: 'SJ', time: '16 hours ago', content: 'Yes, provided they are framed academically to support your logical reasoning.' }
+    ]
   },
   {
     id: 3,
@@ -1248,18 +1258,104 @@ const SEED_FORUM_THREADS: ForumThread[] = [
     country: 'Bangladesh',
     time: '3 days ago',
     preview: 'Use the 1-minute prep time to draw a 4-quadrant mindmap: Who, When, What happened, Why memorable...',
-    content: 'Never write full sentences during the 1-minute preparation. Write 2 keywords per cue question. Practice speaking with the Puku AI examiner to measure your words per minute and filler frequency.',
-    replies: 8,
+    content: 'Never write full sentences during the 1-minute preparation. Write 2 keywords per cue question. Practice speaking with the Puku AI examiner to measure your words per minute and filler frequency.\n\nKeep speaking naturally until the examiner signals you to stop. Reaching 1:45 to 2:00 minutes is crucial for Fluency and Coherence.',
+    replies: 1,
     upvotes: 31,
+    downvotes: 0,
+    score: 31,
     tags: ['Speaking', 'Part2', 'Fluency'],
     solved: true,
     pinned: false,
-    replyList: []
+    replyList: [
+      { id: 'r5', author: 'Farhana Akter', avatar: 'FA', time: '2 days ago', content: 'The 4-quadrant mindmap is genius! Used it with Puku AI and scored 7.5.' }
+    ]
+  },
+  {
+    id: 4,
+    category: 'Listening Tips',
+    title: 'Avoiding distractors in Cambridge Listening Section 4 lectures',
+    author: 'Sadia Rahman',
+    avatar: 'SR',
+    country: 'Bangladesh',
+    time: '4 days ago',
+    preview: 'Speakers often say a number or date and then immediately self-correct: "We started in 1994... sorry, 1996".',
+    content: 'In Section 4, the lecturer speaks continuously without a mid-section pause. Always read ahead during the 30-second break before Section 4 starts! Pay close attention to transition words like "however", "in contrast", and speaker self-corrections.',
+    replies: 1,
+    upvotes: 39,
+    downvotes: 1,
+    score: 38,
+    tags: ['Listening', 'Section4', 'Distractors'],
+    solved: false,
+    pinned: false,
+    replyList: [
+      { id: 'r6', author: 'Mahir Faisal', avatar: 'MF', time: '3 days ago', content: 'Self-corrections used to trick me every time. Great reminder!' }
+    ]
+  },
+  {
+    id: 5,
+    category: 'Test Anxiety',
+    title: 'Computer-delivered IELTS exam day checklist (Dhaka British Council)',
+    author: 'Zubair Al-Mamun',
+    avatar: 'ZA',
+    country: 'Bangladesh',
+    time: '5 days ago',
+    preview: 'Everything you need to know about the Fuller Road centre: lockers, passport checks, headphones, and screen ergonomics...',
+    content: 'Took the computer-delivered test at Fuller Road last Tuesday. The equipment is modern and noise-cancelling headphones are provided. Remember to arrive 45 minutes before test time with your original passport (photocopies or NID are NOT accepted).',
+    replies: 2,
+    upvotes: 56,
+    downvotes: 0,
+    score: 56,
+    tags: ['BritishCouncil', 'Dhaka', 'FullerRoad', 'ComputerDelivered'],
+    solved: true,
+    pinned: false,
+    replyList: [
+      { id: 'r7', author: 'Shamsul Alam', avatar: 'SA', time: '4 days ago', content: 'Are rough sheets provided for note-taking in Listening?' },
+      { id: 'r8', author: 'Zubair Al-Mamun', avatar: 'ZA', time: '4 days ago', content: 'Yes! You are given an official pencil and a login slip with blank space on the back for rough notes.' }
+    ]
   }
 ]
 
-export async function fetchForumThreads(category?: string, query?: string): Promise<ForumThread[]> {
-  // 1. Live fetch from Supabase
+export async function fetchForumThreads(category?: string, query?: string, userIdentifier?: string): Promise<ForumThread[]> {
+  // 1. Load community threads from persistent local storage
+  let threads: ForumThread[] = []
+  try {
+    const raw = window.localStorage.getItem(FORUM_STORAGE_KEY)
+    if (raw) {
+      threads = JSON.parse(raw)
+    }
+  } catch {}
+
+  // If local storage is empty, initialize with SEED_FORUM_THREADS
+  if (!threads || threads.length === 0) {
+    threads = SEED_FORUM_THREADS
+    try {
+      window.localStorage.setItem(FORUM_STORAGE_KEY, JSON.stringify(threads))
+    } catch {}
+  }
+
+  // 2. Load user vote map for current user
+  let userVotes: Record<number, 'up' | 'down'> = {}
+  try {
+    const voteRaw = window.localStorage.getItem(getVoteStorageKey(userIdentifier))
+    if (voteRaw) userVotes = JSON.parse(voteRaw)
+  } catch {}
+
+  // 3. Decorate threads with userVote and score
+  threads = threads.map(t => {
+    const upvotes = typeof t.upvotes === 'number' ? t.upvotes : 0
+    const downvotes = typeof t.downvotes === 'number' ? t.downvotes : 0
+    const userVote = userVotes[t.id] || null
+    return {
+      ...t,
+      upvotes,
+      downvotes,
+      score: upvotes - downvotes,
+      userVote,
+      replyList: t.replyList || [],
+    }
+  })
+
+  // 4. Try live fetch from Supabase to merge live database posts
   try {
     let q = supabase
       .from('forum_threads')
@@ -1273,188 +1369,264 @@ export async function fetchForumThreads(category?: string, query?: string): Prom
 
     const { data, error } = await q
     if (!error && data && data.length > 0) {
-      const liveThreads: ForumThread[] = data.map((t: any) => ({
-        id: t.id,
-        category: t.category,
-        title: t.title,
-        author: 'Community Member',
-        avatar: 'CM',
-        country: 'Global',
-        time: new Date(t.created_at).toLocaleDateString(),
-        preview: t.preview || t.content?.slice(0, 140),
-        content: t.content,
-        replies: 0,
-        upvotes: 0,
-        tags: t.tags || [],
-        solved: Boolean(t.solved),
-        pinned: Boolean(t.pinned),
-        replyList: []
-      }))
-
-      if (query) {
-        const lower = query.toLowerCase()
-        return liveThreads.filter(t => t.title.toLowerCase().includes(lower) || t.content.toLowerCase().includes(lower))
-      }
-      return liveThreads
-    }
-  } catch (err) {
-    console.warn('[Supabase forum_threads] Live query deferred:', err)
-  }
-
-  // 2. Fallback to Express backend if active
-  try {
-    const params = new URLSearchParams()
-    if (category && category !== 'All Topics') params.set('category', category)
-    if (query) params.set('query', query)
-
-    const res = await fetch(`${API_BASE}/forum/threads?${params.toString()}`, { signal: AbortSignal.timeout(1200) })
-    if (res.ok) {
-      const data = await res.json()
-      if (data?.threads?.length > 0) return data.threads
+      const liveIds = new Set(data.map((r: any) => r.id))
+      const extraLocal = threads.filter(t => !liveIds.has(t.id))
+      const fromDb: ForumThread[] = data.map((t: any) => {
+        const localMatch = threads.find(x => x.id === t.id)
+        const up = typeof t.upvotes === 'number' ? t.upvotes : (localMatch?.upvotes || 0)
+        const down = typeof t.downvotes === 'number' ? t.downvotes : (localMatch?.downvotes || 0)
+        return {
+          id: t.id,
+          category: t.category,
+          title: t.title,
+          author: t.author_name || localMatch?.author || 'Community Member',
+          avatar: t.author_avatar || localMatch?.avatar || 'CM',
+          country: t.country || localMatch?.country || 'Bangladesh',
+          time: new Date(t.created_at).toLocaleDateString(),
+          preview: t.preview || t.content?.slice(0, 140),
+          content: t.content,
+          replies: t.replies ?? (localMatch?.replyList?.length || 0),
+          upvotes: up,
+          downvotes: down,
+          score: up - down,
+          tags: t.tags || [],
+          solved: Boolean(t.solved),
+          pinned: Boolean(t.pinned),
+          replyList: localMatch?.replyList || [],
+          userVote: userVotes[t.id] || null,
+        }
+      })
+      threads = [...fromDb, ...extraLocal]
     }
   } catch {}
 
-  // 3. Fallback to curated IELTS seed threads
-  let list = SEED_FORUM_THREADS
+  // 5. Filter by category
   if (category && category !== 'All Topics') {
-    list = list.filter(t => t.category === category)
+    threads = threads.filter(t => t.category === category)
   }
+
+  // 6. Filter by query
   if (query) {
     const lower = query.toLowerCase()
-    list = list.filter(t => t.title.toLowerCase().includes(lower) || t.content.toLowerCase().includes(lower))
+    threads = threads.filter(t =>
+      t.title.toLowerCase().includes(lower) ||
+      t.content.toLowerCase().includes(lower) ||
+      t.tags?.some(tag => tag.toLowerCase().includes(lower))
+    )
   }
-  return list
+
+  // 7. Sort: pinned first, then by score descending
+  return threads.sort((a, b) => {
+    if (a.pinned && !b.pinned) return -1
+    if (!a.pinned && b.pinned) return 1
+    return (b.score ?? 0) - (a.score ?? 0)
+  })
 }
 
-export async function createForumThreadApi(data: { title: string; category: string; content: string; tags?: string[]; author?: string }): Promise<ForumThread> {
-  // 1. Try Supabase
+export async function voteForumThreadApi(
+  threadId: number,
+  direction: 'up' | 'down',
+  userIdentifier?: string
+): Promise<{ upvotes: number; downvotes: number; score: number; userVote: 'up' | 'down' | null }> {
+  const voteKey = getVoteStorageKey(userIdentifier)
+  let userVotes: Record<number, 'up' | 'down'> = {}
   try {
-    const { data: { session } } = await supabase.auth.getSession()
-    if (session?.user?.id && isValidUUID(session.user.id)) {
-      const { data: savedThread, error } = await supabase
-        .from('forum_threads')
-        .insert({
-          author_id: session.user.id,
-          category: data.category,
-          title: data.title,
-          preview: data.content.slice(0, 140),
-          content: data.content,
-          tags: data.tags || [],
-          pinned: false,
-          solved: false,
-          views: 1,
-        })
-        .select()
-        .single()
-
-      if (!error && savedThread) {
-        return {
-          id: savedThread.id,
-          category: savedThread.category,
-          title: savedThread.title,
-          author: data.author || 'Candidate',
-          avatar: (data.author || 'C').slice(0, 2).toUpperCase(),
-          country: 'Bangladesh',
-          time: 'Just now',
-          preview: savedThread.preview,
-          content: savedThread.content,
-          replies: 0,
-          upvotes: 1,
-          tags: savedThread.tags || [],
-          solved: false,
-          pinned: false,
-          replyList: []
-        }
-      }
-    }
-  } catch (err) {
-    console.warn('[Supabase forum_threads] Creation note:', err)
-  }
-
-  // 2. Try backend API
-  try {
-    const res = await fetch(`${API_BASE}/forum/threads`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-      signal: AbortSignal.timeout(1200),
-    })
-    if (res.ok) {
-      const json = await res.json()
-      return json.thread
-    }
+    const raw = window.localStorage.getItem(voteKey)
+    if (raw) userVotes = JSON.parse(raw)
   } catch {}
 
-  // 3. Fallback local thread
-  return {
+  const currentVote = userVotes[threadId] || null
+  let newVote: 'up' | 'down' | null = null
+
+  if (currentVote === direction) {
+    // Clicking same direction removes/toggles off vote
+    newVote = null
+    delete userVotes[threadId]
+  } else {
+    newVote = direction
+    userVotes[threadId] = direction
+  }
+
+  try {
+    window.localStorage.setItem(voteKey, JSON.stringify(userVotes))
+  } catch {}
+
+  let finalUp = 0
+  let finalDown = 0
+
+  try {
+    const rawThreads = window.localStorage.getItem(FORUM_STORAGE_KEY)
+    let threads: ForumThread[] = rawThreads ? JSON.parse(rawThreads) : SEED_FORUM_THREADS
+    threads = threads.map(t => {
+      if (t.id === threadId) {
+        let u = typeof t.upvotes === 'number' ? t.upvotes : 0
+        let d = typeof t.downvotes === 'number' ? t.downvotes : 0
+
+        // Cancel old vote
+        if (currentVote === 'up') u = Math.max(0, u - 1)
+        if (currentVote === 'down') d = Math.max(0, d - 1)
+
+        // Apply new vote
+        if (newVote === 'up') u += 1
+        if (newVote === 'down') d += 1
+
+        finalUp = u
+        finalDown = d
+        return { ...t, upvotes: u, downvotes: d, score: u - d, userVote: newVote }
+      }
+      return t
+    })
+    window.localStorage.setItem(FORUM_STORAGE_KEY, JSON.stringify(threads))
+  } catch {}
+
+  // Also try updating backend / Supabase
+  try {
+    await fetch(`${API_BASE}/forum/threads/${threadId}/vote`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ direction: newVote }),
+      signal: AbortSignal.timeout(800),
+    })
+  } catch {}
+
+  return { upvotes: finalUp, downvotes: finalDown, score: finalUp - finalDown, userVote: newVote }
+}
+
+export async function upvoteForumThreadApi(threadId: number, userIdentifier?: string): Promise<number> {
+  const result = await voteForumThreadApi(threadId, 'up', userIdentifier)
+  return result.upvotes
+}
+
+export async function replyToForumThreadApi(
+  threadId: number,
+  content: string,
+  author?: string
+): Promise<{ reply: ForumReply; thread: ForumThread }> {
+  const authorName = author || 'Student'
+  const reply: ForumReply = {
+    id: `reply-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+    author: authorName,
+    avatar: authorName.split(' ').filter(Boolean).map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'ST',
+    time: 'Just now',
+    content: content.trim(),
+  }
+
+  let updatedThread: ForumThread | null = null
+
+  // Save to persistent community threads in localStorage
+  try {
+    const raw = window.localStorage.getItem(FORUM_STORAGE_KEY)
+    let threads: ForumThread[] = raw ? JSON.parse(raw) : SEED_FORUM_THREADS
+    threads = threads.map(t => {
+      if (t.id === threadId) {
+        const replyList = [...(t.replyList || []), reply]
+        updatedThread = {
+          ...t,
+          replies: replyList.length,
+          replyList,
+        }
+        return updatedThread
+      }
+      return t
+    })
+    window.localStorage.setItem(FORUM_STORAGE_KEY, JSON.stringify(threads))
+  } catch {}
+
+  // Try updating Supabase
+  try {
+    const { data: { session } } = await supabase.auth.getSession()
+    await supabase.from('forum_replies').insert({
+      thread_id: threadId,
+      author_id: session?.user?.id || null,
+      author_name: authorName,
+      author_avatar: reply.avatar,
+      content: content.trim(),
+    })
+  } catch {}
+
+  if (!updatedThread) {
+    updatedThread = {
+      id: threadId,
+      category: 'General',
+      title: 'Discussion Thread',
+      author: authorName,
+      avatar: reply.avatar,
+      country: 'Bangladesh',
+      time: 'Recently',
+      preview: content.slice(0, 140),
+      content,
+      replies: 1,
+      upvotes: 1,
+      downvotes: 0,
+      score: 1,
+      tags: [],
+      solved: false,
+      pinned: false,
+      replyList: [reply]
+    }
+  }
+
+  return { reply, thread: updatedThread }
+}
+
+export async function createForumThreadApi(data: {
+  title: string
+  category: string
+  content: string
+  tags?: string[]
+  author?: string
+}): Promise<ForumThread> {
+  const authorName = data.author || 'Candidate'
+  const newThread: ForumThread = {
     id: Date.now(),
     category: data.category,
     title: data.title,
-    author: data.author || 'Candidate',
-    avatar: (data.author || 'C').slice(0, 2).toUpperCase(),
+    author: authorName,
+    avatar: authorName.split(' ').filter(Boolean).map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'CA',
     country: 'Bangladesh',
     time: 'Just now',
     preview: data.content.slice(0, 140),
     content: data.content,
     replies: 0,
     upvotes: 1,
-    tags: data.tags || [],
+    downvotes: 0,
+    score: 1,
+    tags: data.tags && data.tags.length ? data.tags : [data.category],
     solved: false,
     pinned: false,
-    replyList: []
+    replyList: [],
+    userVote: 'up',
   }
-}
 
-export async function replyToForumThreadApi(threadId: number, content: string, author?: string): Promise<{ reply: ForumReply; thread: ForumThread }> {
+  // Save to persistent community threads
   try {
-    const res = await fetch(`${API_BASE}/forum/threads/${threadId}/replies`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ content, author }),
-      signal: AbortSignal.timeout(1200),
-    })
-    if (res.ok) {
-      return await res.json()
+    const raw = window.localStorage.getItem(FORUM_STORAGE_KEY)
+    const threads: ForumThread[] = raw ? JSON.parse(raw) : SEED_FORUM_THREADS
+    window.localStorage.setItem(FORUM_STORAGE_KEY, JSON.stringify([newThread, ...threads]))
+  } catch {}
+
+  // Record author's upvote
+  try {
+    const voteKey = getVoteStorageKey(authorName)
+    const rawVotes = window.localStorage.getItem(voteKey)
+    const votes = rawVotes ? JSON.parse(rawVotes) : {}
+    votes[newThread.id] = 'up'
+    window.localStorage.setItem(voteKey, JSON.stringify(votes))
+  } catch {}
+
+  // Also attempt Supabase insert
+  try {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (session?.user?.id && isValidUUID(session.user.id)) {
+      await supabase.from('forum_threads').insert({
+        author_id: session.user.id,
+        category: data.category,
+        title: data.title,
+        content: data.content,
+        tags: data.tags || [],
+      })
     }
   } catch {}
 
-  const reply: ForumReply = {
-    id: `reply-${Date.now()}`,
-    author: author || 'Candidate',
-    avatar: (author || 'C').slice(0, 2).toUpperCase(),
-    time: 'Just now',
-    content,
-  }
-  const thread: ForumThread = {
-    id: threadId,
-    category: 'General',
-    title: 'Discussion',
-    author: author || 'Candidate',
-    avatar: 'CM',
-    country: 'Global',
-    time: 'Recently',
-    preview: content.slice(0, 140),
-    content,
-    replies: 1,
-    upvotes: 1,
-    tags: [],
-    solved: false,
-    pinned: false,
-    replyList: [reply]
-  }
-  return { reply, thread }
-}
-
-export async function upvoteForumThreadApi(threadId: number): Promise<number> {
-  try {
-    const res = await fetch(`${API_BASE}/forum/threads/${threadId}/upvote`, {
-      method: 'POST',
-      signal: AbortSignal.timeout(1200),
-    })
-    if (res.ok) {
-      const data = await res.json()
-      return data.upvotes
-    }
-  } catch {}
-  return 1
+  return newThread
 }
