@@ -130,20 +130,27 @@ export default function Dashboard() {
             <span className="mono text-ink font-medium">{targetBand.toFixed(1)}</span> · Connected to Local Database
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <NavLink
             to="/practice"
-            className="bg-[#DC2626] text-white text-xs font-semibold px-5 py-2.5 hover:bg-[#B91C1C] transition-colors shadow-sm"
+            className="bg-[#DC2626] text-white text-xs font-semibold px-4 py-2.5 hover:bg-[#B91C1C] transition-colors shadow-sm"
             style={{ fontFamily: 'IBM Plex Sans, sans-serif', borderRadius: 4 }}
           >
             🎧 Start Listening Practice
           </NavLink>
           <NavLink
             to="/writing"
-            className="bg-navy text-white text-xs font-semibold px-5 py-2.5 hover:bg-navy-mid transition-colors shadow-sm"
+            className="bg-navy text-white text-xs font-semibold px-4 py-2.5 hover:bg-navy-mid transition-colors shadow-sm"
             style={{ fontFamily: 'IBM Plex Sans, sans-serif', borderRadius: 4 }}
           >
             ✍️ AI Essay Evaluation
+          </NavLink>
+          <NavLink
+            to="/documents"
+            className="border border-divider bg-surface text-ink text-xs font-semibold px-4 py-2.5 hover:border-line-strong hover:bg-surface-2 transition-colors shadow-sm"
+            style={{ fontFamily: 'IBM Plex Sans, sans-serif', borderRadius: 4 }}
+          >
+            📄 AI Doc Generator
           </NavLink>
         </div>
       </div>

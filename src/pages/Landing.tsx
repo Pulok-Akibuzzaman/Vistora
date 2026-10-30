@@ -11,6 +11,7 @@ const FEATURES = [
     title: 'AI Writing Evaluation',
     desc: 'Submit IELTS Task 1 & Task 2 essays and receive instant band score predictions, grammatical analysis, and vocabulary enhancement suggestions powered by advanced NLP.',
     tag: 'BAND PREDICTION',
+    to: '/writing',
   },
   {
     icon: '◈',
@@ -19,6 +20,7 @@ const FEATURES = [
     title: 'Full Mock Tests',
     desc: 'Authentic IELTS Academic and General Training simulations with timed sections, adaptive question difficulty, and post-test diagnostic reports.',
     tag: 'TIMED PRACTICE',
+    to: '/practice',
   },
   {
     icon: '⊞',
@@ -27,6 +29,7 @@ const FEATURES = [
     title: 'AI Document Generator',
     desc: 'Generate professional CVs, Statements of Purpose, Personal Statements, and Cover Letters tailored for university and visa applications.',
     tag: 'AI GENERATION',
+    to: '/documents',
   },
   {
     icon: '◎',
@@ -35,6 +38,7 @@ const FEATURES = [
     title: 'Progress Analytics',
     desc: 'Granular performance tracking across Reading, Listening, Writing, and Speaking. Identify weak areas with precision and monitor improvement over time.',
     tag: 'SKILL TRACKING',
+    to: '/dashboard',
   },
   {
     icon: '▣',
@@ -43,6 +47,7 @@ const FEATURES = [
     title: 'Resource Library',
     desc: 'Curated collection of band 8+ sample essays, vocabulary lists, grammar guides, and Cambridge IELTS practice materials updated regularly.',
     tag: '500+ RESOURCES',
+    to: '/resources',
   },
   {
     icon: '◇',
@@ -51,6 +56,7 @@ const FEATURES = [
     title: 'Community Forum',
     desc: 'Connect with 40,000+ IELTS candidates worldwide. Share strategies, get feedback on essays, and learn from top scorers in a structured academic community.',
     tag: 'PEER LEARNING',
+    to: '/community',
   },
 ]
 
@@ -290,26 +296,28 @@ export default function Landing() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {FEATURES.map((f, i) => (
             <Reveal key={f.title} delay={(i % 3) * 110} className="h-full">
-              <div
-                onMouseMove={onCardMove}
-                className="h-full bg-surface border border-divider p-6 corner-mark group hover:border-line-strong hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-900/5 transition duration-300"
-                style={{ borderRadius: 4 }}>
+              <NavLink to={f.to} className="block h-full group">
                 <div
-                  className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                  style={{ borderRadius: 4, background: `radial-gradient(260px circle at var(--x, 50%) var(--y, 50%), ${themeBg(f.bg)}, transparent 70%)` }}
-                />
-                <div className="relative">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="w-10 h-10 flex items-center justify-center text-lg border transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6" style={{ background: themeBg(f.bg), borderColor: themeBg(f.bg), borderRadius: 4, color: themeText(f.color) }}>
-                      {f.icon}
+                  onMouseMove={onCardMove}
+                  className="h-full bg-surface border border-divider p-6 corner-mark group-hover:border-line-strong group-hover:-translate-y-1 group-hover:shadow-xl group-hover:shadow-slate-900/5 transition duration-300"
+                  style={{ borderRadius: 4 }}>
+                  <div
+                    className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                    style={{ borderRadius: 4, background: `radial-gradient(260px circle at var(--x, 50%) var(--y, 50%), ${themeBg(f.bg)}, transparent 70%)` }}
+                  />
+                  <div className="relative">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="w-10 h-10 flex items-center justify-center text-lg border transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6" style={{ background: themeBg(f.bg), borderColor: themeBg(f.bg), borderRadius: 4, color: themeText(f.color) }}>
+                        {f.icon}
+                      </div>
+                      <span className="mono text-[9px] tracking-widest" style={{ color: themeText(f.color) }}>{f.tag}</span>
                     </div>
-                    <span className="mono text-[9px] tracking-widest" style={{ color: themeText(f.color) }}>{f.tag}</span>
+                    <h3 className="text-[15px] font-semibold text-ink mb-2" style={{ fontFamily: 'IBM Plex Sans, sans-serif' }}>{f.title}</h3>
+                    <p className="text-[12px] text-muted leading-relaxed" style={{ fontFamily: 'Inter, sans-serif' }}>{f.desc}</p>
                   </div>
-                  <h3 className="text-[15px] font-semibold text-ink mb-2" style={{ fontFamily: 'IBM Plex Sans, sans-serif' }}>{f.title}</h3>
-                  <p className="text-[12px] text-muted leading-relaxed" style={{ fontFamily: 'Inter, sans-serif' }}>{f.desc}</p>
+                  <span className="absolute bottom-0 left-0 h-[2px] w-full origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-500" style={{ background: f.color }} />
                 </div>
-                <span className="absolute bottom-0 left-0 h-[2px] w-full origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-500" style={{ background: f.color }} />
-              </div>
+              </NavLink>
             </Reveal>
           ))}
         </div>

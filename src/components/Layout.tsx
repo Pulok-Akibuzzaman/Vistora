@@ -89,7 +89,7 @@ export default function Layout() {
           </NavLink>
 
           {/* Desktop Nav */}
-          <nav className="hidden xl:flex items-center gap-0.5">
+          <nav className="hidden lg:flex items-center gap-0.5 xl:gap-1">
             {isLanding ? (
               <>
                 <a href="#features" className="px-3 py-2 text-[11px] text-subtle hover:text-white tracking-wider uppercase font-medium transition-colors" style={{ fontFamily: 'IBM Plex Sans, sans-serif' }}>Features</a>
@@ -175,7 +175,7 @@ export default function Layout() {
               aria-label={mobileOpen ? 'Close navigation menu' : 'Open navigation menu'}
               aria-expanded={mobileOpen}
               onClick={() => setMobileOpen(open => !open)}
-              className={`xl:hidden h-9 w-9 border flex flex-col items-center justify-center gap-1 transition-colors ${
+              className={`lg:hidden h-9 w-9 border flex flex-col items-center justify-center gap-1 transition-colors ${
                 isPublicPage ? 'border-[#334155] text-white' : 'border-divider text-ink'
               }`}
               style={{ borderRadius: 3 }}
@@ -187,7 +187,7 @@ export default function Layout() {
           </div>
         </div>
         {mobileOpen && (
-          <div className={`xl:hidden border-t px-4 py-3 ${isPublicPage ? 'border-[#1E293B] bg-[#0F172A]' : 'border-divider bg-surface'}`}>
+          <div className={`lg:hidden border-t px-4 py-3 ${isPublicPage ? 'border-[#1E293B] bg-[#0F172A]' : 'border-divider bg-surface'}`}>
             <nav className="grid gap-1">
               {isPublicPage ? (
                 <>
