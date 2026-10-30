@@ -13,7 +13,13 @@ export const listeningPairs = (testNumber?: number) => LISTENING_PAIRS[testNumbe
 export const readingPairs = (testNumber?: number) => READING_PAIRS[testNumber ?? 1] || []
 
 export const normalizeAnswer = (value?: unknown) =>
-  typeof value === 'string' ? value.trim().toLowerCase().replace(/\s+/g, ' ') : ''
+  typeof value === 'string'
+    ? value
+        .trim()
+        .toLowerCase()
+        .replace(/^["'‘“]+|["'’”.,;:]+$/g, '')
+        .replace(/\s+/g, ' ')
+    : ''
 
 /** Marks each question in the answer key as correct or not. */
 export function markAnswers(
@@ -23,13 +29,15 @@ export function markAnswers(
 ): Record<number, boolean> {
   const marks: Record<number, boolean> = {}
   for (const [key, accepted] of Object.entries(answerKey)) {
-    const response = normalizeAnswer(responses[key])
-    marks[Number(key)] = !!response && accepted.some(value => normalizeAnswer(value) === response)
+    const numKey = Number(key)
+    const raw = responses[key] ?? responses[numKey]
+    const response = normalizeAnswer(raw)
+    marks[numKey] = !!response && accepted.some(value => normalizeAnswer(value) === response)
   }
   for (const [first, second] of pairs) {
     const expected = new Set((answerKey[first] || []).map(value => normalizeAnswer(value)))
-    const firstResponse = normalizeAnswer(responses[first])
-    const secondResponse = normalizeAnswer(responses[second])
+    const firstResponse = normalizeAnswer(responses[first] ?? responses[String(first)])
+    const secondResponse = normalizeAnswer(responses[second] ?? responses[String(second)])
     marks[first] = !!firstResponse && expected.has(firstResponse)
     marks[second] = !!secondResponse && expected.has(secondResponse) && secondResponse !== firstResponse
   }

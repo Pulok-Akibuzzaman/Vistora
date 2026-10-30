@@ -2284,7 +2284,34 @@ export default function PracticeTest() {
       }
     })
 
-    const filteredReviewItems = questionReviewItems.filter(item => {
+    const listeningAnswerKey = selectedTestNum === 2 ? LISTENING_ANSWERS_2 : LISTENING_ANSWERS
+    const listeningMarks = markAnswers(listeningAnswerKey, answers, listeningPairs(selectedTestNum))
+    const listeningReviewItems = isListening
+      ? Object.entries(listeningAnswerKey)
+          .filter(([key]) => {
+            const id = Number(key)
+            return selectedTest.part === undefined || (id >= (selectedTest.part - 1) * 10 + 1 && id <= selectedTest.part * 10)
+          })
+          .map(([key, accepted]) => {
+            const id = Number(key)
+            const userAns = answers[id]?.trim() || ''
+            const correct = !!listeningMarks[id]
+            const unanswered = !userAns
+            return {
+              id,
+              prompt: `Question ${id}`,
+              userAns,
+              accepted,
+              correct,
+              unanswered,
+              explanation: undefined,
+              passageReference: undefined,
+            }
+          })
+      : []
+
+    const reviewItems = isListening ? listeningReviewItems : questionReviewItems
+    const filteredReviewItems = reviewItems.filter(item => {
       if (resultFilter === 'incorrect') return !item.correct
       if (resultFilter === 'correct') return item.correct
       return true
@@ -2330,14 +2357,18 @@ export default function PracticeTest() {
         </section>
 
         {/* Detailed Question Review & Diagnostics */}
-        {selectedTest.type === 'Reading' && questionReviewItems.length > 0 && (
+        {(selectedTest.type === 'Reading' || selectedTest.type === 'Listening') && reviewItems.length > 0 && (
           <section className="mt-8 border border-divider bg-surface p-6 sm:p-8">
             <div className="flex flex-col gap-4 border-b border-divider pb-5 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <div className="label-tag">DIAGNOSTIC REVIEW</div>
-                <h2 className="mt-2 font-plex text-2xl font-bold text-ink">Answer Review & Passage Evidence</h2>
+                <h2 className="mt-2 font-plex text-2xl font-bold text-ink">
+                  {isListening ? 'Listening Answer Check' : 'Answer Review & Passage Evidence'}
+                </h2>
                 <p className="mt-1 text-sm text-graphite-mid">
-                  Review which answers were correct, why incorrect responses were wrong, and the exact passage excerpts used as evidence.
+                  {isListening
+                    ? 'Compare each of your recorded answers against the official Cambridge IELTS listening answer key.'
+                    : 'Review which answers were correct, why incorrect responses were wrong, and the exact passage excerpts used as evidence.'}
                 </p>
               </div>
               <div className="flex flex-wrap gap-2">
@@ -2350,7 +2381,7 @@ export default function PracticeTest() {
                       : 'border-divider bg-surface text-graphite hover:border-graphite-light'
                   }`}
                 >
-                  All Questions ({questionReviewItems.length})
+                  All Questions ({reviewItems.length})
                 </button>
                 <button
                   type="button"
@@ -2361,7 +2392,7 @@ export default function PracticeTest() {
                       : 'border-rose-200 bg-rose-50 text-rose-700 hover:border-rose-300'
                   }`}
                 >
-                  Mistakes ({questionReviewItems.filter(item => !item.correct).length})
+                  Mistakes ({reviewItems.filter(item => !item.correct).length})
                 </button>
                 <button
                   type="button"
@@ -2372,7 +2403,7 @@ export default function PracticeTest() {
                       : 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:border-emerald-300'
                   }`}
                 >
-                  Correct ({questionReviewItems.filter(item => item.correct).length})
+                  Correct ({reviewItems.filter(item => item.correct).length})
                 </button>
               </div>
             </div>

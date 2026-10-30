@@ -5,7 +5,7 @@ import { LISTENING_ANSWERS_2 } from '../data/listeningTest2'
 import { saveExamResult } from '../lib/results'
 import { saveExamResultApi } from '../lib/api'
 import { useAuth } from '../lib/authContext'
-import { listeningPairs, markAnswers } from '../lib/scoring'
+import { listeningPairs, markAnswers, readingPairs } from '../lib/scoring'
 
 type SkillFeedback = {
   band: number
@@ -118,12 +118,14 @@ export default function FullTestResult({ listeningAnswers, listeningTestNumber =
     })
   }, [listeningAnswers, listeningTestNumber])
 
-  const readingReview = useMemo(() => Object.entries(READING_ANSWERS).map(([key, accepted]) => {
-    const id = Number(key)
-    const response = readingAnswers[id] || ''
-    const correct = accepted.some(answer => normalize(answer) === normalize(response))
-    return { id, response, accepted, correct }
-  }), [readingAnswers])
+  const readingReview = useMemo(() => {
+    const marks = markAnswers(READING_ANSWERS, readingAnswers, readingPairs(1))
+    return Object.entries(READING_ANSWERS).map(([key, accepted]) => {
+      const id = Number(key)
+      const response = readingAnswers[id] || readingAnswers[key] || ''
+      return { id, response, accepted, correct: !!marks[id] }
+    })
+  }, [readingAnswers])
 
   const listeningRaw = listeningReview.filter(item => item.correct).length
   const readingRaw = readingReview.filter(item => item.correct).length

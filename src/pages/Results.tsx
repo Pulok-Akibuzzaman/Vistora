@@ -7,6 +7,7 @@ import { READING_ANSWERS, READING_PASSAGES } from '../data/readingTest1'
 import { READING_ANSWERS_2, READING_PASSAGES_2 } from '../data/readingTest2'
 import { READING_ANSWERS_3, READING_PASSAGES_3 } from '../data/readingTest3'
 import { READING_ANSWERS_4, READING_PASSAGES_4 } from '../data/readingTest4'
+import { READING_ANSWERS_21, READING_PASSAGES_21 } from '../data/readingTest21'
 import { LISTENING_ANSWERS } from '../data/listeningTest1'
 import { LISTENING_ANSWERS_2 } from '../data/listeningTest2'
 
@@ -17,6 +18,7 @@ const READING_TESTS: Record<number, { passages: typeof READING_PASSAGES; answers
   2: { passages: READING_PASSAGES_2, answers: READING_ANSWERS_2 },
   3: { passages: READING_PASSAGES_3, answers: READING_ANSWERS_3 },
   4: { passages: READING_PASSAGES_4, answers: READING_ANSWERS_4 },
+  21: { passages: READING_PASSAGES_21, answers: READING_ANSWERS_21 },
 }
 
 // Older results don't store testNumber/part, so fall back to the title, e.g. "IELTS 18 — Reading Test 3 · Part 1"
