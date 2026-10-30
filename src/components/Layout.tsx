@@ -48,7 +48,8 @@ export default function Layout() {
   const { user, isAuthenticated, logout } = useAuth()
   const isLanding = location.pathname === '/'
   const isAuthPage = location.pathname === '/login' || location.pathname === '/signup'
-  const isPublicPage = isLanding || isAuthPage
+  const isDarkHeader = isLanding || isAuthPage
+  const showGuestLandingNav = isLanding && !isAuthenticated
   const [mobileOpen, setMobileOpen] = useState(false)
   const [accountOpen, setAccountOpen] = useState(false)
 
@@ -72,7 +73,7 @@ export default function Layout() {
       <div className="h-[2px] bg-gradient-to-r from-[#DC2626] via-[#BE123C] to-[#DC2626] fixed top-0 left-0 right-0 z-50" />
 
       {/* Header */}
-      <header className={`fixed top-[2px] left-0 right-0 z-40 border-b ${isPublicPage ? 'bg-[#0F172A]/95 border-[#1E293B]' : 'bg-surface/95 border-divider'} backdrop-blur-sm`}>
+      <header className={`fixed top-[2px] left-0 right-0 z-40 border-b ${isDarkHeader ? 'bg-[#0F172A]/95 border-[#1E293B]' : 'bg-surface/95 border-divider'} backdrop-blur-sm`}>
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           {/* Wordmark */}
           <NavLink to="/" className="flex items-center gap-2.5 group">
@@ -83,14 +84,14 @@ export default function Layout() {
               </svg>
             </div>
             <div>
-              <span className={`font-bold text-sm tracking-tight ${isPublicPage ? 'text-white' : 'text-ink'}`} style={{ fontFamily: 'IBM Plex Sans, sans-serif' }}>Vistora</span>
+              <span className={`font-bold text-sm tracking-tight ${isDarkHeader ? 'text-white' : 'text-ink'}`} style={{ fontFamily: 'IBM Plex Sans, sans-serif' }}>Vistora</span>
               <span className="mono text-[10px] text-accent ml-1 tracking-widest">AI</span>
             </div>
           </NavLink>
 
           {/* Desktop Nav */}
           <nav className="hidden lg:flex items-center gap-0.5 xl:gap-1">
-            {isLanding ? (
+            {showGuestLandingNav ? (
               <>
                 <a href="#features" className="px-3 py-2 text-[11px] text-subtle hover:text-white tracking-wider uppercase font-medium transition-colors" style={{ fontFamily: 'IBM Plex Sans, sans-serif' }}>Features</a>
                 <a href="#how-it-works" className="px-3 py-2 text-[11px] text-subtle hover:text-white tracking-wider uppercase font-medium transition-colors" style={{ fontFamily: 'IBM Plex Sans, sans-serif' }}>How It Works</a>
@@ -103,7 +104,9 @@ export default function Layout() {
                     `px-3 py-2 text-[11px] tracking-wider uppercase font-medium transition-colors border-b-2 ${
                       isActive
                         ? 'text-accent border-[#DC2626]'
-                        : 'text-muted border-transparent hover:text-ink'
+                        : isDarkHeader
+                          ? 'text-slate-300 border-transparent hover:text-white hover:border-[#DC2626]/40'
+                          : 'text-muted border-transparent hover:text-ink'
                     }`
                   }
                   style={{ fontFamily: 'IBM Plex Sans, sans-serif' }}
@@ -117,7 +120,7 @@ export default function Layout() {
             <div className="hidden sm:flex items-center gap-2">
               {!isAuthenticated ? (
                 <>
-                  <NavLink to="/login" className={`text-[11px] font-medium px-3 py-2 transition-colors ${isPublicPage ? 'text-subtle hover:text-white' : 'text-muted hover:text-ink'}`} style={{ fontFamily: 'IBM Plex Sans, sans-serif' }}>Sign In</NavLink>
+                  <NavLink to="/login" className={`text-[11px] font-medium px-3 py-2 transition-colors ${isDarkHeader ? 'text-subtle hover:text-white' : 'text-muted hover:text-ink'}`} style={{ fontFamily: 'IBM Plex Sans, sans-serif' }}>Sign In</NavLink>
                   <NavLink to="/signup" className="text-[11px] font-semibold text-white bg-[#DC2626] px-4 py-2 hover:bg-[#B91C1C] transition-colors" style={{ fontFamily: 'IBM Plex Sans, sans-serif', borderRadius: 3 }}>
                     Create Account
                   </NavLink>
@@ -138,10 +141,10 @@ export default function Layout() {
                         {initials}
                       </span>
                       <span className="hidden xl:block text-left">
-                        <span className="block text-[10px] font-semibold text-ink">{user?.name || 'My Account'}</span>
+                        <span className={`block text-[10px] font-semibold ${isDarkHeader ? 'text-white' : 'text-ink'}`}>{user?.name || 'My Account'}</span>
                         <span className="block mono text-[8px] uppercase tracking-wider text-subtle">{user?.role || 'Student'} account</span>
                       </span>
-                      <span className="mono text-[9px] text-subtle">⌄</span>
+                      <span className={`mono text-[9px] ${isDarkHeader ? 'text-slate-400' : 'text-subtle'}`}>⌄</span>
                     </button>
                     {accountOpen && (
                       <div className="absolute right-0 top-full mt-2 w-64 border border-divider bg-surface p-2 shadow-xl z-50" style={{ borderRadius: 4 }}>
@@ -169,14 +172,14 @@ export default function Layout() {
                 </>
               )}
             </div>
-            <ThemeToggle className={isPublicPage ? 'border-[#334155] text-[#CBD5E1] hover:text-white hover:border-[#475569]' : 'border-divider text-muted hover:text-ink hover:border-line-strong'} />
+            <ThemeToggle className={isDarkHeader ? 'border-[#334155] text-[#CBD5E1] hover:text-white hover:border-[#475569]' : 'border-divider text-muted hover:text-ink hover:border-line-strong'} />
             <button
               type="button"
               aria-label={mobileOpen ? 'Close navigation menu' : 'Open navigation menu'}
               aria-expanded={mobileOpen}
               onClick={() => setMobileOpen(open => !open)}
               className={`lg:hidden h-9 w-9 border flex flex-col items-center justify-center gap-1 transition-colors ${
-                isPublicPage ? 'border-[#334155] text-white' : 'border-divider text-ink'
+                isDarkHeader ? 'border-[#334155] text-white' : 'border-divider text-ink'
               }`}
               style={{ borderRadius: 3 }}
             >
@@ -187,9 +190,9 @@ export default function Layout() {
           </div>
         </div>
         {mobileOpen && (
-          <div className={`lg:hidden border-t px-4 py-3 ${isPublicPage ? 'border-[#1E293B] bg-[#0F172A]' : 'border-divider bg-surface'}`}>
+          <div className={`lg:hidden border-t px-4 py-3 ${isDarkHeader ? 'border-[#1E293B] bg-[#0F172A]' : 'border-divider bg-surface'}`}>
             <nav className="grid gap-1">
-              {isPublicPage ? (
+              {!isAuthenticated ? (
                 <>
                   {isLanding && [['Features', '#features'], ['How It Works', '#how-it-works'], ['Testimonials', '#testimonials']].map(([label, href]) => (
                     <a key={href} href={href} onClick={() => setMobileOpen(false)} className="px-3 py-3 text-xs font-medium uppercase tracking-wider text-subtle hover:text-white">{label}</a>
@@ -200,13 +203,13 @@ export default function Layout() {
               ) : (
                 <>
                   {NAV.map(item => (
-                    <NavLink key={item.to} to={item.to} className={({ isActive }) => `border-l-2 px-3 py-3 text-xs font-medium uppercase tracking-wider ${isActive ? 'border-[#DC2626] bg-electric-dim text-accent' : 'border-transparent text-muted'}`}>{item.label}</NavLink>
+                    <NavLink key={item.to} to={item.to} className={({ isActive }) => `border-l-2 px-3 py-3 text-xs font-medium uppercase tracking-wider ${isActive ? 'border-[#DC2626] bg-electric-dim text-accent' : isDarkHeader ? 'border-transparent text-slate-300 hover:text-white' : 'border-transparent text-muted'}`}>{item.label}</NavLink>
                   ))}
-                  <NavLink to="/profile" className="border-l-2 border-transparent px-3 py-3 text-xs font-medium uppercase tracking-wider text-muted">Profile</NavLink>
+                  <NavLink to="/profile" className={`border-l-2 border-transparent px-3 py-3 text-xs font-medium uppercase tracking-wider ${isDarkHeader ? 'text-slate-300 hover:text-white' : 'text-muted'}`}>Profile</NavLink>
                   {user?.role === 'Admin' && (
                     <NavLink to="/admin" className="border-l-2 border-transparent px-3 py-3 text-xs font-medium uppercase tracking-wider text-accent-2">Admin console</NavLink>
                   )}
-                  <button type="button" onClick={signOut} className="mt-2 border border-divider px-3 py-3 text-center text-xs font-semibold uppercase tracking-wider text-ink" style={{ borderRadius: 3 }}>Sign out</button>
+                  <button type="button" onClick={signOut} className={`mt-2 border px-3 py-3 text-center text-xs font-semibold uppercase tracking-wider ${isDarkHeader ? 'border-[#334155] text-white hover:bg-white/10' : 'border-divider text-ink'}`} style={{ borderRadius: 3 }}>Sign out</button>
                 </>
               )}
             </nav>

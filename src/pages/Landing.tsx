@@ -2,6 +2,7 @@ import { NavLink } from 'react-router'
 import { useEffect, useRef, useState, type MouseEvent } from 'react'
 import { CountUp, Reveal, cssVars, prefersReducedMotion, useInView } from '../components/Motion'
 import { themeBg, themeText } from '../lib/theme'
+import { useAuth } from '../lib/authContext'
 
 const FEATURES = [
   {
@@ -114,6 +115,7 @@ const HERO_CHIPS = [
 const STEP_INTERVAL = 3000
 
 export default function Landing() {
+  const { user, isAuthenticated } = useAuth()
   const heroRef = useRef<HTMLElement>(null)
   const frame = useRef(0)
   const [activeStep, setActiveStep] = useState(0)
@@ -221,7 +223,11 @@ export default function Landing() {
           <div className="hero-in" style={cssVars({ '--delay': '0ms' })}>
             <div className="inline-flex items-center gap-2 bg-navy-mid border border-[#DC2626]/30 px-4 py-1.5 mb-8" style={{ borderRadius: 3 }}>
               <span className="w-1.5 h-1.5 rounded-full bg-[#DC2626] anim-pulse-dot" />
-              <span className="mono text-[10px] text-[#F87171] tracking-widest">AI-POWERED IELTS PREPARATION PLATFORM</span>
+              <span className="mono text-[10px] text-[#F87171] tracking-widest">
+                {isAuthenticated
+                  ? `WELCOME BACK, ${(user?.name || 'STUDENT').toUpperCase()} · TARGET BAND ${user?.targetBand ?? 7.5}`
+                  : 'AI-POWERED IELTS PREPARATION PLATFORM'}
+              </span>
             </div>
           </div>
 
@@ -234,23 +240,77 @@ export default function Landing() {
           </h1>
 
           <p className="hero-in text-subtle text-lg leading-relaxed max-w-2xl mx-auto mb-10" style={cssVars({ '--delay': '400ms', fontFamily: 'Inter, sans-serif' })}>
-            Vistora AI combines advanced language models with proven IELTS pedagogy to deliver personalized band score improvement — from diagnostic assessment to final exam readiness.
+            {isAuthenticated ? (
+              <>
+                Welcome back to your personalized IELTS workspace, <span className="text-white font-medium">{user?.name || 'Candidate'}</span>. Continue your preparation, review AI writing feedback, or take full timed mock tests targeting <strong className="text-white font-semibold">Band {user?.targetBand ?? 7.5}</strong>.
+              </>
+            ) : (
+              'Vistora AI combines advanced language models with proven IELTS pedagogy to deliver personalized band score improvement — from diagnostic assessment to final exam readiness.'
+            )}
           </p>
 
           {/* CTAs */}
-          <div className="hero-in flex items-center justify-center gap-3 flex-wrap mb-12" style={cssVars({ '--delay': '540ms' })}>
-            <NavLink to="/signup"
-              className="group btn-sheen flex items-center gap-2 bg-[#DC2626] text-white text-sm font-semibold px-8 py-3.5 hover:bg-[#B91C1C] hover:shadow-lg hover:shadow-[#DC2626]/30 active:scale-[0.97] transition"
-              style={{ fontFamily: 'IBM Plex Sans, sans-serif', borderRadius: 4 }}>
-              Create Your Account
-              <span className="text-[#FCA5A5] transition-transform group-hover:translate-x-1">→</span>
-            </NavLink>
-            <NavLink to="/practice"
-              className="flex items-center gap-2 bg-transparent border border-[#334155] text-faint text-sm font-medium px-8 py-3.5 hover:border-[#DC2626]/60 hover:text-white hover:bg-navy-mid/60 active:scale-[0.97] transition"
-              style={{ fontFamily: 'IBM Plex Sans, sans-serif', borderRadius: 4 }}>
-              Take a Practice Test
-            </NavLink>
+          <div className="hero-in flex items-center justify-center gap-3 flex-wrap mb-8" style={cssVars({ '--delay': '540ms' })}>
+            {isAuthenticated ? (
+              <>
+                <NavLink to="/dashboard"
+                  className="group btn-sheen flex items-center gap-2 bg-[#DC2626] text-white text-sm font-semibold px-8 py-3.5 hover:bg-[#B91C1C] hover:shadow-lg hover:shadow-[#DC2626]/30 active:scale-[0.97] transition"
+                  style={{ fontFamily: 'IBM Plex Sans, sans-serif', borderRadius: 4 }}>
+                  Go to Dashboard
+                  <span className="text-[#FCA5A5] transition-transform group-hover:translate-x-1">→</span>
+                </NavLink>
+                <NavLink to="/practice"
+                  className="flex items-center gap-2 bg-transparent border border-[#334155] text-faint text-sm font-medium px-8 py-3.5 hover:border-[#DC2626]/60 hover:text-white hover:bg-navy-mid/60 active:scale-[0.97] transition"
+                  style={{ fontFamily: 'IBM Plex Sans, sans-serif', borderRadius: 4 }}>
+                  Take a Practice Test
+                </NavLink>
+                <NavLink to="/writing"
+                  className="flex items-center gap-2 bg-navy-mid/90 border border-[#DC2626]/40 text-[#F87171] text-sm font-medium px-6 py-3.5 hover:border-[#DC2626] hover:text-white active:scale-[0.97] transition"
+                  style={{ fontFamily: 'IBM Plex Sans, sans-serif', borderRadius: 4 }}>
+                  AI Essay Review
+                </NavLink>
+              </>
+            ) : (
+              <>
+                <NavLink to="/signup"
+                  className="group btn-sheen flex items-center gap-2 bg-[#DC2626] text-white text-sm font-semibold px-8 py-3.5 hover:bg-[#B91C1C] hover:shadow-lg hover:shadow-[#DC2626]/30 active:scale-[0.97] transition"
+                  style={{ fontFamily: 'IBM Plex Sans, sans-serif', borderRadius: 4 }}>
+                  Create Your Account
+                  <span className="text-[#FCA5A5] transition-transform group-hover:translate-x-1">→</span>
+                </NavLink>
+                <NavLink to="/practice"
+                  className="flex items-center gap-2 bg-transparent border border-[#334155] text-faint text-sm font-medium px-8 py-3.5 hover:border-[#DC2626]/60 hover:text-white hover:bg-navy-mid/60 active:scale-[0.97] transition"
+                  style={{ fontFamily: 'IBM Plex Sans, sans-serif', borderRadius: 4 }}>
+                  Take a Practice Test
+                </NavLink>
+              </>
+            )}
           </div>
+
+          {/* Quick candidate strip when authenticated */}
+          {isAuthenticated && (
+            <div className="hero-in max-w-xl mx-auto mb-10 p-3 bg-navy-mid/90 border border-[#1E293B] shadow-lg flex flex-wrap items-center justify-between gap-3 text-left" style={{ ...cssVars({ '--delay': '620ms' }), borderRadius: 4 }}>
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded bg-[#DC2626]/20 border border-[#DC2626]/40 flex items-center justify-center text-[#F87171] text-xs font-bold mono">
+                  {user?.name ? user.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : 'ST'}
+                </div>
+                <div>
+                  <div className="text-xs font-semibold text-white">{user?.name || 'Student Candidate'}</div>
+                  <div className="text-[10px] text-muted mono">{user?.institution || user?.email || 'Logged-in Account'}</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-4 text-xs">
+                <div className="text-right">
+                  <span className="text-[10px] text-muted uppercase mono block">Target Band</span>
+                  <span className="mono font-bold text-[#F87171]">{user?.targetBand ?? 7.5}</span>
+                </div>
+                <div className="w-px h-6 bg-[#334155]" />
+                <NavLink to="/dashboard" className="text-[11px] text-[#F87171] hover:text-white underline underline-offset-2 mono font-medium">
+                  Resume Study →
+                </NavLink>
+              </div>
+            </div>
+          )}
 
           {/* Stats row */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-2xl mx-auto">
@@ -418,26 +478,45 @@ export default function Landing() {
         <Reveal className="max-w-2xl mx-auto text-center">
           <div className="label-tag justify-center mb-4 text-ink-4">
             <span className="w-3 h-px bg-navy-light" />
-            Begin Your Journey
+            {isAuthenticated ? 'Continue Your Journey' : 'Begin Your Journey'}
             <span className="w-3 h-px bg-navy-light" />
           </div>
           <h2 className="text-3xl font-bold text-white mb-4 tracking-tight" style={{ fontFamily: 'IBM Plex Sans, sans-serif' }}>
-            Your Target Band Score Is Within Reach
+            {isAuthenticated ? `Keep Pushing Toward Band ${user?.targetBand ?? 7.5}` : 'Your Target Band Score Is Within Reach'}
           </h2>
           <p className="text-muted text-sm mb-8" style={{ fontFamily: 'Inter, sans-serif' }}>
-            Join 40,000+ students who have achieved their IELTS goals with Vistora AI.
+            {isAuthenticated
+              ? 'Jump back into your diagnostics, timed mock tests, AI writing evaluations, and official exam dates.'
+              : 'Join 40,000+ students who have achieved their IELTS goals with Vistora AI.'}
           </p>
           <div className="flex items-center justify-center gap-3 flex-wrap">
-            <NavLink to="/dashboard"
-              className="btn-glow bg-[#DC2626] text-white text-sm font-semibold px-8 py-3.5 hover:bg-[#B91C1C] active:scale-[0.97] transition"
-              style={{ fontFamily: 'IBM Plex Sans, sans-serif', borderRadius: 4 }}>
-              Start Free — No Credit Card
-            </NavLink>
-            <NavLink to="/resources"
-              className="border border-[#334155] text-subtle text-sm font-medium px-6 py-3.5 hover:border-[#475569] hover:text-white active:scale-[0.97] transition"
-              style={{ fontFamily: 'IBM Plex Sans, sans-serif', borderRadius: 4 }}>
-              Browse Resources
-            </NavLink>
+            {isAuthenticated ? (
+              <>
+                <NavLink to="/dashboard"
+                  className="btn-glow bg-[#DC2626] text-white text-sm font-semibold px-8 py-3.5 hover:bg-[#B91C1C] active:scale-[0.97] transition"
+                  style={{ fontFamily: 'IBM Plex Sans, sans-serif', borderRadius: 4 }}>
+                  Go to Dashboard →
+                </NavLink>
+                <NavLink to="/practice"
+                  className="border border-[#334155] text-subtle text-sm font-medium px-6 py-3.5 hover:border-[#475569] hover:text-white active:scale-[0.97] transition"
+                  style={{ fontFamily: 'IBM Plex Sans, sans-serif', borderRadius: 4 }}>
+                  Take a Practice Test
+                </NavLink>
+              </>
+            ) : (
+              <>
+                <NavLink to="/signup"
+                  className="btn-glow bg-[#DC2626] text-white text-sm font-semibold px-8 py-3.5 hover:bg-[#B91C1C] active:scale-[0.97] transition"
+                  style={{ fontFamily: 'IBM Plex Sans, sans-serif', borderRadius: 4 }}>
+                  Start Free — No Credit Card
+                </NavLink>
+                <NavLink to="/resources"
+                  className="border border-[#334155] text-subtle text-sm font-medium px-6 py-3.5 hover:border-[#475569] hover:text-white active:scale-[0.97] transition"
+                  style={{ fontFamily: 'IBM Plex Sans, sans-serif', borderRadius: 4 }}>
+                  Browse Resources
+                </NavLink>
+              </>
+            )}
           </div>
         </Reveal>
       </section>
