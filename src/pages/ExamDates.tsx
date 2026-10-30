@@ -98,7 +98,12 @@ export default function ExamDates() {
                   <div>
                     <h2 className="font-plex text-base font-semibold text-ink">{exam.module} IELTS · {exam.format}</h2>
                     <p className="mt-1 text-sm text-graphite-mid">{exam.venue} · {exam.city}</p>
-                    <span className={`mt-3 inline-block rounded-sm px-2 py-1 font-mono text-xs ${exam.availability === 'Available' ? 'bg-success-soft text-positive' : 'bg-warning-soft text-caution'}`}>{exam.availability.toUpperCase()}</span>
+                    <div className="mt-3 flex flex-wrap items-center gap-2">
+                      <span className={`inline-block rounded-sm px-2 py-1 font-mono text-xs ${exam.availability === 'Available' ? 'bg-success-soft text-positive' : 'bg-warning-soft text-caution'}`}>{exam.availability.toUpperCase()}</span>
+                      {exam.fee && (
+                        <span className="rounded-sm border border-divider px-2 py-1 font-mono text-xs text-graphite-mid">{exam.fee}</span>
+                      )}
+                    </div>
                   </div>
                 </div>
                 <a href={exam.registrationUrl || BRITISH_COUNCIL_BANGLADESH_BOOKING_URL} target="_blank" rel="noreferrer" className="rounded-card bg-electric px-6 py-3 text-center font-plex text-sm font-semibold text-white">

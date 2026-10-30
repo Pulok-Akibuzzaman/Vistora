@@ -402,7 +402,53 @@ function localDatabaseAudioPlugin(): Plugin {
           return
         }
 
-        // 2. Audio streaming endpoint: /api/audio/stream/:book/:test/:part
+        // 2. Exam dates endpoint for British Council Bangladesh
+        if (rawUrl.startsWith('/api/exam-dates')) {
+          const parsed = new URL(rawUrl, 'http://localhost')
+          const city = parsed.searchParams.get('city') || 'All'
+          const format = parsed.searchParams.get('format') || 'All'
+          const moduleParam = parsed.searchParams.get('module') || 'All'
+
+          const baseDates = [
+            { offsetDays: 4, city: 'Dhaka', venue: 'British Council Dhaka Examination Centre, Fuller Road', format: 'Computer-delivered', module: 'Academic', availability: 'Available', fee: 'BDT 23,500' },
+            { offsetDays: 7, city: 'Dhaka', venue: 'Banani Examination Centre, Road 11, Block D', format: 'Paper-based', module: 'Academic', availability: 'Available', fee: 'BDT 23,500' },
+            { offsetDays: 10, city: 'Chattogram', venue: 'Agrabad Commercial Area Centre, Chattogram', format: 'Computer-delivered', module: 'Academic', availability: 'Available', fee: 'BDT 23,500' },
+            { offsetDays: 13, city: 'Sylhet', venue: 'Zindabazar Testing Facility, Sylhet', format: 'Paper-based', module: 'General Training', availability: 'Limited', fee: 'BDT 23,500' },
+            { offsetDays: 16, city: 'Dhaka', venue: 'British Council Dhaka Examination Centre, Fuller Road', format: 'Computer-delivered', module: 'General Training', availability: 'Available', fee: 'BDT 23,500' },
+            { offsetDays: 20, city: 'Chattogram', venue: 'GEC Circle Test Centre, Chattogram', format: 'Paper-based', module: 'Academic', availability: 'Limited', fee: 'BDT 23,500' },
+            { offsetDays: 24, city: 'Sylhet', venue: 'Subidbazar Examination Hall, Sylhet', format: 'Computer-delivered', module: 'Academic', availability: 'Available', fee: 'BDT 23,500' },
+            { offsetDays: 28, city: 'Dhaka', venue: 'Uttara Sector 7 Partner Venue, Dhaka', format: 'Computer-delivered', module: 'Academic', availability: 'Available', fee: 'BDT 23,500' },
+            { offsetDays: 32, city: 'Dhaka', venue: 'Dhanmondi Test Facility, Road 27, Dhaka', format: 'Paper-based', module: 'General Training', availability: 'Available', fee: 'BDT 23,500' },
+            { offsetDays: 36, city: 'Chattogram', venue: 'Agrabad Commercial Area Centre, Chattogram', format: 'Computer-delivered', module: 'General Training', availability: 'Available', fee: 'BDT 23,500' },
+          ]
+
+          const now = new Date()
+          let list = baseDates.map((item, idx) => {
+            const d = new Date(now.getTime() + item.offsetDays * 24 * 60 * 60 * 1000)
+            return {
+              id: `bc-bd-${idx + 1}-${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`,
+              date: d.toISOString().split('T')[0],
+              city: item.city,
+              venue: item.venue,
+              format: item.format,
+              module: item.module,
+              availability: item.availability,
+              fee: item.fee,
+              registrationUrl: 'https://www.britishcouncil.org.bd/en/exam/ielts/book-test'
+            }
+          })
+
+          if (city !== 'All') list = list.filter(x => x.city.toLowerCase() === city.toLowerCase())
+          if (format !== 'All') list = list.filter(x => x.format.toLowerCase() === format.toLowerCase())
+          if (moduleParam !== 'All') list = list.filter(x => x.module.toLowerCase() === moduleParam.toLowerCase())
+
+          res.setHeader('Content-Type', 'application/json')
+          res.statusCode = 200
+          res.end(JSON.stringify({ dates: list }))
+          return
+        }
+
+        // 3. Audio streaming endpoint: /api/audio/stream/:book/:test/:part
         const streamMatch = rawUrl.match(/^\/api\/audio\/stream\/(\d+)\/(\d+)\/(\d+)/)
         if (streamMatch) {
           const [, book, test, part] = streamMatch
