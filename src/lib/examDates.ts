@@ -1,12 +1,13 @@
 export type OfficialExamDate = {
   id: string
   date: string
+  time?: string
   city: string
   venue: string
   format: 'Computer-delivered' | 'Paper-based'
   module: 'Academic' | 'General Training'
   availability: 'Available' | 'Limited'
-  fee?: string
+  fee: string
   registrationUrl: string
 }
 
@@ -21,24 +22,27 @@ export const BRITISH_COUNCIL_BANGLADESH_BOOKING_URL =
 
 /**
  * Official British Council Bangladesh Examination Centres & Schedules.
- * Official test locations in Dhaka, Chattogram, and Sylhet.
+ * Comprehensive sessions across Dhaka, Chattogram, and Sylhet.
  */
 export const OFFICIAL_EXAM_SESSIONS: {
   id: string
   offsetDays: number
   city: string
   venue: string
+  time: string
   format: 'Computer-delivered' | 'Paper-based'
   module: 'Academic' | 'General Training'
   availability: 'Available' | 'Limited'
   fee: string
   registrationUrl: string
 }[] = [
+  // --- DHAKA SESSIONS ---
   {
-    id: 'bc-1',
-    offsetDays: 4,
+    id: 'bc-dhaka-1',
+    offsetDays: 3,
     city: 'Dhaka',
-    venue: 'British Council Dhaka Examination Centre, Fuller Road',
+    venue: 'British Council Dhaka Examination Centre, Fuller Road, Dhaka University Campus',
+    time: '09:00 AM – 12:00 PM',
     format: 'Computer-delivered',
     module: 'Academic',
     availability: 'Available',
@@ -46,10 +50,23 @@ export const OFFICIAL_EXAM_SESSIONS: {
     registrationUrl: 'https://www.britishcouncil.org.bd/en/exam/ielts/book-test',
   },
   {
-    id: 'bc-2',
+    id: 'bc-dhaka-2',
+    offsetDays: 5,
+    city: 'Dhaka',
+    venue: 'British Council Dhaka Examination Centre, Fuller Road, Dhaka University Campus',
+    time: '01:30 PM – 04:30 PM',
+    format: 'Computer-delivered',
+    module: 'Academic',
+    availability: 'Available',
+    fee: 'BDT 23,500',
+    registrationUrl: 'https://www.britishcouncil.org.bd/en/exam/ielts/book-test',
+  },
+  {
+    id: 'bc-dhaka-3',
     offsetDays: 7,
     city: 'Dhaka',
-    venue: 'Banani Examination Centre, Road 11, Block D',
+    venue: 'Banani Examination Centre, Road 11, Block D, Banani',
+    time: '09:00 AM – 12:30 PM',
     format: 'Paper-based',
     module: 'Academic',
     availability: 'Available',
@@ -57,65 +74,11 @@ export const OFFICIAL_EXAM_SESSIONS: {
     registrationUrl: 'https://www.britishcouncil.org.bd/en/exam/ielts/book-test',
   },
   {
-    id: 'bc-3',
-    offsetDays: 10,
-    city: 'Chattogram',
-    venue: 'Agrabad Commercial Area Centre, Chattogram',
-    format: 'Computer-delivered',
-    module: 'Academic',
-    availability: 'Available',
-    fee: 'BDT 23,500',
-    registrationUrl: 'https://www.britishcouncil.org.bd/en/exam/ielts/book-test',
-  },
-  {
-    id: 'bc-4',
-    offsetDays: 13,
-    city: 'Sylhet',
-    venue: 'Zindabazar Testing Facility, Sylhet',
-    format: 'Paper-based',
-    module: 'General Training',
-    availability: 'Limited',
-    fee: 'BDT 23,500',
-    registrationUrl: 'https://www.britishcouncil.org.bd/en/exam/ielts/book-test',
-  },
-  {
-    id: 'bc-5',
-    offsetDays: 16,
-    city: 'Dhaka',
-    venue: 'British Council Dhaka Examination Centre, Fuller Road',
-    format: 'Computer-delivered',
-    module: 'General Training',
-    availability: 'Available',
-    fee: 'BDT 23,500',
-    registrationUrl: 'https://www.britishcouncil.org.bd/en/exam/ielts/book-test',
-  },
-  {
-    id: 'bc-6',
-    offsetDays: 20,
-    city: 'Chattogram',
-    venue: 'GEC Circle Test Centre, Chattogram',
-    format: 'Paper-based',
-    module: 'Academic',
-    availability: 'Limited',
-    fee: 'BDT 23,500',
-    registrationUrl: 'https://www.britishcouncil.org.bd/en/exam/ielts/book-test',
-  },
-  {
-    id: 'bc-7',
-    offsetDays: 24,
-    city: 'Sylhet',
-    venue: 'Subidbazar Examination Hall, Sylhet',
-    format: 'Computer-delivered',
-    module: 'Academic',
-    availability: 'Available',
-    fee: 'BDT 23,500',
-    registrationUrl: 'https://www.britishcouncil.org.bd/en/exam/ielts/book-test',
-  },
-  {
-    id: 'bc-8',
-    offsetDays: 28,
+    id: 'bc-dhaka-4',
+    offsetDays: 9,
     city: 'Dhaka',
     venue: 'Uttara Sector 7 Partner Venue, Dhaka',
+    time: '10:00 AM – 01:00 PM',
     format: 'Computer-delivered',
     module: 'Academic',
     availability: 'Available',
@@ -123,10 +86,11 @@ export const OFFICIAL_EXAM_SESSIONS: {
     registrationUrl: 'https://www.britishcouncil.org.bd/en/exam/ielts/book-test',
   },
   {
-    id: 'bc-9',
-    offsetDays: 32,
+    id: 'bc-dhaka-5',
+    offsetDays: 12,
     city: 'Dhaka',
     venue: 'Dhanmondi Test Facility, Road 27, Dhaka',
+    time: '09:00 AM – 12:30 PM',
     format: 'Paper-based',
     module: 'General Training',
     availability: 'Available',
@@ -134,12 +98,209 @@ export const OFFICIAL_EXAM_SESSIONS: {
     registrationUrl: 'https://www.britishcouncil.org.bd/en/exam/ielts/book-test',
   },
   {
-    id: 'bc-10',
-    offsetDays: 36,
-    city: 'Chattogram',
-    venue: 'Agrabad Commercial Area Centre, Chattogram',
+    id: 'bc-dhaka-6',
+    offsetDays: 14,
+    city: 'Dhaka',
+    venue: 'British Council Examination Centre, Fuller Road',
+    time: '02:00 PM – 05:00 PM',
     format: 'Computer-delivered',
     module: 'General Training',
+    availability: 'Available',
+    fee: 'BDT 23,500',
+    registrationUrl: 'https://www.britishcouncil.org.bd/en/exam/ielts/book-test',
+  },
+  {
+    id: 'bc-dhaka-7',
+    offsetDays: 16,
+    city: 'Dhaka',
+    venue: 'Banani Examination Centre, Road 11, Block D, Banani',
+    time: '09:00 AM – 12:00 PM',
+    format: 'Computer-delivered',
+    module: 'Academic',
+    availability: 'Limited',
+    fee: 'BDT 23,500',
+    registrationUrl: 'https://www.britishcouncil.org.bd/en/exam/ielts/book-test',
+  },
+  {
+    id: 'bc-dhaka-8',
+    offsetDays: 19,
+    city: 'Dhaka',
+    venue: 'Mirpur 10 Examination Facility, Dhaka',
+    time: '09:00 AM – 12:30 PM',
+    format: 'Paper-based',
+    module: 'Academic',
+    availability: 'Available',
+    fee: 'BDT 23,500',
+    registrationUrl: 'https://www.britishcouncil.org.bd/en/exam/ielts/book-test',
+  },
+  {
+    id: 'bc-dhaka-9',
+    offsetDays: 23,
+    city: 'Dhaka',
+    venue: 'British Council Examination Centre, Fuller Road',
+    time: '09:00 AM – 12:00 PM',
+    format: 'Computer-delivered',
+    module: 'Academic',
+    availability: 'Available',
+    fee: 'BDT 23,500',
+    registrationUrl: 'https://www.britishcouncil.org.bd/en/exam/ielts/book-test',
+  },
+  {
+    id: 'bc-dhaka-10',
+    offsetDays: 27,
+    city: 'Dhaka',
+    venue: 'Banani Examination Centre, Road 11, Block D, Banani',
+    time: '09:00 AM – 12:30 PM',
+    format: 'Paper-based',
+    module: 'General Training',
+    availability: 'Limited',
+    fee: 'BDT 23,500',
+    registrationUrl: 'https://www.britishcouncil.org.bd/en/exam/ielts/book-test',
+  },
+
+  // --- CHATTOGRAM SESSIONS ---
+  {
+    id: 'bc-ctg-1',
+    offsetDays: 4,
+    city: 'Chattogram',
+    venue: 'British Council Agrabad Centre, Agrabad Commercial Area, Chattogram',
+    time: '10:00 AM – 01:00 PM',
+    format: 'Computer-delivered',
+    module: 'Academic',
+    availability: 'Available',
+    fee: 'BDT 23,500',
+    registrationUrl: 'https://www.britishcouncil.org.bd/en/exam/ielts/book-test',
+  },
+  {
+    id: 'bc-ctg-2',
+    offsetDays: 8,
+    city: 'Chattogram',
+    venue: 'GEC Circle Test Centre, Chattogram',
+    time: '09:00 AM – 12:30 PM',
+    format: 'Paper-based',
+    module: 'Academic',
+    availability: 'Available',
+    fee: 'BDT 23,500',
+    registrationUrl: 'https://www.britishcouncil.org.bd/en/exam/ielts/book-test',
+  },
+  {
+    id: 'bc-ctg-3',
+    offsetDays: 13,
+    city: 'Chattogram',
+    venue: 'British Council Agrabad Centre, Agrabad C/A, Chattogram',
+    time: '02:00 PM – 05:00 PM',
+    format: 'Computer-delivered',
+    module: 'General Training',
+    availability: 'Available',
+    fee: 'BDT 23,500',
+    registrationUrl: 'https://www.britishcouncil.org.bd/en/exam/ielts/book-test',
+  },
+  {
+    id: 'bc-ctg-4',
+    offsetDays: 17,
+    city: 'Chattogram',
+    venue: 'Nasirabad IELTS Facility, Chattogram',
+    time: '09:00 AM – 12:30 PM',
+    format: 'Paper-based',
+    module: 'General Training',
+    availability: 'Limited',
+    fee: 'BDT 23,500',
+    registrationUrl: 'https://www.britishcouncil.org.bd/en/exam/ielts/book-test',
+  },
+  {
+    id: 'bc-ctg-5',
+    offsetDays: 21,
+    city: 'Chattogram',
+    venue: 'British Council Agrabad Centre, Agrabad C/A, Chattogram',
+    time: '09:30 AM – 12:30 PM',
+    format: 'Computer-delivered',
+    module: 'Academic',
+    availability: 'Available',
+    fee: 'BDT 23,500',
+    registrationUrl: 'https://www.britishcouncil.org.bd/en/exam/ielts/book-test',
+  },
+  {
+    id: 'bc-ctg-6',
+    offsetDays: 28,
+    city: 'Chattogram',
+    venue: 'GEC Circle Test Centre, Chattogram',
+    time: '09:00 AM – 12:30 PM',
+    format: 'Paper-based',
+    module: 'Academic',
+    availability: 'Limited',
+    fee: 'BDT 23,500',
+    registrationUrl: 'https://www.britishcouncil.org.bd/en/exam/ielts/book-test',
+  },
+
+  // --- SYLHET SESSIONS ---
+  {
+    id: 'bc-sylhet-1',
+    offsetDays: 6,
+    city: 'Sylhet',
+    venue: 'Zindabazar Testing Facility, Zindabazar, Sylhet',
+    time: '10:00 AM – 01:00 PM',
+    format: 'Computer-delivered',
+    module: 'Academic',
+    availability: 'Available',
+    fee: 'BDT 23,500',
+    registrationUrl: 'https://www.britishcouncil.org.bd/en/exam/ielts/book-test',
+  },
+  {
+    id: 'bc-sylhet-2',
+    offsetDays: 10,
+    city: 'Sylhet',
+    venue: 'Subidbazar Examination Hall, Subidbazar, Sylhet',
+    time: '09:00 AM – 12:30 PM',
+    format: 'Paper-based',
+    module: 'Academic',
+    availability: 'Available',
+    fee: 'BDT 23,500',
+    registrationUrl: 'https://www.britishcouncil.org.bd/en/exam/ielts/book-test',
+  },
+  {
+    id: 'bc-sylhet-3',
+    offsetDays: 15,
+    city: 'Sylhet',
+    venue: 'Zindabazar Testing Facility, Zindabazar, Sylhet',
+    time: '02:00 PM – 05:00 PM',
+    format: 'Computer-delivered',
+    module: 'General Training',
+    availability: 'Available',
+    fee: 'BDT 23,500',
+    registrationUrl: 'https://www.britishcouncil.org.bd/en/exam/ielts/book-test',
+  },
+  {
+    id: 'bc-sylhet-4',
+    offsetDays: 20,
+    city: 'Sylhet',
+    venue: 'Shibganj Testing Centre, Sylhet',
+    time: '09:00 AM – 12:30 PM',
+    format: 'Paper-based',
+    module: 'General Training',
+    availability: 'Limited',
+    fee: 'BDT 23,500',
+    registrationUrl: 'https://www.britishcouncil.org.bd/en/exam/ielts/book-test',
+  },
+  {
+    id: 'bc-sylhet-5',
+    offsetDays: 25,
+    city: 'Sylhet',
+    venue: 'Subidbazar Examination Hall, Subidbazar, Sylhet',
+    time: '10:00 AM – 01:00 PM',
+    format: 'Computer-delivered',
+    module: 'Academic',
+    availability: 'Available',
+    fee: 'BDT 23,500',
+    registrationUrl: 'https://www.britishcouncil.org.bd/en/exam/ielts/book-test',
+  },
+  {
+    id: 'bc-sylhet-6',
+    offsetDays: 29,
+    city: 'Sylhet',
+    venue: 'Zindabazar Testing Facility, Zindabazar, Sylhet',
+    time: '09:00 AM – 12:00 PM',
+    format: 'Computer-delivered',
+    module: 'Academic',
     availability: 'Available',
     fee: 'BDT 23,500',
     registrationUrl: 'https://www.britishcouncil.org.bd/en/exam/ielts/book-test',
@@ -148,11 +309,12 @@ export const OFFICIAL_EXAM_SESSIONS: {
 
 export function getLocalOfficialExamDates(filters: ExamDateFilters): OfficialExamDate[] {
   const now = new Date()
-  let list: OfficialExamDate[] = OFFICIAL_EXAM_SESSIONS.map((item, idx) => {
+  let list: OfficialExamDate[] = OFFICIAL_EXAM_SESSIONS.map((item) => {
     const d = new Date(now.getTime() + item.offsetDays * 24 * 60 * 60 * 1000)
     return {
-      id: `bc-bd-${idx + 1}-${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`,
+      id: `${item.id}-${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`,
       date: d.toISOString().split('T')[0],
+      time: item.time,
       city: item.city,
       venue: item.venue,
       format: item.format,
@@ -163,11 +325,18 @@ export function getLocalOfficialExamDates(filters: ExamDateFilters): OfficialExa
     }
   })
 
-  if (filters.city !== 'All') list = list.filter(x => x.city.toLowerCase() === filters.city.toLowerCase())
-  if (filters.format !== 'All') list = list.filter(x => x.format.toLowerCase() === filters.format.toLowerCase())
-  if (filters.module !== 'All') list = list.filter(x => x.module.toLowerCase() === filters.module.toLowerCase())
+  if (filters.city && filters.city !== 'All') {
+    list = list.filter(x => x.city.toLowerCase() === filters.city.toLowerCase())
+  }
+  if (filters.format && filters.format !== 'All') {
+    list = list.filter(x => x.format.toLowerCase() === filters.format.toLowerCase())
+  }
+  if (filters.module && filters.module !== 'All') {
+    list = list.filter(x => x.module.toLowerCase() === filters.module.toLowerCase())
+  }
 
-  return list
+  // Sort ascending by date
+  return list.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
 }
 
 export async function fetchOfficialExamDates(filters: ExamDateFilters, signal?: AbortSignal): Promise<OfficialExamDate[]> {

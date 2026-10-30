@@ -122,7 +122,7 @@ export default function FullTestResult({ listeningAnswers, listeningTestNumber =
     const marks = markAnswers(READING_ANSWERS, readingAnswers, readingPairs(1))
     return Object.entries(READING_ANSWERS).map(([key, accepted]) => {
       const id = Number(key)
-      const response = readingAnswers[id] || readingAnswers[key] || ''
+      const response = readingAnswers[id] || (readingAnswers as Record<string, string>)[key] || ''
       return { id, response, accepted, correct: !!marks[id] }
     })
   }, [readingAnswers])

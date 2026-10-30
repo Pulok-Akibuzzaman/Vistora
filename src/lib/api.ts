@@ -125,7 +125,7 @@ export interface ForumThread {
   country: string
   time: string
   replies: number
-  views: number
+  views?: number
   upvotes: number
   pinned: boolean
   solved: boolean
@@ -136,7 +136,7 @@ export interface ForumThread {
 }
 
 export interface DashboardStats {
-  skillScores: {
+  skillScores?: {
     skill: string
     score: number | null
     target: number
@@ -147,8 +147,18 @@ export interface DashboardStats {
   }[]
   overallBand: number
   targetBand: number
-  totalTestsCompleted: number
-  recentActivities: {
+  targetExamDate?: string
+  daysUntilExam?: number
+  totalHoursStudied?: number
+  weeklyStudyHours?: number
+  weeklyGoalHours?: number
+  streakDays?: number
+  readinessScore?: number
+  skillBreakdown?: { skill: string; band: number; testsCount: number }[]
+  scoreHistory?: { date: string; band: number; label: string }[]
+  recentActivity?: { id: string; type: string; title: string; band?: number | null; date: string; time: string }[]
+  totalTestsCompleted?: number
+  recentActivities?: {
     id: string
     type: string
     title: string
@@ -156,13 +166,13 @@ export interface DashboardStats {
     time: string
     status: string
   }[]
-  recommendations: {
+  recommendations?: {
     title: string
     desc: string
     priority: string
     link: string
   }[]
-  weeklyProgress: {
+  weeklyProgress?: {
     day: string
     mins: number
   }[]
