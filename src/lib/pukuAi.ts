@@ -284,7 +284,21 @@ TOPIC / PROMPT: ${topic || 'General Academic Topic'}
 CANDIDATE ESSAY:
 ${essay}
 
-Please evaluate this essay according to official IELTS criteria and return JSON.`
+Please evaluate this essay according to official IELTS criteria and return ONLY valid JSON matching this schema:
+{
+  "overallBand": 6.5,
+  "taBand": 6.5,
+  "ccBand": 6.5,
+  "lrBand": 6.5,
+  "graBand": 6.5,
+  "taFeedback": "...",
+  "ccFeedback": "...",
+  "lrFeedback": "...",
+  "graFeedback": "...",
+  "summary": "...",
+  "strengths": ["..."],
+  "improvements": ["..."]
+}`
 
   try {
     const rawResult = await generatePukuCompletion(userPrompt, systemPrompt, 2200, 35000)
@@ -293,14 +307,73 @@ Please evaluate this essay according to official IELTS criteria and return JSON.
     const parsed = extractJson(rawResult)
     if (!parsed) return null
 
-    const ta = parsed.taBand || parsed.criteria?.taskAchievement?.band || 6.5
-    const cc = parsed.ccBand || parsed.criteria?.coherenceCohesion?.band || 6.5
-    const lr = parsed.lrBand || parsed.criteria?.lexicalResource?.band || 6.5
-    const gra = parsed.graBand || parsed.criteria?.grammaticalAccuracy?.band || 6.5
-    const band = parsed.overallBand || Math.round(((ta + cc + lr + gra) / 4) * 2) / 2
+    const rawBand =
+      parsed.overallBand ||
+      parsed.band ||
+      (parsed.score?.overall
+        ? Math.min(9.0, Math.round(((parsed.score.overall / (parsed.score.scale || 10)) * 9) * 2) / 2)
+        : undefined)
+
+    const rawTa =
+      parsed.taBand ||
+      parsed.criteria?.taskAchievement?.band ||
+      (parsed.score?.development
+        ? Math.min(9.0, Math.round(((parsed.score.development / (parsed.score.scale || 10)) * 9) * 2) / 2)
+        : rawBand || 6.5)
+
+    const rawCc =
+      parsed.ccBand ||
+      parsed.criteria?.coherenceCohesion?.band ||
+      (parsed.score?.organization
+        ? Math.min(9.0, Math.round(((parsed.score.organization / (parsed.score.scale || 10)) * 9) * 2) / 2)
+        : rawBand || 6.5)
+
+    const rawLr =
+      parsed.lrBand ||
+      parsed.criteria?.lexicalResource?.band ||
+      (parsed.score?.clarity
+        ? Math.min(9.0, Math.round(((parsed.score.clarity / (parsed.score.scale || 10)) * 9) * 2) / 2)
+        : rawBand || 6.5)
+
+    const rawGra =
+      parsed.graBand ||
+      parsed.criteria?.grammaticalAccuracy?.band ||
+      (parsed.score?.evidenceAndSupport
+        ? Math.min(9.0, Math.round(((parsed.score.evidenceAndSupport / (parsed.score.scale || 10)) * 9) * 2) / 2)
+        : rawBand || 6.5)
+
+    const ta = rawTa || 6.5
+    const cc = rawCc || 6.5
+    const lr = rawLr || 6.5
+    const gra = rawGra || 6.5
+    const band = rawBand || Math.round(((ta + cc + lr + gra) / 4) * 2) / 2
 
     const words = essay.trim().split(/\s+/).filter(Boolean)
     const paragraphs = essay.split(/\n\s*\n/).filter(p => p.trim().length > 0)
+
+    const summary =
+      parsed.summary ||
+      parsed.overallAssessment ||
+      parsed.feedback ||
+      `Essay thoroughly evaluated according to official IELTS band descriptors. Overall Band: ${band.toFixed(1)}.`
+
+    const improvements =
+      (Array.isArray(parsed.improvements) && parsed.improvements.length > 0)
+        ? parsed.improvements
+        : (Array.isArray(parsed.suggestedImprovements) && parsed.suggestedImprovements.length > 0)
+          ? parsed.suggestedImprovements
+          : (Array.isArray(parsed.weaknesses) && parsed.weaknesses.length > 0)
+            ? parsed.weaknesses
+            : [
+                'Incorporate wider variety of academic sentence structures',
+                'Strengthen paragraph topic sentences with clear supporting evidence',
+                'Elevate academic vocabulary range and collocations'
+              ]
+
+    const strengths =
+      (Array.isArray(parsed.strengths) && parsed.strengths.length > 0)
+        ? parsed.strengths
+        : ['Clear viewpoint and relevant supporting ideas', 'Logical progression of arguments']
 
     return {
       band,
@@ -313,14 +386,11 @@ Please evaluate this essay according to official IELTS criteria and return JSON.
       paragraphCount: paragraphs.length,
       academicWordCount: Math.min(words.length, 25),
       detectedAcademicWords: ['demonstrate', 'significant', 'sustainable', 'proportion', 'consequently'],
-      summary: parsed.summary || 'Essay thoroughly evaluated according to official IELTS band descriptors.',
+      summary,
       grammar: Array.isArray(parsed.grammarIssues) ? parsed.grammarIssues : [],
       vocab: Array.isArray(parsed.vocabSuggestions) ? parsed.vocabSuggestions : [],
-      improvements: Array.isArray(parsed.improvements) ? parsed.improvements : [
-        'Incorporate wider variety of academic sentence structures',
-        'Strengthen paragraph topic sentences with clear supporting evidence',
-        'Elevate academic vocabulary range and collocations'
-      ],
+      improvements,
+      strengths,
       aiEngine: 'Puku AI 2.8 Examiner',
       criteriaFeedback: {
         ta: parsed.taFeedback || parsed.criteria?.taskAchievement?.feedback || 'Clear addressing of key task requirements.',
@@ -331,6 +401,118 @@ Please evaluate this essay according to official IELTS criteria and return JSON.
     }
   } catch (err: any) {
     console.warn(`[Puku.sh Writing] Evaluation failed: ${err?.message || err}`)
+    return null
+  }
+}
+
+/**
+ * Evaluate IELTS Speaking performance using Puku AI (puku-ai-2.8)
+ */
+export async function evaluateSpeakingWithPuku(params: {
+  part?: number
+  title?: string
+  questions?: string[]
+  transcript: string
+  durationSeconds?: number
+  wordCount?: number
+}): Promise<any | null> {
+  const systemPrompt = `You are an official senior British Council / IDP IELTS Speaking Examiner.
+Evaluate the candidate's spoken response according to the 4 official IELTS criteria:
+1. Fluency and Coherence (FC)
+2. Lexical Resource (LR)
+3. Grammatical Range and Accuracy (GRA)
+4. Pronunciation (PR)
+
+Respond strictly in valid JSON matching:
+{
+  "overallBand": 7.0,
+  "fcBand": 7.0,
+  "lrBand": 7.0,
+  "graBand": 7.0,
+  "prBand": 7.0,
+  "fcFeedback": "...",
+  "lrFeedback": "...",
+  "graFeedback": "...",
+  "prFeedback": "...",
+  "summary": "...",
+  "strengths": ["..."],
+  "improvements": ["..."],
+  "sampleUpgrades": [
+    { "original": "phrase", "improved": "better phrase", "reason": "why" }
+  ]
+}`
+
+  const userPrompt = `EXAM: IELTS Speaking Part ${params.part || 1}
+TOPIC / PROMPT: ${params.title || 'General Speaking Topics'}
+QUESTIONS ASKED: ${(params.questions || []).join(' | ')}
+SPEECH DURATION: ${params.durationSeconds || 60} seconds
+WORD COUNT: ${params.wordCount || 50} words
+
+CANDIDATE TRANSCRIBED SPEECH:
+${params.transcript}
+
+Evaluate according to official IELTS criteria and return ONLY valid JSON matching the schema.`
+
+  try {
+    const rawResult = await generatePukuCompletion(userPrompt, systemPrompt, 1800, 35000)
+    if (!rawResult) return null
+
+    const parsed = extractJson(rawResult)
+    if (!parsed) return null
+
+    const words = params.transcript.trim().split(/\s+/).filter(Boolean)
+    const count = params.wordCount || words.length
+    const duration = Math.max(15, params.durationSeconds || 60)
+    const wpm = Math.round(count / (duration / 60))
+
+    const rawBand = parsed.overallBand || parsed.band
+    const fc = parsed.fcBand || rawBand || 6.5
+    const lr = parsed.lrBand || rawBand || 6.5
+    const gra = parsed.graBand || rawBand || 6.5
+    const pr = parsed.prBand || rawBand || 6.5
+    const overallBand = rawBand || Math.round(((fc + lr + gra + pr) / 4) * 2) / 2
+
+    return {
+      overallBand,
+      wpm,
+      criteria: {
+        fluencyCoherence: {
+          band: fc,
+          feedback: parsed.fcFeedback || `Speech pace maintained at ${wpm} WPM with good coherence.`,
+        },
+        lexicalResource: {
+          band: lr,
+          feedback: parsed.lrFeedback || 'Accurate topic-specific vocabulary with natural expressions.',
+        },
+        grammaticalAccuracy: {
+          band: gra,
+          feedback: parsed.graFeedback || 'Controlled simple and complex grammatical structures.',
+        },
+        pronunciation: {
+          band: pr,
+          feedback: parsed.prFeedback || 'Intelligible pronunciation with appropriate stress and rhythm.',
+        },
+      },
+      summary: parsed.summary || `Your spoken performance achieved an estimated Band ${overallBand.toFixed(1)}. Steady pace of ${wpm} WPM with solid communication.`,
+      strengths: Array.isArray(parsed.strengths) && parsed.strengths.length > 0 ? parsed.strengths : [
+        `Maintained continuous speech at ${wpm} WPM without long communicative pauses.`,
+        `Directly addressed IELTS Speaking Part ${params.part || 1} prompts.`,
+      ],
+      improvements: Array.isArray(parsed.improvements) && parsed.improvements.length > 0 ? parsed.improvements : [
+        'Incorporate more academic collocations and idiomatic phrases to reach Band 8.0+.',
+        'Vary intonation and stress patterns to emphasize key contrasting points.',
+      ],
+      sampleUpgrades: Array.isArray(parsed.sampleUpgrades) && parsed.sampleUpgrades.length > 0 ? parsed.sampleUpgrades : [
+        {
+          original: 'I like this because it is good',
+          improved: 'I find this particularly compelling due to its tangible benefits',
+          reason: 'Replaces colloquial "good" with formal IELTS academic vocabulary',
+        },
+      ],
+      source: 'Puku AI 2.8 Examiner',
+    }
+  } catch (err: any) {
+    console.warn(`[Puku.sh Speaking] Evaluation error: ${err?.message || err}`)
     return null
   }
 }

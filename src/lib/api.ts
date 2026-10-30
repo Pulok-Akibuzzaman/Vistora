@@ -3,7 +3,7 @@
  * Connects Frontend UI with local Express backend (Port 5001 / Vite /api proxy)
  */
 
-import { generateDocumentWithPuku, evaluateWritingWithPuku } from './pukuAi'
+import { generateDocumentWithPuku, evaluateWritingWithPuku, evaluateSpeakingWithPuku } from './pukuAi'
 
 export const API_BASE = '/api'
 export const DIRECT_BACKEND_URL = 'http://localhost:5001'
@@ -861,6 +861,7 @@ export async function evaluateSpeakingApi(params: {
   durationSeconds?: number
   wordCount?: number
 }): Promise<SpeakingEvaluationResult> {
+  // 1. Try local Express backend if available
   try {
     const res = await fetch(`${API_BASE}/speaking/evaluate`, {
       method: 'POST',
@@ -875,6 +876,17 @@ export async function evaluateSpeakingApi(params: {
     // Backend offline / Vercel static deployment
   }
 
+  // 2. Direct Puku AI 2.8 examiner
+  try {
+    const aiResult = await evaluateSpeakingWithPuku(params)
+    if (aiResult && aiResult.overallBand) {
+      return aiResult
+    }
+  } catch (err: any) {
+    console.warn('[Puku AI Speaking] Direct call fallback:', err?.message || err)
+  }
+
+  // 3. Fallback to resilient client-side IELTS speaking heuristics
   return evaluateSpeakingHeuristically(params)
 }
 
