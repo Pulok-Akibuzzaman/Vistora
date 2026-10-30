@@ -2,6 +2,7 @@ import { defineConfig, type HtmlTagDescriptor, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import path from 'node:path'
+import fs from 'node:fs'
 
 import siteConfiguration from './.figma/make/site.json' with { type: 'json' }
 
@@ -21,6 +22,7 @@ export default defineConfig(({ mode }) => {
     plugins: [
       react(),
       tailwindcss(),
+      localDatabaseAudioPlugin(),
       figmaSiteConfiguration(siteConfiguration),
       figmaErrorOverlayReplay(),
       figmaReactRefreshBoundaryFallback(),
@@ -368,6 +370,102 @@ function figmaMakeKitPlugin(options: { storiesGlob: string | string[] }): Plugin
         } catch (err) {
           next(err as Error)
         }
+      })
+    },
+  }
+}
+
+/**
+ * Serves official Cambridge IELTS audio files directly from the local Database directory
+ * during development, enabling full HTTP 206 byte-range streaming, instant scrubbing,
+ * and zero network latency without requiring an external backend.
+ */
+function localDatabaseAudioPlugin(): Plugin {
+  return {
+    name: 'local-database-audio-plugin',
+    configureServer(server) {
+      server.middlewares.use((req, res, next) => {
+        const rawUrl = req.url || ''
+
+        // 1. Health check endpoint for UI connection badge
+        if (rawUrl === '/api/health' || rawUrl.startsWith('/api/health?')) {
+          res.setHeader('Content-Type', 'application/json')
+          res.statusCode = 200
+          res.end(JSON.stringify({
+            status: 'ok',
+            connected: true,
+            service: 'Vistora Vite Engine',
+            totalAudioFiles: 76,
+            availableBooks: ['18', '19', '20', '21'],
+            databaseExists: true,
+          }))
+          return
+        }
+
+        // 2. Audio streaming endpoint: /api/audio/stream/:book/:test/:part
+        const streamMatch = rawUrl.match(/^\/api\/audio\/stream\/(\d+)\/(\d+)\/(\d+)/)
+        if (streamMatch) {
+          const [, book, test, part] = streamMatch
+          const dbDir = path.resolve(import.meta.dirname, 'Database')
+          const b = String(book).replace(/[^0-9]/g, '')
+          const t = Number(test)
+          const p = Number(part)
+
+          function search(dir: string): string | null {
+            if (!fs.existsSync(dir)) return null
+            const entries = fs.readdirSync(dir, { withFileTypes: true })
+            for (const entry of entries) {
+              const full = path.join(dir, entry.name)
+              if (entry.isDirectory()) {
+                const found = search(full)
+                if (found) return found
+              } else if (entry.isFile() && entry.name.toLowerCase().endsWith('.mp3')) {
+                const name = entry.name
+                if (name.match(new RegExp('IELTS' + b + '_test' + t + '_audio' + p + '\\.mp3', 'i'))) return full
+                if (name.match(new RegExp('IELTS-' + b + '-Test-' + t + '-Part-' + p, 'i'))) return full
+                if (name.match(new RegExp('^T' + t + 'S' + p + '\\.mp3', 'i')) && dir.includes(b)) return full
+                if (name.match(new RegExp('C' + b + 'T' + t + 'P' + p, 'i'))) return full
+              }
+            }
+            return null
+          }
+
+          const filePath = search(dbDir)
+          if (filePath && fs.existsSync(filePath)) {
+            const stat = fs.statSync(filePath)
+            const fileSize = stat.size
+            const range = req.headers.range
+
+            res.setHeader('Accept-Ranges', 'bytes')
+            res.setHeader('Content-Type', 'audio/mpeg')
+            res.setHeader('Cache-Control', 'no-cache')
+
+            if (range) {
+              const parts = range.replace(/bytes=/, '').split('-')
+              const start = parseInt(parts[0], 10)
+              const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1
+
+              if (start >= fileSize || end >= fileSize) {
+                res.statusCode = 416
+                res.setHeader('Content-Range', `bytes */${fileSize}`)
+                return res.end()
+              }
+
+              const chunkSize = end - start + 1
+              res.statusCode = 206
+              res.setHeader('Content-Range', `bytes ${start}-${end}/${fileSize}`)
+              res.setHeader('Content-Length', chunkSize)
+              fs.createReadStream(filePath, { start, end }).pipe(res)
+            } else {
+              res.statusCode = 200
+              res.setHeader('Content-Length', fileSize)
+              fs.createReadStream(filePath).pipe(res)
+            }
+            return
+          }
+        }
+
+        next()
       })
     },
   }

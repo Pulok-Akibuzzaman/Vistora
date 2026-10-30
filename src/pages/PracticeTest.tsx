@@ -8,7 +8,7 @@ import { LISTENING_ANSWERS } from '../data/listeningTest1'
 import { LISTENING_ANSWERS_2, LISTENING_PARTS_2 } from '../data/listeningTest2'
 import FullTestResult from '../components/FullTestResult'
 import { saveExamResult } from '../lib/results'
-import { checkBackendHealth, getStreamUrl, saveExamResultApi, evaluateSpeakingApi, type BackendHealth, type SpeakingEvaluationResult } from '../lib/api'
+import { checkBackendHealth, getStreamUrl, getSharepointAudioUrl, saveExamResultApi, evaluateSpeakingApi, type BackendHealth, type SpeakingEvaluationResult } from '../lib/api'
 import { useAuth } from '../lib/authContext'
 import { countCorrect, listeningPairs, markAnswers, readingPairs } from '../lib/scoring'
 import { themeText, ThemeToggle } from '../lib/theme'
@@ -456,7 +456,20 @@ function ListeningExam({
               </span>
               <button type="button" onClick={cycleSpeed} className="rounded border border-slate-700 bg-slate-800 px-1.5 py-0.5 font-mono text-[10px] text-slate-300 hover:text-white" title="Playback speed">{playbackSpeed}x</button>
             </div>
-            <div className="truncate text-[10px] text-slate-400" title={effectiveAudioTitle}>{effectiveAudioTitle}</div>
+            <div className="flex items-center justify-between gap-2 text-[10px] text-slate-400">
+              <span className="truncate" title={effectiveAudioTitle}>{effectiveAudioTitle}</span>
+              {getSharepointAudioUrl(selectedBook, selectedTestNumber, currentPart) && (
+                <a
+                  href={getSharepointAudioUrl(selectedBook, selectedTestNumber, currentPart)!}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="shrink-0 text-rose-400 hover:text-rose-300 underline"
+                  title="Open direct file in SharePoint"
+                >
+                  SharePoint ↗
+                </a>
+              )}
+            </div>
             <div className="flex items-center justify-between font-mono text-[10px]">
               <span className="text-rose-400">{formatTime(currentTime)}</span><span className="text-slate-500">{formatTime(duration)}</span>
             </div>
@@ -479,9 +492,52 @@ function ListeningExam({
               <input className="sr-only" type="file" accept="audio/*" onChange={event => onAudioFile(event.target.files?.[0])} />
             </label>
             {audioError && (
-              <div role="alert" className="flex items-center justify-between gap-2 rounded border border-rose-800 bg-rose-950/60 px-2.5 py-1.5 text-[10px] text-rose-300">
-                <span>Could not load audio for Part {currentPart}.</span>
-                <button type="button" onClick={() => { if (audioRef.current) { audioRef.current.src = effectiveAudioUrl; audioRef.current.load() } }} className="underline">Retry</button>
+              <div role="alert" className="space-y-2 rounded-lg border border-rose-800/80 bg-rose-950/70 p-2.5 text-[11px] text-rose-200">
+                <div className="flex items-start justify-between gap-2">
+                  <span className="font-semibold text-rose-300">⚠️ Could not stream Part {currentPart} online</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (audioRef.current) {
+                        audioRef.current.src = effectiveAudioUrl
+                        audioRef.current.load()
+                      }
+                    }}
+                    className="shrink-0 rounded border border-rose-700 bg-rose-900/60 px-2 py-0.5 text-[10px] text-rose-200 hover:bg-rose-800"
+                  >
+                    Retry
+                  </button>
+                </div>
+                <p className="text-[10px] leading-relaxed text-rose-300/80">
+                  SharePoint streams from institutional accounts require university sign-in or restrict cross-origin playback in external web apps.
+                </p>
+                <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                  {getSharepointAudioUrl(selectedBook, selectedTestNumber, currentPart) && (
+                    <a
+                      href={getSharepointAudioUrl(selectedBook, selectedTestNumber, currentPart)!}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 rounded bg-rose-600 px-2 py-1 text-[10px] font-bold text-white transition hover:bg-rose-500"
+                    >
+                      <span>↗ Open in SharePoint / Download</span>
+                    </a>
+                  )}
+                  <label className="inline-flex cursor-pointer items-center gap-1 rounded border border-slate-600 bg-slate-800 px-2 py-1 text-[10px] font-semibold text-slate-200 transition hover:border-slate-400 hover:text-white">
+                    <span>📁 Select Local MP3 from Database</span>
+                    <input
+                      className="sr-only"
+                      type="file"
+                      accept="audio/*"
+                      onChange={event => {
+                        const file = event.target.files?.[0]
+                        if (file) {
+                          onAudioFile(file)
+                          setAudioError(false)
+                        }
+                      }}
+                    />
+                  </label>
+                </div>
               </div>
             )}
           </section>
@@ -1550,6 +1606,7 @@ export default function PracticeTest() {
   const [selectedTestNum, setSelectedTestNum] = useState(selectedTest.testNumber || 1)
   const [backendHealth, setBackendHealth] = useState<BackendHealth>({ connected: false })
   const [soundTestPlaying, setSoundTestPlaying] = useState(false)
+  const [soundTestError, setSoundTestError] = useState(false)
   const soundTestAudioRef = useRef<HTMLAudioElement | null>(null)
   const [fullModule, setFullModule] = useState<FullTestModule>('Listening')
   const [fullCompleted, setFullCompleted] = useState<FullTestModule[]>([])
@@ -2621,7 +2678,13 @@ export default function PracticeTest() {
                       <option value="18-3">IELTS 18 · Test 3</option>
                       <option value="18-4">IELTS 18 · Test 4</option>
                       <option value="19-1">IELTS 19 · Test 1</option>
+                      <option value="19-2">IELTS 19 · Test 2</option>
+                      <option value="19-3">IELTS 19 · Test 3</option>
+                      <option value="19-4">IELTS 19 · Test 4</option>
                       <option value="20-1">IELTS 20 · Test 1</option>
+                      <option value="20-2">IELTS 20 · Test 2</option>
+                      <option value="20-3">IELTS 20 · Test 3</option>
+                      <option value="20-4">IELTS 20 · Test 4</option>
                       <option value="21-1">IELTS 21 · Test 1</option>
                     </select>
                   </div>
@@ -2633,6 +2696,7 @@ export default function PracticeTest() {
                     <button
                       type="button"
                       onClick={() => {
+                        setSoundTestError(false)
                         if (!soundTestAudioRef.current) {
                           const a = new Audio(getStreamUrl(selectedBook, selectedTestNum, 1))
                           soundTestAudioRef.current = a
@@ -2646,13 +2710,17 @@ export default function PracticeTest() {
                           soundTestAudioRef.current.currentTime = 0
                           soundTestAudioRef.current.play().then(() => {
                             setSoundTestPlaying(true)
+                            setSoundTestError(false)
                             window.setTimeout(() => {
                               if (soundTestAudioRef.current && !soundTestAudioRef.current.paused) {
                                 soundTestAudioRef.current.pause()
                                 setSoundTestPlaying(false)
                               }
                             }, 5000)
-                          }).catch(() => setSoundTestPlaying(false))
+                          }).catch(() => {
+                            setSoundTestPlaying(false)
+                            setSoundTestError(true)
+                          })
                         }
                       }}
                       className={`w-full flex items-center justify-center gap-2 rounded px-4 py-2 font-plex text-xs font-semibold text-white transition-all ${
@@ -2665,6 +2733,11 @@ export default function PracticeTest() {
                         <><span>▶ Play 5s Sound Check</span></>
                       )}
                     </button>
+                    {soundTestError && (
+                      <p className="mt-1.5 text-[11px] leading-tight text-danger font-plex">
+                        ⚠️ Audio stream could not play. If testing SharePoint on Vercel, Microsoft 365 sign-in or a local MP3 is needed.
+                      </p>
+                    )}
                   </div>
                 </div>
 
