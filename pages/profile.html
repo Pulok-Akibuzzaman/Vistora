@@ -1,147 +1,142 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>User Profile — Vistora IELTS</title>
+  <title>Candidate Profile & Settings — Vistora AI</title>
+  <meta name="description" content="Manage your IELTS candidate profile, target band goals, and test date preferences.">
   <link rel="stylesheet" href="../css/main.css">
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👤</text></svg>">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14' fill='none'><path d='M7 1L13 12H1L7 1Z' fill='%23DC2626'/><path d='M7 5L10 11H4L7 5Z' fill='%23FCA5A5'/></svg>">
 </head>
-<body>
+<body class="bg-paper-grid">
 
-  <!-- Top Navigation -->
-  <header class="navbar">
-    <div class="container nav-container">
-      <a href="../index.html" class="brand">
-        <span>Vistora</span>
-        <span class="brand-badge">IELTS CBT</span>
+  <!-- Top Accent Bar -->
+  <div class="top-accent-bar"></div>
+
+  <!-- Header -->
+  <header class="header-academic app-nav">
+    <div class="header-container">
+      <a href="../index.html" class="brand-wrap">
+        <div class="brand-mark">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M7 1L13 12H1L7 1Z" fill="white" />
+            <path d="M7 5L10 11H4L7 5Z" fill="#FCA5A5" />
+          </svg>
+        </div>
+        <div style="display: flex; align-items: baseline;">
+          <span class="brand-title" style="color: var(--t-ink);">Vistora</span>
+          <span class="brand-ai-badge">AI</span>
+        </div>
       </a>
-      
-      <nav>
-        <ul class="nav-links">
-          <li><a href="practice-test.html" class="nav-link">Practice Tests</a></li>
-          <li><a href="results.html" class="nav-link">Results</a></li>
-          <li><a href="dashboard.html" class="nav-link">Dashboard</a></li>
-        </ul>
+
+      <nav class="nav-links-desktop">
+        <a href="dashboard.html" class="nav-item-link">Dashboard</a>
+        <a href="practice-test.html" class="nav-item-link">Practice Tests</a>
+        <a href="exam-dates.html" class="nav-item-link">Exam Dates</a>
+        <a href="results.html" class="nav-item-link">Results</a>
+        <a href="writing-eval.html" class="nav-item-link">AI Writing</a>
+        <a href="resources.html" class="nav-item-link">Resources</a>
+        <a href="forum.html" class="nav-item-link">Community</a>
       </nav>
 
-      <div class="nav-actions">
-        <a href="dashboard.html" class="btn btn-outline btn-sm">← Back to Dashboard</a>
+      <div class="header-actions">
+        <button type="button" class="theme-toggle-btn" id="theme-toggle" aria-label="Toggle theme">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        </button>
+        <a href="profile.html" class="user-avatar-circle" id="user-avatar-display">ST</a>
       </div>
     </div>
   </header>
 
-  <main class="container" style="padding: 3rem 1.5rem; max-width: 700px;">
-    <div class="card">
-      <div style="display: flex; align-items: center; gap: 1.25rem; margin-bottom: 2rem;">
-        <div style="width: 70px; height: 70px; border-radius: var(--radius-full); background: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 2rem; color: white;">
-          👤
-        </div>
-        <div>
-          <h2>Profile & Exam Preferences</h2>
-          <p style="color: var(--text-muted); font-size: 0.9rem;">Manage your target score and academic details.</p>
+  <!-- Page Content -->
+  <main class="content-wrapper">
+    <div class="page-container" style="max-width: 900px;">
+
+      <!-- Header Card -->
+      <div class="card-academic corner-mark" style="margin-bottom: 2rem; border-left: 3px solid #DC2626;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+          <div style="display: flex; align-items: center; gap: 16px;">
+            <div class="user-avatar-circle" style="width: 56px; height: 56px; font-size: 18px;" id="profile-avatar-circle">ST</div>
+            <div>
+              <div class="label-tag" style="margin-bottom: 2px;">CANDIDATE PROFILE</div>
+              <h1 style="font-family: var(--font-plex); font-size: 1.5rem; font-weight: 700; color: var(--t-ink); margin: 0;" id="display-profile-name">Student Name</h1>
+              <div class="mono" style="font-size: 11px; color: var(--t-subtle); margin-top: 2px;" id="display-profile-email">student@example.com</div>
+            </div>
+          </div>
+          <span class="badge-academic badge-accent" id="display-role-badge">STUDENT</span>
         </div>
       </div>
 
-      <div id="profile-alert" style="display: none;"></div>
+      <!-- Settings Form Card -->
+      <div class="card-academic corner-mark">
+        <div class="label-tag" style="margin-bottom: 1.25rem;">GOAL CONFIGURATION & DETAILS</div>
 
-      <form onsubmit="handleSaveProfile(event)">
-        <div class="form-group">
-          <label class="form-label" for="profile-email">Email Address</label>
-          <input type="email" id="profile-email" class="form-control" disabled style="opacity: 0.6; cursor: not-allowed;">
-        </div>
+        <form id="profile-form" onsubmit="handleProfileSave(event)">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+            <div>
+              <label style="display: block; font-family: var(--font-mono); font-size: 10px; color: var(--t-subtle); margin-bottom: 4px;">FULL NAME</label>
+              <input type="text" id="prof-name-input" required style="width: 100%; padding: 8px 12px; font-size: 13px; background: var(--t-surface-2); border: 1px solid var(--t-divider); border-radius: 4px; color: var(--t-ink);">
+            </div>
 
-        <div class="form-group">
-          <label class="form-label" for="profile-name">Full Name</label>
-          <input type="text" id="profile-name" class="form-control" required>
-        </div>
-
-        <div class="grid-2" style="margin-bottom: 0;">
-          <div class="form-group">
-            <label class="form-label" for="profile-target-band">Target Band Score</label>
-            <select id="profile-target-band" class="form-control">
-              <option value="6.5">6.5 Competent</option>
-              <option value="7.0">7.0 Good</option>
-              <option value="7.5" selected>7.5 High</option>
-              <option value="8.0">8.0 Very Good</option>
-              <option value="8.5">8.5 Expert</option>
-              <option value="9.0">9.0 Expert</option>
-            </select>
+            <div>
+              <label style="display: block; font-family: var(--font-mono); font-size: 10px; color: var(--t-subtle); margin-bottom: 4px;">INSTITUTION / UNIVERSITY</label>
+              <input type="text" id="prof-inst-input" value="East West University" style="width: 100%; padding: 8px 12px; font-size: 13px; background: var(--t-surface-2); border: 1px solid var(--t-divider); border-radius: 4px; color: var(--t-ink);">
+            </div>
           </div>
 
-          <div class="form-group">
-            <label class="form-label" for="profile-exam-date">Target Exam Date</label>
-            <input type="date" id="profile-exam-date" class="form-control">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+            <div>
+              <label style="display: block; font-family: var(--font-mono); font-size: 10px; color: var(--t-subtle); margin-bottom: 4px;">TARGET IELTS BAND</label>
+              <select id="prof-band-select" style="width: 100%; padding: 8px 12px; font-size: 13px; background: var(--t-surface-2); border: 1px solid var(--t-divider); border-radius: 4px; color: var(--t-ink);">
+                <option value="6.5">Band 6.5</option>
+                <option value="7.0">Band 7.0</option>
+                <option value="7.5" selected>Band 7.5</option>
+                <option value="8.0">Band 8.0</option>
+                <option value="8.5">Band 8.5</option>
+                <option value="9.0">Band 9.0</option>
+              </select>
+            </div>
+
+            <div>
+              <label style="display: block; font-family: var(--font-mono); font-size: 10px; color: var(--t-subtle); margin-bottom: 4px;">TARGET EXAM DATE</label>
+              <input type="date" id="prof-date-input" style="width: 100%; padding: 8px 12px; font-size: 13px; background: var(--t-surface-2); border: 1px solid var(--t-divider); border-radius: 4px; color: var(--t-ink);">
+            </div>
           </div>
-        </div>
 
-        <div class="form-group">
-          <label class="form-label" for="profile-institution">University / Institution</label>
-          <input type="text" id="profile-institution" class="form-control" placeholder="East West University">
-        </div>
+          <div style="text-align: right; border-top: 1px solid var(--t-divider); padding-top: 1rem;">
+            <button type="submit" class="btn-academic btn-crimson btn-sheen" id="btn-save-profile">
+              Save Profile Preferences
+            </button>
+          </div>
+        </form>
+      </div>
 
-        <div class="form-group">
-          <label class="form-label" for="profile-bio">Bio / Study Goals</label>
-          <textarea id="profile-bio" class="form-control" placeholder="e.g. Aiming for Band 7.5 to pursue Master's degree in Computer Science."></textarea>
-        </div>
-
-        <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1.5rem;">
-          <button type="submit" class="btn btn-primary" id="btn-save-profile">Save Changes</button>
-        </div>
-      </form>
     </div>
   </main>
 
+  <!-- Footer -->
+  <footer class="footer-academic">
+    <div class="footer-container">
+      <div style="display: flex; flex-direction: row; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+        <span class="mono" style="font-size: 10px; color: #64748B;">© 2026 VISTORA AI · ALL RIGHTS RESERVED</span>
+        <span class="mono" style="font-size: 10px; color: #64748B;">IELTS PREPARATION PLATFORM · CSE412 EAST WEST UNIVERSITY</span>
+      </div>
+    </div>
+  </footer>
+
+  <script type="module" src="../js/pages/profile.js"></script>
   <script type="module">
-    import { getCurrentUser, updateProfile } from '../js/lib/auth.js';
-
-    async function loadProfile() {
-      const user = await getCurrentUser();
-      if (!user) {
-        window.location.href = 'login.html';
-        return;
-      }
-
-      document.getElementById('profile-email').value = user.email || '';
-      document.getElementById('profile-name').value = user.fullName || '';
-      document.getElementById('profile-target-band').value = String(user.targetBand || 7.5);
-      document.getElementById('profile-exam-date').value = user.targetExamDate || '';
-      document.getElementById('profile-institution').value = user.institution || '';
-      document.getElementById('profile-bio').value = user.bio || '';
-    }
-
-    window.handleSaveProfile = async function(e) {
-      e.preventDefault();
-      const btn = document.getElementById('btn-save-profile');
-      btn.disabled = true;
-      btn.innerText = 'Saving...';
-
-      try {
-        await updateProfile({
-          fullName: document.getElementById('profile-name').value.trim(),
-          targetBand: Number(document.getElementById('profile-target-band').value),
-          targetExamDate: document.getElementById('profile-exam-date').value,
-          institution: document.getElementById('profile-institution').value.trim(),
-          bio: document.getElementById('profile-bio').value.trim()
-        });
-
-        const alertEl = document.getElementById('profile-alert');
-        alertEl.className = 'alert alert-success';
-        alertEl.innerText = 'Profile updated successfully!';
-        alertEl.style.display = 'block';
-        setTimeout(() => alertEl.style.display = 'none', 3000);
-      } catch (err) {
-        const alertEl = document.getElementById('profile-alert');
-        alertEl.className = 'alert alert-danger';
-        alertEl.innerText = err.message || 'Failed to update profile.';
-        alertEl.style.display = 'block';
-      } finally {
-        btn.disabled = false;
-        btn.innerText = 'Save Changes';
-      }
-    };
-
-    loadProfile();
+    const themeBtn = document.getElementById('theme-toggle');
+    const savedTheme = localStorage.getItem('vistora-theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    themeBtn?.addEventListener('click', () => {
+      const current = document.documentElement.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('vistora-theme', next);
+    });
   </script>
 </body>
 </html>

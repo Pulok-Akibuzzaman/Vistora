@@ -1,196 +1,137 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sign In & Register — Vistora IELTS</title>
+  <title>Sign In / Register — Vistora AI</title>
+  <meta name="description" content="Sign in to your Vistora AI IELTS preparation account or create a new student profile.">
   <link rel="stylesheet" href="../css/main.css">
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎓</text></svg>">
-  <style>
-    .auth-wrapper {
-      min-height: calc(100vh - 180px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 3rem 1.5rem;
-    }
-    .auth-card {
-      width: 100%;
-      max-width: 440px;
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-xl);
-      padding: 2.25rem;
-      box-shadow: var(--shadow-lg);
-      backdrop-filter: blur(16px);
-    }
-    .auth-tabs {
-      display: flex;
-      border-bottom: 1px solid var(--border);
-      margin-bottom: 2rem;
-    }
-    .auth-tab {
-      flex: 1;
-      text-align: center;
-      padding: 0.75rem 0;
-      font-weight: 600;
-      color: var(--text-muted);
-      cursor: pointer;
-      border-bottom: 2px solid transparent;
-      transition: all var(--transition-fast);
-    }
-    .auth-tab.active {
-      color: var(--primary);
-      border-bottom-color: var(--primary);
-    }
-  </style>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14' fill='none'><path d='M7 1L13 12H1L7 1Z' fill='%23DC2626'/><path d='M7 5L10 11H4L7 5Z' fill='%23FCA5A5'/></svg>">
 </head>
-<body>
+<body style="min-height: 100vh; display: flex; flex-direction: column; background: var(--t-paper);">
 
-  <!-- Top Navigation -->
-  <header class="navbar">
-    <div class="container nav-container">
-      <a href="../index.html" class="brand">
-        <span>Vistora</span>
-        <span class="brand-badge">IELTS CBT</span>
+  <!-- Top Accent Bar -->
+  <div class="top-accent-bar"></div>
+
+  <!-- Header -->
+  <header class="header-academic public-nav">
+    <div class="header-container">
+      <a href="../index.html" class="brand-wrap">
+        <div class="brand-mark">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M7 1L13 12H1L7 1Z" fill="white" />
+            <path d="M7 5L10 11H4L7 5Z" fill="#FCA5A5" />
+          </svg>
+        </div>
+        <div style="display: flex; align-items: baseline;">
+          <span class="brand-title" style="color: #FFFFFF;">Vistora</span>
+          <span class="brand-ai-badge">AI</span>
+        </div>
       </a>
-      <a href="../index.html" class="btn btn-outline btn-sm">← Back to Home</a>
+      <a href="../index.html" class="btn-academic btn-outline-dark" style="font-size: 11px; padding: 4px 10px;">← Back to Home</a>
     </div>
   </header>
 
-  <main class="auth-wrapper">
-    <div class="auth-card">
-      <div style="text-align: center; margin-bottom: 1.5rem;">
-        <h2 id="auth-title">Welcome Back</h2>
-        <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.35rem;" id="auth-subtitle">
-          Sign in to access your saved test results and personalized study plan.
+  <!-- Split Screen Authentication Layout -->
+  <main style="display: grid; grid-template-columns: 1fr 1fr; min-height: calc(100vh - 58px); margin-top: 56px;" id="auth-split-wrapper">
+    
+    <!-- Left Hero Banner (Dark Navy Grid) -->
+    <section class="theme-fixed bg-navy-grid" style="padding: 4rem 3.5rem; display: flex; flex-direction: column; justify-content: space-between; border-right: 1px solid #1E293B;">
+      <div>
+        <div class="mono" style="font-size: 10px; color: #F87171; letter-spacing: 0.15em; font-weight: 600; margin-bottom: 2rem;">VISTORA AI · IELTS PREPARATION</div>
+        <div style="width: 48px; height: 3px; background: #DC2626; margin-bottom: 1.5rem;"></div>
+        <h1 style="font-family: var(--font-plex); font-size: 2.5rem; font-weight: 700; color: #FFFFFF; line-height: 1.2; letter-spacing: -0.02em; margin-bottom: 1.25rem;">
+          Prepare with structure.<br>
+          Improve with evidence.
+        </h1>
+        <p style="color: #94A3B8; font-size: 1rem; line-height: 1.7; max-width: 440px;">
+          Practice with official Cambridge 18–20 audios, evaluate essay tasks with instant AI feedback, and monitor progress toward your university band goal.
         </p>
       </div>
 
-      <!-- Auth Switcher Tabs -->
-      <div class="auth-tabs">
-        <div class="auth-tab active" id="tab-login" onclick="switchAuthMode('login')">Sign In</div>
-        <div class="auth-tab" id="tab-signup" onclick="switchAuthMode('signup')">Create Account</div>
+      <div style="border-top: 1px solid #1E293B; padding-top: 2rem;">
+        <div class="label-tag" style="color: #64748B; margin-bottom: 0.75rem;">SECURITY ARCHITECTURE</div>
+        <div style="font-size: 11px; color: #94A3B8; line-height: 1.6;">
+          Authentication and user data are managed with PostgreSQL Row Level Security (RLS) powered by Supabase.
+        </div>
       </div>
+    </section>
 
-      <!-- Alert Message Box -->
-      <div id="auth-alert" style="display: none;"></div>
-
-      <!-- Authentication Form -->
-      <form id="auth-form" onsubmit="handleAuthSubmit(event)">
-        <div class="form-group" id="group-name" style="display: none;">
-          <label class="form-label" for="auth-name">Full Name</label>
-          <input type="text" id="auth-name" class="form-control" placeholder="e.g. Pulok Akibuzzaman">
+    <!-- Right Form Pane -->
+    <section style="display: flex; align-items: center; justify-content: center; padding: 3rem 2rem; background: var(--t-surface);">
+      <div style="max-width: 420px; width: 100%;">
+        
+        <!-- Tab Selector: Sign In / Create Account -->
+        <div style="display: flex; border-bottom: 1px solid var(--t-divider); margin-bottom: 2rem;">
+          <button type="button" id="tab-login" class="nav-item-link active" style="flex: 1; text-align: center; font-size: 13px; padding: 10px 0; border-radius: 0;" onclick="switchAuthTab('login')">
+            Sign In
+          </button>
+          <button type="button" id="tab-signup" class="nav-item-link" style="flex: 1; text-align: center; font-size: 13px; padding: 10px 0; border-radius: 0;" onclick="switchAuthTab('signup')">
+            Create Account
+          </button>
         </div>
 
-        <div class="form-group">
-          <label class="form-label" for="auth-email">Email Address</label>
-          <input type="email" id="auth-email" class="form-control" placeholder="student@example.com" required>
-        </div>
+        <!-- Alert -->
+        <div id="auth-alert" style="display: none; padding: 10px 14px; border-radius: 4px; font-size: 12px; margin-bottom: 1.25rem;"></div>
 
-        <div class="form-group">
-          <label class="form-label" for="auth-password">Password</label>
-          <input type="password" id="auth-password" class="form-control" placeholder="••••••••" required minlength="6">
-        </div>
+        <!-- Auth Form -->
+        <form id="auth-form" onsubmit="handleAuthSubmit(event)">
+          <!-- Full Name (Only for signup) -->
+          <div id="field-fullname" style="display: none; margin-bottom: 1.25rem;">
+            <label style="display: block; font-family: var(--font-mono); font-size: 10px; color: var(--t-subtle); margin-bottom: 4px;">FULL NAME</label>
+            <input type="text" id="auth-fullname" placeholder="e.g. Ayaan Rahman" style="width: 100%; padding: 10px 12px; font-size: 13px; background: var(--t-surface-2); border: 1px solid var(--t-divider); border-radius: 4px; color: var(--t-ink);">
+          </div>
 
-        <button type="submit" class="btn btn-primary" id="btn-auth-submit" style="width: 100%; margin-top: 0.75rem;">
-          Sign In
-        </button>
-      </form>
+          <!-- Email -->
+          <div style="margin-bottom: 1.25rem;">
+            <label style="display: block; font-family: var(--font-mono); font-size: 10px; color: var(--t-subtle); margin-bottom: 4px;">EMAIL ADDRESS</label>
+            <input type="email" id="auth-email" placeholder="student@example.com" required style="width: 100%; padding: 10px 12px; font-size: 13px; background: var(--t-surface-2); border: 1px solid var(--t-divider); border-radius: 4px; color: var(--t-ink);">
+          </div>
 
-      <!-- Supabase Configuration Quick Toggle -->
-      <div style="margin-top: 2rem; border-top: 1px dashed var(--border); padding-top: 1.25rem; font-size: 0.8rem; color: var(--text-dim); text-align: center;">
-        <p>Backend: <strong>Supabase Auth</strong></p>
-        <button type="button" onclick="promptSupabaseConfig()" style="background: none; border: none; color: var(--accent); cursor: pointer; text-decoration: underline; margin-top: 0.25rem;">
-          Configure Supabase URL & Anon Key
-        </button>
+          <!-- Password -->
+          <div style="margin-bottom: 1.5rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+              <label style="font-family: var(--font-mono); font-size: 10px; color: var(--t-subtle);">PASSWORD</label>
+              <span id="password-hint" class="mono" style="font-size: 9px; color: var(--t-muted);">Min. 6 characters</span>
+            </div>
+            <input type="password" id="auth-password" placeholder="••••••••" required style="width: 100%; padding: 10px 12px; font-size: 13px; background: var(--t-surface-2); border: 1px solid var(--t-divider); border-radius: 4px; color: var(--t-ink);">
+          </div>
+
+          <!-- Target Band (Signup only) -->
+          <div id="field-target-band" style="display: none; margin-bottom: 1.5rem;">
+            <label style="display: block; font-family: var(--font-mono); font-size: 10px; color: var(--t-subtle); margin-bottom: 4px;">TARGET IELTS BAND</label>
+            <select id="auth-target-band" style="width: 100%; padding: 8px 12px; font-size: 12px; background: var(--t-surface-2); border: 1px solid var(--t-divider); border-radius: 4px; color: var(--t-ink);">
+              <option value="6.5">Band 6.5 (Competent User)</option>
+              <option value="7.0">Band 7.0 (Good User)</option>
+              <option value="7.5" selected>Band 7.5 (Target Academic C1)</option>
+              <option value="8.0">Band 8.0 (Very Good User)</option>
+              <option value="8.5">Band 8.5 (Expert User)</option>
+              <option value="9.0">Band 9.0 (Expert / Native)</option>
+            </select>
+          </div>
+
+          <!-- Submit Button -->
+          <button type="submit" class="btn-academic btn-crimson btn-sheen" style="width: 100%; padding: 12px; font-size: 14px;" id="btn-auth-submit">
+            Sign In to Account →
+          </button>
+        </form>
+
       </div>
-    </div>
+    </section>
+
   </main>
 
-  <script type="module">
-    import { signIn, signUp, getCurrentUser } from '../js/lib/auth.js';
-    import { setSupabaseConfig, isSupabaseConfigured } from '../js/lib/supabaseClient.js';
-
-    let currentMode = 'login';
-
-    window.switchAuthMode = function(mode) {
-      currentMode = mode;
-      const isLogin = mode === 'login';
-      document.getElementById('tab-login').classList.toggle('active', isLogin);
-      document.getElementById('tab-signup').classList.toggle('active', !isLogin);
-      document.getElementById('auth-title').innerText = isLogin ? 'Welcome Back' : 'Create Account';
-      document.getElementById('auth-subtitle').innerText = isLogin 
-        ? 'Sign in to access your saved test results and personalized study plan.' 
-        : 'Register for free to save your exam attempts and community forum posts.';
-      document.getElementById('group-name').style.display = isLogin ? 'none' : 'flex';
-      document.getElementById('btn-auth-submit').innerText = isLogin ? 'Sign In' : 'Create Account';
-      hideAlert();
-    };
-
-    window.promptSupabaseConfig = function() {
-      const url = prompt('Enter your Supabase Project URL (e.g., https://your-id.supabase.co):');
-      if (!url) return;
-      const key = prompt('Enter your Supabase Anon Key:');
-      if (!key) return;
-      setSupabaseConfig(url, key);
-    };
-
-    function showAlert(message, type = 'danger') {
-      const el = document.getElementById('auth-alert');
-      el.className = `alert alert-${type}`;
-      el.innerText = message;
-      el.style.display = 'block';
-    }
-
-    function hideAlert() {
-      const el = document.getElementById('auth-alert');
-      el.style.display = 'none';
-    }
-
-    window.handleAuthSubmit = async function(event) {
-      event.preventDefault();
-      hideAlert();
-
-      const email = document.getElementById('auth-email').value;
-      const password = document.getElementById('auth-password').value;
-      const name = document.getElementById('auth-name').value;
-      const submitBtn = document.getElementById('btn-auth-submit');
-
-      submitBtn.disabled = true;
-      submitBtn.innerText = currentMode === 'login' ? 'Signing In...' : 'Registering...';
-
-      try {
-        if (currentMode === 'login') {
-          await signIn(email, password);
-        } else {
-          await signUp(email, password, name);
-          showAlert('Account created! Checking session...', 'success');
-        }
-
-        // Redirect
-        const params = new URLSearchParams(window.location.search);
-        const target = params.get('redirect') ? decodeURIComponent(params.get('redirect')) : 'dashboard.html';
-        window.location.href = target;
-      } catch (err) {
-        console.error('Auth error:', err);
-        showAlert(err.message || 'Authentication failed. Please verify credentials.', 'danger');
-      } finally {
-        submitBtn.disabled = false;
-        submitBtn.innerText = currentMode === 'login' ? 'Sign In' : 'Create Account';
+  <style>
+    @media (max-width: 900px) {
+      #auth-split-wrapper {
+        grid-template-columns: 1fr !important;
       }
-    };
-
-    // Auto-redirect if already logged in
-    async function checkExisting() {
-      const user = await getCurrentUser();
-      if (user) {
-        const params = new URLSearchParams(window.location.search);
-        const target = params.get('redirect') ? decodeURIComponent(params.get('redirect')) : 'dashboard.html';
-        window.location.href = target;
+      #auth-split-wrapper section:first-child {
+        display: none !important;
       }
     }
-    checkExisting();
-  </script>
+  </style>
+
+  <script type="module" src="../js/pages/login.js"></script>
 </body>
 </html>

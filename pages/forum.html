@@ -1,337 +1,196 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Community Forum — Vistora IELTS</title>
+  <title>Community Forum — Vistora AI</title>
+  <meta name="description" content="Collaborate with IELTS test takers worldwide, share essay drafts, and discuss test strategies.">
   <link rel="stylesheet" href="../css/main.css">
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💬</text></svg>">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14' fill='none'><path d='M7 1L13 12H1L7 1Z' fill='%23DC2626'/><path d='M7 5L10 11H4L7 5Z' fill='%23FCA5A5'/></svg>">
 </head>
-<body>
+<body class="bg-paper-grid">
 
-  <!-- Top Navigation -->
-  <header class="navbar">
-    <div class="container nav-container">
-      <a href="../index.html" class="brand">
-        <span>Vistora</span>
-        <span class="brand-badge">IELTS CBT</span>
+  <!-- Top Accent Bar -->
+  <div class="top-accent-bar"></div>
+
+  <!-- Header -->
+  <header class="header-academic app-nav">
+    <div class="header-container">
+      <a href="../index.html" class="brand-wrap">
+        <div class="brand-mark">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M7 1L13 12H1L7 1Z" fill="white" />
+            <path d="M7 5L10 11H4L7 5Z" fill="#FCA5A5" />
+          </svg>
+        </div>
+        <div style="display: flex; align-items: baseline;">
+          <span class="brand-title" style="color: var(--t-ink);">Vistora</span>
+          <span class="brand-ai-badge">AI</span>
+        </div>
       </a>
-      
-      <nav>
-        <ul class="nav-links">
-          <li><a href="practice-test.html" class="nav-link">Practice Tests</a></li>
-          <li><a href="results.html" class="nav-link">Results</a></li>
-          <li><a href="forum.html" class="nav-link active">Community Forum</a></li>
-          <li><a href="writing-eval.html" class="nav-link">Writing</a></li>
-          <li><a href="dashboard.html" class="nav-link">Dashboard</a></li>
-        </ul>
+
+      <nav class="nav-links-desktop">
+        <a href="dashboard.html" class="nav-item-link">Dashboard</a>
+        <a href="practice-test.html" class="nav-item-link">Practice Tests</a>
+        <a href="exam-dates.html" class="nav-item-link">Exam Dates</a>
+        <a href="results.html" class="nav-item-link">Results</a>
+        <a href="writing-eval.html" class="nav-item-link">AI Writing</a>
+        <a href="resources.html" class="nav-item-link">Resources</a>
+        <a href="forum.html" class="nav-item-link active">Community</a>
       </nav>
 
-      <div class="nav-actions">
-        <button class="btn btn-primary btn-sm" onclick="openNewThreadModal()">+ Start Discussion</button>
+      <div class="header-actions">
+        <button type="button" class="theme-toggle-btn" id="theme-toggle" aria-label="Toggle theme">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        </button>
+        <a href="profile.html" class="user-avatar-circle" id="user-avatar-display">ST</a>
       </div>
     </div>
   </header>
 
-  <main class="container" style="padding: 2.5rem 1.5rem;">
-    <!-- Forum Header -->
-    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
-      <div>
-        <span class="badge badge-indigo">Peer Collaboration</span>
-        <h1 style="margin-top: 0.5rem;">Community Forum & Discussions</h1>
-        <p style="color: var(--text-muted); font-size: 0.95rem;">
-          Exchange Cambridge exam tips, ask questions on passages, and share Band 8+ strategies.
-        </p>
+  <!-- Page Content -->
+  <main class="content-wrapper">
+    <div class="page-container">
+
+      <!-- Header Banner & Search -->
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem;">
+        <div>
+          <div class="label-tag" style="margin-bottom: 4px;">GLOBAL IELTS COMMUNITY</div>
+          <h1 style="font-family: var(--font-plex); font-size: 1.75rem; font-weight: 700; color: var(--t-ink);">Academic Discussion Forum</h1>
+          <p style="font-size: 13px; color: var(--t-muted); margin-top: 4px;">Connect with 40,000+ candidates, discuss Cambridge audio nuances, and receive peer essay feedback.</p>
+        </div>
+
+        <div style="display: flex; gap: 10px; align-items: center;">
+          <input type="text" id="forum-search-input" placeholder="Search threads..." style="padding: 8px 14px; font-size: 12px; background: var(--t-surface); border: 1px solid var(--t-divider); border-radius: 4px; color: var(--t-ink); width: 220px;" oninput="handleSearch(this.value)">
+          <button type="button" class="btn-academic btn-crimson btn-sheen" onclick="openNewPostModal()">
+            + New Discussion
+          </button>
+        </div>
       </div>
 
-      <!-- Filter Buttons -->
-      <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;" id="forum-filter-tabs">
-        <button class="btn btn-secondary btn-sm active" onclick="filterForum('All')">All</button>
-        <button class="btn btn-secondary btn-sm" onclick="filterForum('Listening Tips')">Listening</button>
-        <button class="btn btn-secondary btn-sm" onclick="filterForum('Reading Strategies')">Reading</button>
-        <button class="btn btn-secondary btn-sm" onclick="filterForum('Writing Help')">Writing</button>
-        <button class="btn btn-secondary btn-sm" onclick="filterForum('Score Reports')">Scores</button>
-      </div>
-    </div>
+      <!-- Layout: Categories Column + Threads List -->
+      <div style="display: grid; grid-template-columns: 240px 1fr; gap: 1.5rem;" id="forum-main-layout">
+        
+        <!-- Left: Topics Sidebar -->
+        <div>
+          <div class="card-academic" style="padding: 1rem;">
+            <div class="label-tag" style="margin-bottom: 10px;">TOPICS</div>
+            <div style="display: flex; flex-direction: column; gap: 2px;" id="forum-categories-list">
+              <button type="button" class="btn-academic btn-outline-theme active" style="text-align: left; justify-content: flex-start; width: 100%; font-size: 11px; padding: 6px 10px;" onclick="filterCategory('All Topics')">All Topics</button>
+              <button type="button" class="btn-academic btn-outline-theme" style="text-align: left; justify-content: flex-start; width: 100%; font-size: 11px; padding: 6px 10px;" onclick="filterCategory('Writing Help')">Writing Help</button>
+              <button type="button" class="btn-academic btn-outline-theme" style="text-align: left; justify-content: flex-start; width: 100%; font-size: 11px; padding: 6px 10px;" onclick="filterCategory('Reading Strategies')">Reading Strategies</button>
+              <button type="button" class="btn-academic btn-outline-theme" style="text-align: left; justify-content: flex-start; width: 100%; font-size: 11px; padding: 6px 10px;" onclick="filterCategory('Listening Tips')">Listening Tips</button>
+              <button type="button" class="btn-academic btn-outline-theme" style="text-align: left; justify-content: flex-start; width: 100%; font-size: 11px; padding: 6px 10px;" onclick="filterCategory('Speaking Practice')">Speaking Practice</button>
+              <button type="button" class="btn-academic btn-outline-theme" style="text-align: left; justify-content: flex-start; width: 100%; font-size: 11px; padding: 6px 10px;" onclick="filterCategory('Score Reports')">Score Reports</button>
+              <button type="button" class="btn-academic btn-outline-theme" style="text-align: left; justify-content: flex-start; width: 100%; font-size: 11px; padding: 6px 10px;" onclick="filterCategory('Study Plans')">Study Plans</button>
+            </div>
+          </div>
+        </div>
 
-    <!-- Alert / Notice -->
-    <div id="forum-alert" style="display: none;"></div>
+        <!-- Right: Threads Stream -->
+        <div style="display: flex; flex-direction: column; gap: 10px;" id="threads-container">
+          <!-- Populated via JavaScript -->
+        </div>
 
-    <!-- Threads Feed -->
-    <div id="threads-container" style="display: flex; flex-direction: column; gap: 1.25rem;">
-      <div style="text-align: center; padding: 4rem 1rem;">
-        <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">⏳</div>
-        <p style="color: var(--text-muted);">Loading discussions from Supabase...</p>
       </div>
+
     </div>
   </main>
 
-  <!-- New Thread Modal -->
-  <div id="new-thread-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(12px); z-index: 1000; align-items: center; justify-content: center; padding: 1.5rem;">
-    <div class="card" style="max-width: 600px; width: 100%;">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-        <h3>Start a New Discussion</h3>
-        <button class="btn btn-outline btn-sm" onclick="closeNewThreadModal()">✕</button>
+  <!-- Create Thread Modal Dialog -->
+  <div id="new-thread-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 200; align-items: center; justify-content: center; padding: 1rem;">
+    <div class="card-academic corner-mark" style="max-width: 600px; width: 100%; background: var(--t-surface); border: 1px solid var(--t-divider); padding: 1.75rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+        <h3 style="font-family: var(--font-plex); font-size: 1.25rem; font-weight: 700; color: var(--t-ink);">Start New Discussion</h3>
+        <button type="button" onclick="closeNewPostModal()" style="font-size: 18px; color: var(--t-muted);">✕</button>
       </div>
 
-      <form onsubmit="handleCreateThread(event)">
-        <div class="form-group">
-          <label class="form-label" for="thread-category">Category</label>
-          <select id="thread-category" class="form-control" required>
-            <option value="Listening Tips">Listening Tips</option>
-            <option value="Reading Strategies">Reading Strategies</option>
-            <option value="Writing Help">Writing Help</option>
-            <option value="Score Reports">Score Reports</option>
-            <option value="General Tips">General Tips</option>
+      <form id="create-thread-form" onsubmit="handleThreadSubmit(event)">
+        <div style="margin-bottom: 1rem;">
+          <label style="display: block; font-family: var(--font-mono); font-size: 10px; color: var(--t-subtle); margin-bottom: 4px;">TOPIC CATEGORY</label>
+          <select id="thread-category-select" style="width: 100%; padding: 8px 12px; font-size: 12px; background: var(--t-surface-2); border: 1px solid var(--t-divider); border-radius: 4px; color: var(--t-ink);">
+            <option>Writing Help</option>
+            <option>Reading Strategies</option>
+            <option>Listening Tips</option>
+            <option>Speaking Practice</option>
+            <option>Score Reports</option>
+            <option>Study Plans</option>
           </select>
         </div>
 
-        <div class="form-group">
-          <label class="form-label" for="thread-title">Discussion Title</label>
-          <input type="text" id="thread-title" class="form-control" placeholder="e.g. How to handle difficult multiple-choice questions in Section 3" required>
+        <div style="margin-bottom: 1rem;">
+          <label style="display: block; font-family: var(--font-mono); font-size: 10px; color: var(--t-subtle); margin-bottom: 4px;">THREAD TITLE</label>
+          <input type="text" id="thread-title-input" placeholder="e.g. Cambridge 19 Listening Part 3 distractors analysis..." required style="width: 100%; padding: 8px 12px; font-size: 13px; background: var(--t-surface-2); border: 1px solid var(--t-divider); border-radius: 4px; color: var(--t-ink);">
         </div>
 
-        <div class="form-group">
-          <label class="form-label" for="thread-content">Content & Question</label>
-          <textarea id="thread-content" class="form-control" placeholder="Share your strategy or describe what you found challenging..." required></textarea>
+        <div style="margin-bottom: 1.25rem;">
+          <label style="display: block; font-family: var(--font-mono); font-size: 10px; color: var(--t-subtle); margin-bottom: 4px;">DISCUSSION CONTENT / QUESTION</label>
+          <textarea id="thread-content-input" rows="6" placeholder="Describe your question, share essay excerpts, or outline the strategy..." required style="width: 100%; padding: 10px 12px; font-size: 13px; background: var(--t-surface-2); border: 1px solid var(--t-divider); border-radius: 4px; color: var(--t-ink); line-height: 1.6;"></textarea>
         </div>
 
-        <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem;">
-          <button type="button" class="btn btn-outline" onclick="closeNewThreadModal()">Cancel</button>
-          <button type="submit" class="btn btn-primary" id="btn-submit-thread">Post Discussion</button>
+        <div style="display: flex; justify-content: flex-end; gap: 10px;">
+          <button type="button" class="btn-academic btn-outline-theme" onclick="closeNewPostModal()">Cancel</button>
+          <button type="submit" class="btn-academic btn-crimson" id="btn-submit-thread">Post Thread →</button>
         </div>
       </form>
     </div>
   </div>
 
-  <footer class="footer">
-    <div class="container">
-      <div class="footer-bottom">
-        <div>© 2026 Vistora Platform. East West University.</div>
-        <a href="../index.html">Home</a>
+  <!-- Thread Detail Modal / Drawer -->
+  <div id="thread-view-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 200; align-items: center; justify-content: center; padding: 1rem;">
+    <div class="card-academic corner-mark" style="max-width: 720px; width: 100%; max-height: 85vh; overflow-y: auto; background: var(--t-surface); border: 1px solid var(--t-divider); padding: 1.75rem;">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+        <div>
+          <span class="badge-academic badge-accent" id="modal-thread-category">WRITING HELP</span>
+          <h2 style="font-family: var(--font-plex); font-size: 1.25rem; font-weight: 700; color: var(--t-ink); margin-top: 6px;" id="modal-thread-title">Thread Title</h2>
+          <div class="mono" style="font-size: 11px; color: var(--t-subtle); margin-top: 2px;" id="modal-thread-author">By Ayaan Rahman</div>
+        </div>
+        <button type="button" onclick="closeThreadViewModal()" style="font-size: 18px; color: var(--t-muted);">✕</button>
+      </div>
+
+      <div style="font-size: 13px; color: var(--t-ink); line-height: 1.7; margin-bottom: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--t-divider);" id="modal-thread-body">
+        <!-- Content -->
+      </div>
+
+      <!-- Replies Section -->
+      <div class="label-tag" style="margin-bottom: 10px;">REPLIES & DISCUSSION</div>
+      <div id="modal-replies-list" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 1.5rem;">
+        <!-- Replies rendered dynamically -->
+      </div>
+
+      <!-- Post Reply Box -->
+      <form id="reply-form" onsubmit="handleReplySubmit(event)">
+        <div style="display: flex; gap: 8px;">
+          <input type="text" id="reply-text-input" placeholder="Write a response or share advice..." required style="flex: 1; padding: 8px 12px; font-size: 12px; background: var(--t-surface-2); border: 1px solid var(--t-divider); border-radius: 4px; color: var(--t-ink);">
+          <button type="submit" class="btn-academic btn-crimson" style="padding: 6px 14px; font-size: 11px;">Reply</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer-academic">
+    <div class="footer-container">
+      <div style="display: flex; flex-direction: row; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+        <span class="mono" style="font-size: 10px; color: #64748B;">© 2026 VISTORA AI · ALL RIGHTS RESERVED</span>
+        <span class="mono" style="font-size: 10px; color: #64748B;">IELTS PREPARATION PLATFORM · CSE412 EAST WEST UNIVERSITY</span>
       </div>
     </div>
   </footer>
 
+  <script type="module" src="../js/pages/forum.js"></script>
   <script type="module">
-    import { supabase, isSupabaseConfigured } from '../js/lib/supabaseClient.js';
-    import { getCurrentUser } from '../js/lib/auth.js';
-
-    let allThreads = [];
-    let currentFilter = 'All';
-    let userUpvotes = new Set();
-
-    // Default Seed Discussions
-    const SEED_THREADS = [
-      {
-        id: 'seed-1',
-        title: 'How to avoid repetition in Task 2 — strategies that helped me go from 6.0 to 7.5',
-        category: 'Writing Help',
-        content: "After three attempts at Writing, I finally cracked the coherence issue. The key for me was learning to use referencing (this, these, such) instead of repeating the same nouns across sentences. Examiners give huge credit when you demonstrate natural lexical substitutions rather than awkward forced thesaurus lookups.",
-        author_name: 'Priya Krishnamurthy',
-        upvotes_count: 89,
-        replies_count: 2,
-        created_at: new Date(Date.now() - 7200000).toISOString()
-      },
-      {
-        id: 'seed-2',
-        title: 'Band 8.0 achieved — full breakdown of my 6-month preparation strategy',
-        category: 'Score Reports',
-        content: 'R: 8.5, L: 8.5, W: 7.5, S: 7.5. Overall 8.0. I practiced using authentic Cambridge IELTS 18-20 test audio on this platform daily. For listening, training at 1.25x speed makes the real exam pace feel slow and relaxed.',
-        author_name: 'Mohammed Al-Qasim',
-        upvotes_count: 204,
-        replies_count: 1,
-        created_at: new Date(Date.now() - 18000000).toISOString()
-      },
-      {
-        id: 'seed-3',
-        title: 'True/False/Not Given — I finally understand the difference',
-        category: 'Reading Strategies',
-        content: "Remember: FALSE means the text explicitly contradicts the statement. NOT GIVEN means the information cannot be confirmed, even if it feels intuitively plausible from general knowledge! Always ask: 'Did the passage state the direct opposite?'",
-        author_name: 'Yuki Tanaka',
-        upvotes_count: 112,
-        replies_count: 0,
-        created_at: new Date(Date.now() - 28800000).toISOString()
-      }
-    ];
-
-    async function loadThreads() {
-      const container = document.getElementById('threads-container');
-      const user = await getCurrentUser();
-
-      // Load user's upvotes from Supabase to prevent duplicates
-      if (isSupabaseConfigured() && supabase && user?.id) {
-        try {
-          const { data: upvotes } = await supabase.from('forum_upvotes').select('thread_id').eq('user_id', user.id);
-          if (upvotes) {
-            userUpvotes = new Set(upvotes.map(u => u.thread_id));
-          }
-        } catch {}
-      }
-
-      // Load threads from Supabase
-      if (isSupabaseConfigured() && supabase) {
-        try {
-          const { data, error } = await supabase.from('forum_threads').select('*').order('created_at', { ascending: false });
-          if (!error && data && data.length > 0) {
-            allThreads = data;
-          }
-        } catch (err) {
-          console.warn('Supabase forum load error:', err);
-        }
-      }
-
-      if (allThreads.length === 0) {
-        allThreads = JSON.parse(localStorage.getItem('vistora_forum_threads') || 'null') || SEED_THREADS;
-      }
-
-      renderThreads();
-    }
-
-    function renderThreads() {
-      const container = document.getElementById('threads-container');
-      const filtered = currentFilter === 'All' 
-        ? allThreads 
-        : allThreads.filter(t => t.category === currentFilter);
-
-      if (filtered.length === 0) {
-        container.innerHTML = `
-          <div class="card" style="text-align: center; padding: 3rem;">
-            <h3>No Discussions in this Category</h3>
-            <p style="color: var(--text-muted); margin-top: 0.5rem;">Be the first to start a conversation!</p>
-          </div>
-        `;
-        return;
-      }
-
-      container.innerHTML = filtered.map(t => {
-        const isUpvoted = userUpvotes.has(t.id);
-        const dateStr = new Date(t.created_at || Date.now()).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
-        
-        return `
-          <div class="card" id="thread-${t.id}">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem;">
-              <div style="flex: 1;">
-                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-                  <span class="badge badge-indigo">${t.category}</span>
-                  <span style="font-size: 0.8rem; color: var(--text-dim);">By ${t.author_name || 'Community Member'} · ${dateStr}</span>
-                </div>
-                <h3 style="font-size: 1.15rem; margin-bottom: 0.5rem;">${t.title}</h3>
-                <p style="color: var(--text-muted); font-size: 0.925rem; line-height: 1.6;">${t.content}</p>
-              </div>
-
-              <!-- Upvote Action with Duplicate Prevention -->
-              <button class="btn btn-sm ${isUpvoted ? 'btn-primary' : 'btn-outline'}" 
-                      onclick="handleUpvote('${t.id}')" 
-                      style="display: flex; flex-direction: column; padding: 0.5rem 0.75rem; min-width: 65px; text-align: center;">
-                <span style="font-size: 1rem;">▲</span>
-                <span style="font-weight: 700;">${t.upvotes_count || 0}</span>
-              </button>
-            </div>
-          </div>
-        `;
-      }).join('');
-    }
-
-    window.filterForum = function(category) {
-      currentFilter = category;
-      const btns = document.querySelectorAll('#forum-filter-tabs button');
-      btns.forEach(b => b.classList.toggle('active', b.innerText.includes(category) || (category === 'All' && b.innerText === 'All')));
-      renderThreads();
-    };
-
-    window.handleUpvote = async function(threadId) {
-      const user = await getCurrentUser();
-      if (!user) {
-        alert('Please sign in to upvote forum discussions.');
-        window.location.href = 'login.html';
-        return;
-      }
-
-      if (userUpvotes.has(threadId)) {
-        alert('You have already upvoted this discussion.');
-        return;
-      }
-
-      const thread = allThreads.find(t => t.id === threadId);
-      if (thread) {
-        thread.upvotes_count = (thread.upvotes_count || 0) + 1;
-        userUpvotes.add(threadId);
-
-        // Record in Supabase (enforced by UNIQUE constraint on thread_id, user_id)
-        if (isSupabaseConfigured() && supabase && user?.id) {
-          try {
-            await supabase.from('forum_upvotes').insert([{
-              thread_id: threadId,
-              user_id: user.id
-            }]);
-          } catch (err) {
-            console.warn('Supabase upvote error:', err);
-          }
-        }
-
-        localStorage.setItem('vistora_forum_threads', JSON.stringify(allThreads));
-        renderThreads();
-      }
-    };
-
-    window.openNewThreadModal = async function() {
-      const user = await getCurrentUser();
-      if (!user) {
-        alert('Please sign in to post a new discussion.');
-        window.location.href = 'login.html';
-        return;
-      }
-      document.getElementById('new-thread-modal').style.display = 'flex';
-    };
-
-    window.closeNewThreadModal = function() {
-      document.getElementById('new-thread-modal').style.display = 'none';
-    };
-
-    window.handleCreateThread = async function(e) {
-      e.preventDefault();
-      const user = await getCurrentUser();
-      const title = document.getElementById('thread-title').value.trim();
-      const content = document.getElementById('thread-content').value.trim();
-      const category = document.getElementById('thread-category').value;
-
-      const newThread = {
-        id: 'thr-' + Date.now(),
-        title,
-        content,
-        category,
-        author_name: user?.fullName || 'Anonymous',
-        user_id: user?.id,
-        upvotes_count: 0,
-        replies_count: 0,
-        created_at: new Date().toISOString()
-      };
-
-      if (isSupabaseConfigured() && supabase && user?.id) {
-        try {
-          const { data } = await supabase.from('forum_threads').insert([{
-            user_id: user.id,
-            title,
-            content,
-            category
-          }]).select().single();
-          if (data) newThread.id = data.id;
-        } catch (err) {
-          console.warn('Supabase insert thread error:', err);
-        }
-      }
-
-      allThreads.unshift(newThread);
-      localStorage.setItem('vistora_forum_threads', JSON.stringify(allThreads));
-
-      closeNewThreadModal();
-      document.getElementById('thread-title').value = '';
-      document.getElementById('thread-content').value = '';
-      renderThreads();
-    };
-
-    loadThreads();
+    const themeBtn = document.getElementById('theme-toggle');
+    const savedTheme = localStorage.getItem('vistora-theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    themeBtn?.addEventListener('click', () => {
+      const current = document.documentElement.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('vistora-theme', next);
+    });
   </script>
 </body>
 </html>

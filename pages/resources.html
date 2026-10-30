@@ -1,99 +1,131 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cambridge Preparation Resources — Vistora IELTS</title>
+  <title>IELTS Resource Library — Vistora AI</title>
+  <meta name="description" content="Curated IELTS academic guides, band 8+ sample essays, vocabulary lists, and Cambridge preparation books.">
   <link rel="stylesheet" href="../css/main.css">
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14' fill='none'><path d='M7 1L13 12H1L7 1Z' fill='%23DC2626'/><path d='M7 5L10 11H4L7 5Z' fill='%23FCA5A5'/></svg>">
 </head>
-<body>
+<body class="bg-paper-grid">
 
-  <!-- Top Navigation -->
-  <header class="navbar">
-    <div class="container nav-container">
-      <a href="../index.html" class="brand">
-        <span>Vistora</span>
-        <span class="brand-badge">IELTS CBT</span>
+  <!-- Top Accent Bar -->
+  <div class="top-accent-bar"></div>
+
+  <!-- Header -->
+  <header class="header-academic app-nav">
+    <div class="header-container">
+      <a href="../index.html" class="brand-wrap">
+        <div class="brand-mark">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M7 1L13 12H1L7 1Z" fill="white" />
+            <path d="M7 5L10 11H4L7 5Z" fill="#FCA5A5" />
+          </svg>
+        </div>
+        <div style="display: flex; align-items: baseline;">
+          <span class="brand-title" style="color: var(--t-ink);">Vistora</span>
+          <span class="brand-ai-badge">AI</span>
+        </div>
       </a>
-      
-      <nav>
-        <ul class="nav-links">
-          <li><a href="practice-test.html" class="nav-link">Practice Tests</a></li>
-          <li><a href="results.html" class="nav-link">Results</a></li>
-          <li><a href="forum.html" class="nav-link">Community Forum</a></li>
-          <li><a href="resources.html" class="nav-link active">Resources</a></li>
-          <li><a href="dashboard.html" class="nav-link">Dashboard</a></li>
-        </ul>
+
+      <nav class="nav-links-desktop">
+        <a href="dashboard.html" class="nav-item-link">Dashboard</a>
+        <a href="practice-test.html" class="nav-item-link">Practice Tests</a>
+        <a href="exam-dates.html" class="nav-item-link">Exam Dates</a>
+        <a href="results.html" class="nav-item-link">Results</a>
+        <a href="writing-eval.html" class="nav-item-link">AI Writing</a>
+        <a href="resources.html" class="nav-item-link active">Resources</a>
+        <a href="forum.html" class="nav-item-link">Community</a>
       </nav>
 
-      <div class="nav-actions">
-        <a href="practice-test.html" class="btn btn-primary btn-sm">Practice Now</a>
+      <div class="header-actions">
+        <button type="button" class="theme-toggle-btn" id="theme-toggle" aria-label="Toggle theme">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        </button>
+        <a href="profile.html" class="user-avatar-circle" id="user-avatar-display">ST</a>
       </div>
     </div>
   </header>
 
-  <main class="container" style="padding: 2.5rem 1.5rem;">
-    <div style="margin-bottom: 2rem;">
-      <span class="badge badge-indigo">Official Cambridge Guides</span>
-      <h1 style="margin-top: 0.5rem;">IELTS Strategy Guides & Materials</h1>
-      <p style="color: var(--text-muted); font-size: 0.95rem;">
-        Essential tactics for achieving Band 8+ across Reading, Listening, Writing, and Speaking.
-      </p>
-    </div>
+  <!-- Page Content -->
+  <main class="content-wrapper">
+    <div class="page-container">
 
-    <!-- Official Links Banner -->
-    <div class="card" style="margin-bottom: 2.5rem; background: rgba(30, 41, 59, 0.6);">
-      <h3 style="margin-bottom: 0.75rem;">Official Examination Portals</h3>
-      <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-        <a href="https://takeielts.britishcouncil.org" target="_blank" class="btn btn-outline btn-sm">British Council Prep ↗</a>
-        <a href="https://ielts.idp.com/prepare" target="_blank" class="btn btn-outline btn-sm">IDP Preparation ↗</a>
-        <a href="https://www.cambridgeenglish.org/exams-and-tests/ielts/" target="_blank" class="btn btn-outline btn-sm">Cambridge English ↗</a>
-        <a href="https://www.wgtn.ac.nz/lals/resources/academicwordlist" target="_blank" class="btn btn-outline btn-sm">Academic Word List (AWL) ↗</a>
+      <!-- Header Banner & Search -->
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem;">
+        <div>
+          <div class="label-tag" style="margin-bottom: 4px;">CURATED ACADEMIC ARCHIVE</div>
+          <h1 style="font-family: var(--font-plex); font-size: 1.75rem; font-weight: 700; color: var(--t-ink);">IELTS Resource & Guide Library</h1>
+          <p style="font-size: 13px; color: var(--t-muted); margin-top: 4px;">Official band descriptors, task 1 templates, academic collocations, and reading skimming strategies.</p>
+        </div>
+
+        <input type="text" id="resource-search" placeholder="Search resources & guides..." style="padding: 8px 14px; font-size: 12px; background: var(--t-surface); border: 1px solid var(--t-divider); border-radius: 4px; color: var(--t-ink); width: 240px;" oninput="filterResources(this.value)">
       </div>
-    </div>
 
-    <!-- Strategy Guides Grid -->
-    <div class="grid-2" id="resources-grid">
-      <!-- Dynamically populated -->
+      <!-- Categories Filter Chips -->
+      <div style="display: flex; gap: 6px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 1.5rem;" id="res-category-chips">
+        <button type="button" class="btn-academic btn-outline-theme active" onclick="selectResCategory('All')">All</button>
+        <button type="button" class="btn-academic btn-outline-theme" onclick="selectResCategory('Official Books')">Official Books</button>
+        <button type="button" class="btn-academic btn-outline-theme" onclick="selectResCategory('Writing')">Writing</button>
+        <button type="button" class="btn-academic btn-outline-theme" onclick="selectResCategory('Reading')">Reading</button>
+        <button type="button" class="btn-academic btn-outline-theme" onclick="selectResCategory('Listening')">Listening</button>
+        <button type="button" class="btn-academic btn-outline-theme" onclick="selectResCategory('Vocabulary')">Vocabulary</button>
+        <button type="button" class="btn-academic btn-outline-theme" onclick="selectResCategory('Sample Essays')">Sample Essays</button>
+      </div>
+
+      <!-- Resources Grid -->
+      <div class="grid-cols-3 gap-4" id="resources-grid-container">
+        <!-- Populated via JavaScript -->
+      </div>
+
     </div>
   </main>
 
-  <footer class="footer">
-    <div class="container">
-      <div class="footer-bottom">
-        <div>© 2026 Vistora Platform. East West University.</div>
-        <a href="../index.html">Home</a>
+  <!-- Resource Detail Reading Modal -->
+  <div id="resource-detail-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 200; align-items: center; justify-content: center; padding: 1rem;">
+    <div class="card-academic corner-mark" style="max-width: 760px; width: 100%; max-height: 85vh; overflow-y: auto; background: var(--t-surface); border: 1px solid var(--t-divider); padding: 2rem;">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+        <div>
+          <span class="badge-academic badge-accent" id="modal-res-badge">GUIDE</span>
+          <h2 style="font-family: var(--font-plex); font-size: 1.35rem; font-weight: 700; color: var(--t-ink); margin-top: 6px;" id="modal-res-title">Resource Title</h2>
+        </div>
+        <button type="button" onclick="closeResourceModal()" style="font-size: 18px; color: var(--t-muted);">✕</button>
+      </div>
+
+      <div style="font-size: 13px; color: var(--t-ink); line-height: 1.8; margin-bottom: 1.5rem;" id="modal-res-body">
+        <!-- Full content -->
+      </div>
+
+      <div style="text-align: right; border-top: 1px solid var(--t-divider); padding-top: 1rem;">
+        <button type="button" class="btn-academic btn-outline-theme" onclick="closeResourceModal()">Close Guide</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer-academic">
+    <div class="footer-container">
+      <div style="display: flex; flex-direction: row; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+        <span class="mono" style="font-size: 10px; color: #64748B;">© 2026 VISTORA AI · ALL RIGHTS RESERVED</span>
+        <span class="mono" style="font-size: 10px; color: #64748B;">IELTS PREPARATION PLATFORM · CSE412 EAST WEST UNIVERSITY</span>
       </div>
     </div>
   </footer>
 
+  <script type="module" src="../js/pages/resources.js"></script>
   <script type="module">
-    import { STUDY_RESOURCES } from '../js/data/resourcesData.js';
-
-    const container = document.getElementById('resources-grid');
-    container.innerHTML = STUDY_RESOURCES.map(r => `
-      <div class="card">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
-          <span class="badge badge-primary">${r.category}</span>
-          <span class="badge badge-warning">${r.tag}</span>
-        </div>
-
-        <h3 style="font-size: 1.15rem; margin-bottom: 0.5rem;">${r.title}</h3>
-        <p style="color: var(--text-muted); font-size: 0.925rem; margin-bottom: 1rem;">${r.desc}</p>
-
-        <div style="background: rgba(255,255,255,0.02); border-left: 3px solid var(--accent); padding: 0.75rem 1rem; border-radius: var(--radius-sm); margin-bottom: 1.25rem;">
-          <div style="font-size: 0.8rem; font-weight: 700; color: #a5b4fc; margin-bottom: 0.4rem;">KEY TAKEAWAYS</div>
-          <ul style="padding-left: 1.2rem; font-size: 0.875rem; color: #cbd5e1; display: flex; flex-direction: column; gap: 0.35rem;">
-            ${r.tips.map(t => `<li>${t}</li>`).join('')}
-          </ul>
-        </div>
-
-        <a href="${r.externalUrl}" target="_blank" class="btn btn-secondary btn-sm" style="width: 100%;">
-          Open Official Guide ↗
-        </a>
-      </div>
-    `).join('');
+    const themeBtn = document.getElementById('theme-toggle');
+    const savedTheme = localStorage.getItem('vistora-theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    themeBtn?.addEventListener('click', () => {
+      const current = document.documentElement.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('vistora-theme', next);
+    });
   </script>
 </body>
 </html>

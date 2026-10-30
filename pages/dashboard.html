@@ -1,272 +1,234 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Student Dashboard — Vistora IELTS</title>
+  <title>Student Dashboard — Vistora AI</title>
+  <meta name="description" content="Personalized IELTS preparation dashboard with band score analytics, study checklists, and test history.">
   <link rel="stylesheet" href="../css/main.css">
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎓</text></svg>">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14' fill='none'><path d='M7 1L13 12H1L7 1Z' fill='%23DC2626'/><path d='M7 5L10 11H4L7 5Z' fill='%23FCA5A5'/></svg>">
 </head>
-<body>
+<body class="bg-paper-grid">
 
-  <!-- Top Navigation -->
-  <header class="navbar">
-    <div class="container nav-container">
-      <a href="../index.html" class="brand">
-        <span>Vistora</span>
-        <span class="brand-badge">IELTS CBT</span>
+  <!-- Top Accent Bar -->
+  <div class="top-accent-bar"></div>
+
+  <!-- Header -->
+  <header class="header-academic app-nav" id="main-header">
+    <div class="header-container">
+      <a href="../index.html" class="brand-wrap">
+        <div class="brand-mark">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M7 1L13 12H1L7 1Z" fill="white" />
+            <path d="M7 5L10 11H4L7 5Z" fill="#FCA5A5" />
+          </svg>
+        </div>
+        <div style="display: flex; align-items: baseline;">
+          <span class="brand-title" style="color: var(--t-ink);">Vistora</span>
+          <span class="brand-ai-badge">AI</span>
+        </div>
       </a>
-      
-      <nav>
-        <ul class="nav-links">
-          <li><a href="practice-test.html" class="nav-link">Practice Tests</a></li>
-          <li><a href="results.html" class="nav-link">Results</a></li>
-          <li><a href="forum.html" class="nav-link">Community Forum</a></li>
-          <li><a href="writing-eval.html" class="nav-link">Writing</a></li>
-          <li><a href="exam-dates.html" class="nav-link">Exam Dates</a></li>
-          <li><a href="dashboard.html" class="nav-link active">Dashboard</a></li>
-        </ul>
+
+      <nav class="nav-links-desktop">
+        <a href="dashboard.html" class="nav-item-link active">Dashboard</a>
+        <a href="practice-test.html" class="nav-item-link">Practice Tests</a>
+        <a href="exam-dates.html" class="nav-item-link">Exam Dates</a>
+        <a href="results.html" class="nav-item-link">Results</a>
+        <a href="writing-eval.html" class="nav-item-link">AI Writing</a>
+        <a href="resources.html" class="nav-item-link">Resources</a>
+        <a href="forum.html" class="nav-item-link">Community</a>
       </nav>
 
-      <div class="nav-actions">
-        <button class="btn btn-outline btn-sm" onclick="handleLogout()">Sign Out</button>
+      <div class="header-actions">
+        <button type="button" class="theme-toggle-btn" id="theme-toggle" aria-label="Toggle theme">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        </button>
+        <div id="auth-nav-slot" style="display: flex; align-items: center; gap: 8px;">
+          <a href="profile.html" class="user-avatar-circle" id="user-avatar-display">ST</a>
+          <button id="btn-header-signout" class="btn-academic btn-outline-theme" style="padding: 4px 10px; font-size: 11px;">Sign Out</button>
+        </div>
       </div>
     </div>
   </header>
 
-  <main class="container" style="padding: 2.5rem 1.5rem;">
-    <!-- Welcome Header Card -->
-    <div class="card" style="margin-bottom: 2rem; background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.9));">
-      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.5rem;">
-        <div style="display: flex; align-items: center; gap: 1.25rem;">
-          <div style="width: 60px; height: 60px; border-radius: var(--radius-full); background: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1.75rem; color: white;">
-            👤
+  <!-- Page Content -->
+  <main class="content-wrapper">
+    <div class="page-container">
+
+      <!-- Candidate Greeting Header -->
+      <div class="card-academic corner-mark" style="margin-bottom: 1.5rem; background: var(--t-surface); border-left: 3px solid #DC2626;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+          <div style="display: flex; align-items: center; gap: 14px;">
+            <div class="user-avatar-circle" style="width: 48px; height: 48px; font-size: 16px;" id="profile-initials-large">
+              ST
+            </div>
+            <div>
+              <div class="label-tag" style="margin-bottom: 2px;">IELTS CANDIDATE DASHBOARD</div>
+              <h1 style="font-family: var(--font-plex); font-size: 1.5rem; font-weight: 700; color: var(--t-ink); margin: 0;" id="user-greeting">Welcome back, Student</h1>
+              <p style="font-size: 12px; color: var(--t-subtle); margin-top: 2px;" id="user-meta-line">Target Band: 7.5 · Target Date: Dec 2026</p>
+            </div>
           </div>
-          <div>
-            <h1 style="font-size: 1.75rem;" id="user-greeting">Welcome, Student</h1>
-            <p style="color: var(--text-muted); font-size: 0.9rem;" id="user-institution">East West University · CSE412 Candidate</p>
+
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <a href="practice-test.html" class="btn-academic btn-crimson btn-sheen">
+              Start Practice Test →
+            </a>
+            <a href="profile.html" class="btn-academic btn-outline-theme">
+              Settings
+            </a>
           </div>
         </div>
-
-        <div style="display: flex; gap: 1rem;">
-          <div style="background: rgba(0,0,0,0.3); padding: 0.6rem 1.2rem; border-radius: var(--radius-md); border: 1px solid var(--border); text-align: center;">
-            <div style="font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase;">Target Band</div>
-            <div id="target-band-stat" style="font-size: 1.5rem; font-weight: 800; color: #38bdf8;">7.5</div>
-          </div>
-          <a href="profile.html" class="btn btn-secondary btn-sm" style="height: fit-content; align-self: center;">Edit Profile</a>
-        </div>
-      </div>
-    </div>
-
-    <!-- Quick Metrics Row -->
-    <div class="grid-3" style="margin-bottom: 2.5rem;">
-      <div class="card">
-        <span style="font-size: 1.5rem;">📝</span>
-        <div style="font-size: 2rem; font-weight: 800; font-family: var(--font-heading); margin-top: 0.5rem;" id="stat-tests-count">0</div>
-        <p style="color: var(--text-muted); font-size: 0.875rem;">Tests Completed</p>
       </div>
 
-      <div class="card">
-        <span style="font-size: 1.5rem;">🎯</span>
-        <div style="font-size: 2rem; font-weight: 800; font-family: var(--font-heading); color: #34d399; margin-top: 0.5rem;" id="stat-avg-band">0.0</div>
-        <p style="color: var(--text-muted); font-size: 0.875rem;">Average Band Score</p>
-      </div>
-
-      <div class="card">
-        <span style="font-size: 1.5rem;">📋</span>
-        <div style="font-size: 2rem; font-weight: 800; font-family: var(--font-heading); color: #a5b4fc; margin-top: 0.5rem;" id="stat-tasks-count">0</div>
-        <p style="color: var(--text-muted); font-size: 0.875rem;">Study Tasks Active</p>
-      </div>
-    </div>
-
-    <!-- Main Dashboard Split: Practice Tests & Study Planner -->
-    <div class="grid-2">
-      <!-- Section 1: Recommended Tests -->
-      <div>
-        <h2 style="margin-bottom: 1.25rem;">Recommended Practice Tests</h2>
-        <div style="display: flex; flex-direction: column; gap: 1rem;">
+      <!-- Top Analytics Grid (Band Arc Gauge + 4 Skills Breakdown) -->
+      <div style="display: grid; grid-template-columns: 280px 1fr; gap: 1.25rem; margin-bottom: 1.5rem;" id="analytics-grid">
+        
+        <!-- Overall Band Score Gauge Card -->
+        <div class="card-academic corner-mark" style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 2rem 1.5rem;">
+          <div class="label-tag" style="margin-bottom: 1rem;">CURRENT OVERALL BAND</div>
           
-          <div class="card">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-              <div>
-                <span class="badge badge-primary">Listening</span>
-                <h3 style="margin: 0.4rem 0 0.2rem;">IELTS 18 — Listening Test 1</h3>
-                <p style="color: var(--text-muted); font-size: 0.875rem;">40 Questions · Full 4 Parts with official audio</p>
-              </div>
-              <a href="practice-test.html?test=l1" class="btn btn-primary btn-sm">Start</a>
-            </div>
-          </div>
+          <!-- Band Score Arc SVG -->
+          <svg viewBox="0 0 100 100" style="width: 140px; height: 140px;">
+            <path d="M 15 75 A 42 42 0 1 1 85 75" fill="none" stroke="var(--t-divider)" stroke-width="7" stroke-linecap="round" />
+            <path id="band-arc-fill" d="M 15 75 A 42 42 0 1 1 70 25" fill="none" stroke="#DC2626" stroke-width="7" stroke-linecap="round" />
+            <text x="50" y="48" text-anchor="middle" font-size="20" font-weight="700" fill="var(--t-ink)" font-family="IBM Plex Mono" id="overall-band-val">7.0</text>
+            <text x="50" y="62" text-anchor="middle" font-size="8" fill="var(--t-subtle)" font-family="IBM Plex Mono">/ 9.0</text>
+            <text x="50" y="74" text-anchor="middle" font-size="7" fill="var(--t-muted)" font-family="Inter, sans-serif">CEFR C1 Level</text>
+          </svg>
 
-          <div class="card">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-              <div>
-                <span class="badge badge-primary">Listening</span>
-                <h3 style="margin: 0.4rem 0 0.2rem;">IELTS 18 — Listening Test 2</h3>
-                <p style="color: var(--text-muted); font-size: 0.875rem;">40 Questions · Restaurant & Volcano eruption</p>
-              </div>
-              <a href="practice-test.html?test=l2" class="btn btn-primary btn-sm">Start</a>
-            </div>
+          <div class="mono" style="font-size: 11px; color: var(--t-positive); margin-top: 0.5rem;" id="target-progress-text">
+            Target Band: 7.5 (0.5 to go)
           </div>
-
-          <div class="card">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-              <div>
-                <span class="badge badge-indigo">Reading</span>
-                <h3 style="margin: 0.4rem 0 0.2rem;">IELTS 18 — Academic Reading 1</h3>
-                <p style="color: var(--text-muted); font-size: 0.875rem;">Urban Farming, Forest Management, Space Debris</p>
-              </div>
-              <a href="practice-test.html?test=r1" class="btn btn-primary btn-sm">Start</a>
-            </div>
-          </div>
-
         </div>
+
+        <!-- 4 Skills Sub-breakdown -->
+        <div class="card-academic corner-mark">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+            <div class="label-tag">SUB-SKILL PERFORMANCE BREAKDOWN</div>
+            <a href="results.html" class="mono" style="font-size: 11px; color: var(--t-accent);">View Diagnostic Report →</a>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 1rem;">
+            <!-- Reading -->
+            <div>
+              <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px;">
+                <span style="font-weight: 600; color: var(--t-ink);">Academic Reading</span>
+                <span class="mono" style="font-weight: 600; color: var(--t-accent);" id="skill-reading-val">Band 7.5 (31/40)</span>
+              </div>
+              <div style="height: 6px; background: var(--t-divider); border-radius: 3px; overflow: hidden;">
+                <div style="height: 100%; width: 83%; background: #DC2626; border-radius: 3px;" id="skill-reading-bar"></div>
+              </div>
+            </div>
+
+            <!-- Listening -->
+            <div>
+              <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px;">
+                <span style="font-weight: 600; color: var(--t-ink);">Academic Listening</span>
+                <span class="mono" style="font-weight: 600; color: var(--t-accent);" id="skill-listening-val">Band 8.0 (35/40)</span>
+              </div>
+              <div style="height: 6px; background: var(--t-divider); border-radius: 3px; overflow: hidden;">
+                <div style="height: 100%; width: 88%; background: #059669; border-radius: 3px;" id="skill-listening-bar"></div>
+              </div>
+            </div>
+
+            <!-- Writing -->
+            <div>
+              <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px;">
+                <span style="font-weight: 600; color: var(--t-ink);">AI Writing (Task 1 & 2)</span>
+                <span class="mono" style="font-weight: 600; color: var(--t-accent);" id="skill-writing-val">Band 6.5</span>
+              </div>
+              <div style="height: 6px; background: var(--t-divider); border-radius: 3px; overflow: hidden;">
+                <div style="height: 100%; width: 72%; background: #D97706; border-radius: 3px;" id="skill-writing-bar"></div>
+              </div>
+            </div>
+
+            <!-- Speaking -->
+            <div>
+              <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px;">
+                <span style="font-weight: 600; color: var(--t-ink);">Speaking Simulation</span>
+                <span class="mono" style="font-weight: 600; color: var(--t-subtle);" id="skill-speaking-val">Diagnostic Pending</span>
+              </div>
+              <div style="height: 6px; background: var(--t-divider); border-radius: 3px; overflow: hidden;">
+                <div style="height: 100%; width: 60%; background: #94A3B8; border-radius: 3px;" id="skill-speaking-bar"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
 
-      <!-- Section 2: Study Tasks Planner -->
-      <div>
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
-          <h2>Study Planner Tasks</h2>
-          <button class="btn btn-secondary btn-sm" onclick="showNewTaskPrompt()">+ Add Task</button>
-        </div>
+      <!-- Main Columns: Study Planner & Recent Attempts -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
+        
+        <!-- Study Tasks Planner (Supabase study_tasks) -->
+        <div class="card-academic corner-mark">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <div class="label-tag">STUDY PLANNER & CHECKLIST</div>
+            <span class="mono" style="font-size: 10px; color: var(--t-subtle);" id="tasks-active-badge">3 ACTIVE</span>
+          </div>
 
-        <div class="card">
-          <div id="tasks-container" style="display: flex; flex-direction: column; gap: 0.75rem;">
-            <!-- Rendered dynamically -->
+          <!-- Add Task Form -->
+          <form id="add-task-form" style="display: flex; gap: 8px; margin-bottom: 1rem;">
+            <input type="text" id="new-task-input" placeholder="Add study task (e.g. Cambridge 19 Test 2 Reading)..." style="flex: 1; padding: 8px 12px; font-size: 12px; background: var(--t-surface-2); border: 1px solid var(--t-divider); border-radius: 3px; color: var(--t-ink);" required>
+            <button type="submit" class="btn-academic btn-crimson" style="padding: 6px 14px; font-size: 11px;">+ Add</button>
+          </form>
+
+          <!-- Task Items List -->
+          <div id="tasks-list-container" style="display: flex; flex-direction: column; gap: 6px; max-height: 280px; overflow-y: auto;">
+            <!-- Populated via JavaScript -->
           </div>
         </div>
+
+        <!-- Recent Exam Attempts (Supabase exam_results) -->
+        <div class="card-academic corner-mark">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <div class="label-tag">RECENT TEST ATTEMPTS</div>
+            <a href="results.html" class="mono" style="font-size: 10px; color: var(--t-accent);">ALL RESULTS →</a>
+          </div>
+
+          <div id="recent-results-container" style="display: flex; flex-direction: column; gap: 8px;">
+            <!-- Populated via JavaScript -->
+          </div>
+        </div>
+
       </div>
+
     </div>
   </main>
 
+  <!-- Footer -->
+  <footer class="footer-academic">
+    <div class="footer-container">
+      <div style="display: flex; flex-direction: row; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+        <span class="mono" style="font-size: 10px; color: #64748B;">© 2026 VISTORA AI · ALL RIGHTS RESERVED</span>
+        <span class="mono" style="font-size: 10px; color: #64748B;">IELTS PREPARATION PLATFORM · CSE412 EAST WEST UNIVERSITY</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Dashboard Controller -->
+  <script type="module" src="../js/pages/dashboard.js"></script>
   <script type="module">
-    import { getCurrentUser, signOut } from '../js/lib/auth.js';
-    import { supabase, isSupabaseConfigured } from '../js/lib/supabaseClient.js';
+    import { supabase } from '../js/lib/supabaseClient.js';
 
-    window.handleLogout = async function() {
-      await signOut();
-    };
+    // Theme toggle
+    const themeBtn = document.getElementById('theme-toggle');
+    const savedTheme = localStorage.getItem('vistora-theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    themeBtn?.addEventListener('click', () => {
+      const current = document.documentElement.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('vistora-theme', next);
+    });
 
-    let tasks = [];
-
-    async function initDashboard() {
-      const user = await getCurrentUser();
-      if (!user) {
-        window.location.href = 'login.html';
-        return;
-      }
-
-      document.getElementById('user-greeting').innerText = `Welcome, ${user.fullName}`;
-      document.getElementById('user-institution').innerText = user.institution || 'East West University · CSE412';
-      document.getElementById('target-band-stat').innerText = Number(user.targetBand || 7.5).toFixed(1);
-
-      // Load Results Metrics
-      loadMetrics(user);
-
-      // Load Study Tasks
-      loadStudyTasks(user);
-    }
-
-    async function loadMetrics(user) {
-      let results = [];
-      if (isSupabaseConfigured() && supabase) {
-        const { data } = await supabase.from('exam_results').select('*').eq('user_id', user.id);
-        if (data) results = data;
-      }
-      if (results.length === 0) {
-        results = JSON.parse(localStorage.getItem('vistora_exam_results') || '[]');
-      }
-
-      document.getElementById('stat-tests-count').innerText = results.length;
-      if (results.length > 0) {
-        const sum = results.reduce((acc, r) => acc + Number(r.overall_band || r.overallBand || 0), 0);
-        document.getElementById('stat-avg-band').innerText = (sum / results.length).toFixed(1);
-      }
-    }
-
-    async function loadStudyTasks(user) {
-      const container = document.getElementById('tasks-container');
-
-      if (isSupabaseConfigured() && supabase) {
-        const { data } = await supabase.from('study_tasks').select('*').eq('user_id', user.id).order('created_at', { ascending: false });
-        if (data) tasks = data;
-      }
-
-      if (tasks.length === 0) {
-        tasks = JSON.parse(localStorage.getItem('vistora_study_tasks') || '[]');
-      }
-
-      document.getElementById('stat-tasks-count').innerText = tasks.filter(t => !t.is_completed).length;
-
-      if (tasks.length === 0) {
-        container.innerHTML = `
-          <div style="text-align: center; padding: 2rem; color: var(--text-muted); font-size: 0.9rem;">
-            No active study tasks. Click <strong>"+ Add Task"</strong> to plan your prep checklist!
-          </div>
-        `;
-        return;
-      }
-
-      container.innerHTML = tasks.map(t => `
-        <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.6rem 0.8rem; background: rgba(255,255,255,0.02); border-radius: var(--radius-md); border: 1px solid var(--border);">
-          <label style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer; text-decoration: ${t.is_completed ? 'line-through' : 'none'}; color: ${t.is_completed ? 'var(--text-dim)' : 'var(--text-main)'};">
-            <input type="checkbox" ${t.is_completed ? 'checked' : ''} onchange="toggleTask('${t.id}')">
-            <span>${t.title}</span>
-          </label>
-          <button class="btn btn-danger btn-sm" style="padding: 0.2rem 0.5rem; font-size: 0.75rem;" onclick="deleteTask('${t.id}')">✕</button>
-        </div>
-      `).join('');
-    }
-
-    window.showNewTaskPrompt = async function() {
-      const title = prompt('Enter new IELTS study task:');
-      if (!title || !title.trim()) return;
-
-      const user = await getCurrentUser();
-      const newTask = {
-        id: 'task-' + Date.now(),
-        user_id: user?.id,
-        title: title.trim(),
-        is_completed: false,
-        created_at: new Date().toISOString()
-      };
-
-      if (isSupabaseConfigured() && supabase && user?.id) {
-        await supabase.from('study_tasks').insert([{
-          user_id: user.id,
-          title: newTask.title,
-          is_completed: false
-        }]);
-      }
-
-      tasks.unshift(newTask);
-      localStorage.setItem('vistora_study_tasks', JSON.stringify(tasks));
-      loadStudyTasks(user);
-    };
-
-    window.toggleTask = async function(id) {
-      const task = tasks.find(t => t.id === id);
-      if (!task) return;
-      task.is_completed = !task.is_completed;
-
-      if (isSupabaseConfigured() && supabase) {
-        await supabase.from('study_tasks').update({ is_completed: task.is_completed }).eq('id', id);
-      }
-      localStorage.setItem('vistora_study_tasks', JSON.stringify(tasks));
-      const user = await getCurrentUser();
-      loadStudyTasks(user);
-    };
-
-    window.deleteTask = async function(id) {
-      tasks = tasks.filter(t => t.id !== id);
-      if (isSupabaseConfigured() && supabase) {
-        await supabase.from('study_tasks').delete().eq('id', id);
-      }
-      localStorage.setItem('vistora_study_tasks', JSON.stringify(tasks));
-      const user = await getCurrentUser();
-      loadStudyTasks(user);
-    };
-
-    initDashboard();
+    // Sign out
+    document.getElementById('btn-header-signout')?.addEventListener('click', async () => {
+      await supabase.auth.signOut();
+      window.location.href = '../index.html';
+    });
   </script>
 </body>
 </html>

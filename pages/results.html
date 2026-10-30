@@ -1,196 +1,163 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Exam Results & Performance History — Vistora</title>
+  <title>Diagnostic Results & Analytics — Vistora AI</title>
+  <meta name="description" content="Detailed IELTS test results, sub-skill diagnostic breakdowns, and question-by-question analysis.">
   <link rel="stylesheet" href="../css/main.css">
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14' fill='none'><path d='M7 1L13 12H1L7 1Z' fill='%23DC2626'/><path d='M7 5L10 11H4L7 5Z' fill='%23FCA5A5'/></svg>">
 </head>
-<body>
+<body class="bg-paper-grid">
 
-  <!-- Top Navigation -->
-  <header class="navbar">
-    <div class="container nav-container">
-      <a href="../index.html" class="brand">
-        <span>Vistora</span>
-        <span class="brand-badge">IELTS CBT</span>
+  <!-- Top Accent Bar -->
+  <div class="top-accent-bar"></div>
+
+  <!-- Header -->
+  <header class="header-academic app-nav">
+    <div class="header-container">
+      <a href="../index.html" class="brand-wrap">
+        <div class="brand-mark">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M7 1L13 12H1L7 1Z" fill="white" />
+            <path d="M7 5L10 11H4L7 5Z" fill="#FCA5A5" />
+          </svg>
+        </div>
+        <div style="display: flex; align-items: baseline;">
+          <span class="brand-title" style="color: var(--t-ink);">Vistora</span>
+          <span class="brand-ai-badge">AI</span>
+        </div>
       </a>
-      
-      <nav>
-        <ul class="nav-links">
-          <li><a href="practice-test.html" class="nav-link">Practice Tests</a></li>
-          <li><a href="results.html" class="nav-link active">Results</a></li>
-          <li><a href="forum.html" class="nav-link">Community Forum</a></li>
-          <li><a href="writing-eval.html" class="nav-link">Writing</a></li>
-          <li><a href="dashboard.html" class="nav-link">Dashboard</a></li>
-        </ul>
+
+      <nav class="nav-links-desktop">
+        <a href="dashboard.html" class="nav-item-link">Dashboard</a>
+        <a href="practice-test.html" class="nav-item-link">Practice Tests</a>
+        <a href="exam-dates.html" class="nav-item-link">Exam Dates</a>
+        <a href="results.html" class="nav-item-link active">Results</a>
+        <a href="writing-eval.html" class="nav-item-link">AI Writing</a>
+        <a href="resources.html" class="nav-item-link">Resources</a>
+        <a href="forum.html" class="nav-item-link">Community</a>
       </nav>
 
-      <div class="nav-actions">
-        <a href="practice-test.html" class="btn btn-primary btn-sm">+ Take New Test</a>
+      <div class="header-actions">
+        <button type="button" class="theme-toggle-btn" id="theme-toggle" aria-label="Toggle theme">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        </button>
+        <a href="profile.html" class="user-avatar-circle" id="user-avatar-display">ST</a>
       </div>
     </div>
   </header>
 
-  <main class="container" style="padding: 3rem 1.5rem;">
-    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
-      <div>
-        <span class="badge badge-indigo">Performance Tracking</span>
-        <h1 style="margin-top: 0.5rem;">Your IELTS Exam History</h1>
-        <p style="color: var(--text-muted); font-size: 0.95rem;">
-          Verified results synchronized with your secure Supabase account.
-        </p>
+  <!-- Page Content -->
+  <main class="content-wrapper">
+    <div class="page-container">
+
+      <!-- Header Banner -->
+      <div style="margin-bottom: 1.5rem;">
+        <div class="label-tag" style="margin-bottom: 4px;">PERFORMANCE ARCHIVE</div>
+        <h1 style="font-family: var(--font-plex); font-size: 1.75rem; font-weight: 700; color: var(--t-ink);">Exam Results & Diagnostic Reports</h1>
+        <p style="font-size: 13px; color: var(--t-muted); margin-top: 4px;">Official band scoring breakdown and question-level analysis from your mock attempts.</p>
       </div>
 
-      <div style="display: flex; gap: 0.75rem;">
-        <button class="btn btn-outline btn-sm" onclick="loadResults()">🔄 Refresh</button>
-      </div>
-    </div>
+      <!-- Main Layout: Sidebar Attempts List + Right Detailed Report -->
+      <div style="display: grid; grid-template-columns: 320px 1fr; gap: 1.25rem;" id="results-split-layout">
+        
+        <!-- Left: Past Attempts Filter & List -->
+        <div>
+          <!-- Type Filter Tabs -->
+          <div style="display: flex; gap: 4px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 8px;" id="results-filter-tabs">
+            <button type="button" class="btn-academic btn-outline-theme active" style="padding: 4px 10px; font-size: 10px;" onclick="filterResults('all')">All</button>
+            <button type="button" class="btn-academic btn-outline-theme" style="padding: 4px 10px; font-size: 10px;" onclick="filterResults('Listening')">Listening</button>
+            <button type="button" class="btn-academic btn-outline-theme" style="padding: 4px 10px; font-size: 10px;" onclick="filterResults('Reading')">Reading</button>
+            <button type="button" class="btn-academic btn-outline-theme" style="padding: 4px 10px; font-size: 10px;" onclick="filterResults('Writing')">Writing</button>
+          </div>
 
-    <!-- Alert Banner -->
-    <div id="results-alert" style="display: none;"></div>
+          <!-- Attempts Cards Container -->
+          <div id="attempts-list-container" style="display: flex; flex-direction: column; gap: 8px; max-height: calc(100vh - 240px); overflow-y: auto;">
+            <!-- Populated via JavaScript -->
+          </div>
+        </div>
 
-    <!-- Results Table / Cards -->
-    <div id="results-container">
-      <div style="text-align: center; padding: 4rem 1rem;">
-        <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">⏳</div>
-        <p style="color: var(--text-muted);">Loading exam results from Supabase...</p>
+        <!-- Right: Diagnostic Details Report -->
+        <div class="card-academic corner-mark" id="diagnostic-report-panel">
+          <div id="report-empty-state" style="text-align: center; padding: 4rem 2rem; color: var(--t-muted);">
+            <div style="font-size: 2.5rem; margin-bottom: 1rem;">📊</div>
+            <h3 style="font-family: var(--font-plex); font-size: 1.1rem; color: var(--t-ink);">Select a Test Result</h3>
+            <p style="font-size: 12px; margin-top: 4px;">Select an attempt from the left list to view detailed band scoring, CEFR descriptor, and answer key analysis.</p>
+          </div>
+
+          <div id="report-content" style="display: none;">
+            <!-- Diagnostic Header Row -->
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid var(--t-divider); padding-bottom: 1.25rem; margin-bottom: 1.25rem;">
+              <div>
+                <span class="badge-academic badge-accent" id="report-type-badge">LISTENING</span>
+                <h2 style="font-family: var(--font-plex); font-size: 1.35rem; font-weight: 700; color: var(--t-ink); margin-top: 6px;" id="report-test-title">IELTS 18 — Listening Test 1</h2>
+                <div class="mono" style="font-size: 11px; color: var(--t-subtle); margin-top: 2px;" id="report-date-line">Completed on Oct 30, 2026</div>
+              </div>
+
+              <!-- Band Score Card -->
+              <div style="text-align: right; background: var(--t-surface-2); padding: 10px 18px; border-radius: 4px; border: 1px solid var(--t-divider);">
+                <div class="mono" style="font-size: 9px; color: var(--t-subtle); letter-spacing: 0.1em;">OVERALL BAND</div>
+                <div class="mono" style="font-size: 2rem; font-weight: 700; color: #DC2626;" id="report-band-score">8.0</div>
+                <div class="mono" style="font-size: 11px; color: var(--t-positive);" id="report-raw-score">35 / 40 Correct</div>
+              </div>
+            </div>
+
+            <!-- Answer Analysis Table -->
+            <div class="label-tag" style="margin-bottom: 8px;">QUESTION BY QUESTION EVALUATION</div>
+            <div style="overflow-x: auto;">
+              <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+                <thead>
+                  <tr style="border-bottom: 1px solid var(--t-divider); text-align: left; color: var(--t-subtle);">
+                    <th style="padding: 8px 10px;" class="mono">#</th>
+                    <th style="padding: 8px 10px;">Your Answer</th>
+                    <th style="padding: 8px 10px;">Correct Answer</th>
+                    <th style="padding: 8px 10px; text-align: center;">Evaluation</th>
+                  </tr>
+                </thead>
+                <tbody id="report-questions-table-body">
+                  <!-- Populated via JavaScript -->
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Delete action -->
+            <div style="margin-top: 1.5rem; text-align: right; border-top: 1px solid var(--t-divider-soft); padding-top: 1rem;">
+              <button type="button" class="btn-academic" style="color: #DC2626; font-size: 11px; padding: 4px 10px;" id="btn-delete-result" onclick="deleteCurrentResult()">
+                🗑 Delete This Attempt
+              </button>
+            </div>
+          </div>
+        </div>
+
       </div>
+
     </div>
   </main>
 
-  <footer class="footer">
-    <div class="container">
-      <div class="footer-bottom">
-        <div>© 2026 Vistora Platform. East West University.</div>
-        <a href="../index.html">Home</a>
+  <!-- Footer -->
+  <footer class="footer-academic">
+    <div class="footer-container">
+      <div style="display: flex; flex-direction: row; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+        <span class="mono" style="font-size: 10px; color: #64748B;">© 2026 VISTORA AI · ALL RIGHTS RESERVED</span>
+        <span class="mono" style="font-size: 10px; color: #64748B;">IELTS PREPARATION PLATFORM · CSE412 EAST WEST UNIVERSITY</span>
       </div>
     </div>
   </footer>
 
+  <script type="module" src="../js/pages/results.js"></script>
   <script type="module">
-    import { supabase, isSupabaseConfigured } from '../js/lib/supabaseClient.js';
-    import { getCurrentUser } from '../js/lib/auth.js';
-
-    window.loadResults = async function() {
-      const container = document.getElementById('results-container');
-      const user = await getCurrentUser();
-
-      let results = [];
-
-      // 1. Fetch from Supabase if configured
-      if (isSupabaseConfigured() && supabase && user?.id) {
-        try {
-          const { data, error } = await supabase
-            .from('exam_results')
-            .select('*')
-            .eq('user_id', user.id)
-            .order('completed_at', { ascending: false });
-
-          if (!error && data) {
-            results = data;
-          }
-        } catch (err) {
-          console.warn('[Supabase Results Error]:', err);
-        }
-      }
-
-      // 2. Fallback to localStorage if empty
-      if (results.length === 0) {
-        try {
-          results = JSON.parse(localStorage.getItem('vistora_exam_results') || '[]');
-        } catch {}
-      }
-
-      // 3. Render
-      if (results.length === 0) {
-        container.innerHTML = `
-          <div class="card" style="text-align: center; padding: 4rem 2rem;">
-            <div style="font-size: 3rem; margin-bottom: 1rem;">📝</div>
-            <h3>No Exam Results Found</h3>
-            <p style="color: var(--text-muted); max-width: 450px; margin: 0.5rem auto 1.5rem;">
-              You have not completed any practice tests yet. Take an authentic listening or reading test to track your band score.
-            </p>
-            <a href="practice-test.html" class="btn btn-primary">Take Practice Test Now</a>
-          </div>
-        `;
-        return;
-      }
-
-      let html = `<div style="display: flex; flex-direction: column; gap: 1rem;">`;
-
-      results.forEach(res => {
-        const dateStr = new Date(res.completed_at || res.completedAt || Date.now()).toLocaleDateString('en-GB', {
-          day: 'numeric',
-          month: 'short',
-          year: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit'
-        });
-
-        const band = Number(res.overall_band || res.overallBand || 0).toFixed(1);
-        const correct = res.correct_answers ?? res.correctAnswers ?? 0;
-        const total = res.total_questions ?? res.totalQuestions ?? 40;
-        const title = res.test_title || res.testTitle || 'IELTS Mock Test';
-        const type = res.test_type || res.testType || 'Listening';
-
-        html += `
-          <div class="card" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.25rem;">
-            <div style="display: flex; align-items: center; gap: 1.25rem;">
-              <div style="background: rgba(220, 38, 38, 0.15); color: #f87171; border: 1px solid rgba(220, 38, 38, 0.3); border-radius: var(--radius-md); padding: 0.75rem 1rem; text-align: center;">
-                <div style="font-size: 0.7rem; text-transform: uppercase; font-weight: 700;">Band</div>
-                <div style="font-size: 1.75rem; font-weight: 800; font-family: var(--font-heading); line-height: 1;">${band}</div>
-              </div>
-
-              <div>
-                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
-                  <span class="badge ${type === 'Listening' ? 'badge-primary' : 'badge-indigo'}">${type}</span>
-                  <span style="font-size: 0.8rem; color: var(--text-dim);">${dateStr}</span>
-                </div>
-                <h3>${title}</h3>
-                <div style="font-size: 0.875rem; color: var(--text-muted); margin-top: 0.2rem;">
-                  Correct: <strong style="color: #34d399;">${correct}</strong> / ${total} questions
-                </div>
-              </div>
-            </div>
-
-            <div style="display: flex; align-items: center; gap: 0.75rem;">
-              <button class="btn btn-danger btn-sm" onclick="deleteResult('${res.id}')">Delete</button>
-            </div>
-          </div>
-        `;
-      });
-
-      html += `</div>`;
-      container.innerHTML = html;
-    };
-
-    window.deleteResult = async function(id) {
-      if (!confirm('Are you sure you want to permanently delete this exam result?')) return;
-
-      const user = await getCurrentUser();
-
-      // Delete from Supabase
-      if (isSupabaseConfigured() && supabase && user?.id) {
-        try {
-          await supabase.from('exam_results').delete().eq('id', id);
-        } catch (err) {
-          console.warn('Supabase delete error:', err);
-        }
-      }
-
-      // Delete from localStorage
-      try {
-        const stored = JSON.parse(localStorage.getItem('vistora_exam_results') || '[]');
-        const filtered = stored.filter(r => r.id !== id);
-        localStorage.setItem('vistora_exam_results', JSON.stringify(filtered));
-      } catch {}
-
-      loadResults();
-    };
-
-    loadResults();
+    const themeBtn = document.getElementById('theme-toggle');
+    const savedTheme = localStorage.getItem('vistora-theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    themeBtn?.addEventListener('click', () => {
+      const current = document.documentElement.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('vistora-theme', next);
+    });
   </script>
 </body>
 </html>

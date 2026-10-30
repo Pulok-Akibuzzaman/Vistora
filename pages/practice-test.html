@@ -1,155 +1,136 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>IELTS Computer-Delivered Practice Test — Vistora</title>
+  <title>IELTS Computer-Delivered Practice Test — Vistora AI</title>
   <link rel="stylesheet" href="../css/main.css">
   <link rel="stylesheet" href="../css/test-player.css">
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎧</text></svg>">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14' fill='none'><path d='M7 1L13 12H1L7 1Z' fill='%23DC2626'/><path d='M7 5L10 11H4L7 5Z' fill='%23FCA5A5'/></svg>">
 </head>
-<body style="background: #090d16;">
+<body style="background: #090E17; color: #E8EDF5; min-height: 100vh; display: flex; flex-direction: column;">
 
-  <!-- Exam Top Bar -->
-  <header class="exam-header" id="exam-top-bar">
-    <div class="exam-title-badge">
-      <a href="../index.html" class="btn btn-outline btn-sm" title="Exit Exam">✕ Exit</a>
-      <div>
-        <h3 id="current-test-title" style="font-size: 1.05rem;">IELTS 18 — Listening Test 1</h3>
-        <span id="current-test-meta" style="font-size: 0.8rem; color: var(--text-dim);">Academic Simulation · 40 Questions</span>
+  <!-- Top Accent Bar -->
+  <div class="top-accent-bar"></div>
+
+  <!-- CBT Exam Chrome Header -->
+  <header class="cbt-header" id="exam-top-bar">
+    <div style="display: flex; align-items: center; gap: 14px;">
+      <a href="../index.html" class="btn-academic btn-outline-dark" style="padding: 4px 10px; font-size: 11px;" title="Exit Exam">
+        ✕ Exit
+      </a>
+      <div style="display: flex; align-items: baseline; gap: 8px;">
+        <span class="mono" style="font-size: 10px; color: #DC2626; font-weight: 700; letter-spacing: 0.1em; background: rgba(220,38,38,0.15); padding: 2px 6px; border-radius: 2px;">CBT SIMULATION</span>
+        <h1 id="current-test-title" style="font-family: var(--font-plex); font-size: 13px; font-weight: 600; color: #FFFFFF; margin: 0;">IELTS 18 — Academic Test</h1>
+        <span id="current-test-meta" class="mono" style="font-size: 11px; color: #64748B;">40 Questions</span>
       </div>
     </div>
 
-    <!-- Timer & Submit Actions -->
-    <div style="display: flex; align-items: center; gap: 1.25rem;">
-      <div class="exam-timer" id="exam-timer-display">
-        <span>⏱️</span>
-        <span id="timer-text">40:00</span>
-      </div>
+    <!-- Center Candidate Credentials -->
+    <div style="display: flex; align-items: center; gap: 12px; font-size: 11px; color: #94A3B8;" class="mono">
+      <span>Candidate: <strong style="color: #FFFFFF;" id="candidate-id-display">ST-89217</strong></span>
+      <span>•</span>
+      <span id="candidate-mode-display">Academic Module</span>
+    </div>
 
-      <button type="button" class="btn btn-primary btn-sm" id="btn-submit-exam" onclick="submitExamAttempt()">
+    <!-- Timer & Controls -->
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <div class="cbt-timer" id="exam-timer-display">
+        <span style="color: #94A3B8; font-size: 11px;">TIME LEFT:</span>
+        <span id="timer-text" style="color: #F87171; font-weight: 700;">40:00</span>
+      </div>
+      <button type="button" class="btn-academic btn-crimson" id="btn-submit-exam" onclick="submitExamAttempt()" style="padding: 6px 14px; font-size: 12px;">
         Submit Test
       </button>
     </div>
   </header>
 
-  <div class="container" style="max-width: 1400px; padding: 1rem 1.5rem;">
+  <!-- Workspace Container (Split Pane) -->
+  <div style="max-width: 1500px; margin: 0 auto; width: 100%; flex: 1; padding: 60px 1.25rem 70px; display: flex; flex-direction: column;">
 
-    <!-- Audio Player Bar (Displayed for Listening Tests) -->
-    <div class="audio-player-bar" id="audio-player-container">
-      <div class="audio-controls-row">
-        <div class="audio-meta">
-          <span style="font-size: 1.25rem;">📻</span>
+    <!-- Audio Player Bar (Only for Listening Tests) -->
+    <div id="audio-player-container" style="background: #111A2E; border: 1px solid #1E293B; border-radius: 4px; padding: 12px 16px; margin-bottom: 12px; display: flex; flex-direction: column; gap: 8px;">
+      <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="width: 28px; height: 28px; border-radius: 3px; background: rgba(220,38,38,0.15); color: #F87171; display: flex; align-items: center; justify-content: center; font-size: 13px;">
+            🎧
+          </div>
           <div>
-            <strong id="audio-track-label">Cambridge 18 · Test 1 · Part 1</strong>
-            <div style="font-size: 0.75rem; color: var(--text-muted); display: flex; gap: 0.5rem; align-items: center; margin-top: 0.15rem;">
-              <span class="audio-source-badge" id="audio-source-badge">SharePoint Cloud Stream</span>
-              <span id="audio-duplicate-indicator" style="display: none; color: #fbbf24;">(Flagged Shared URL)</span>
+            <strong id="audio-track-label" style="font-size: 13px; color: #FFFFFF;">Cambridge 18 · Test 1</strong>
+            <div style="font-size: 10px; color: #64748B; display: flex; gap: 8px; align-items: center; margin-top: 2px;">
+              <span class="mono" id="audio-source-badge" style="color: #38BDF8;">SharePoint Cloud Audio</span>
+              <span id="audio-duplicate-indicator" class="mono" style="display: none; color: #FBBF24;">(Flagged Shared URL)</span>
             </div>
           </div>
         </div>
 
-        <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
-          <!-- Speed Controller -->
-          <div style="display: flex; align-items: center; gap: 0.25rem; background: rgba(0,0,0,0.3); padding: 0.2rem; border-radius: var(--radius-sm);">
-            <button type="button" class="btn btn-sm btn-outline" style="padding: 0.2rem 0.5rem; font-size: 0.75rem;" onclick="setPlaybackSpeed(1.0)">1.0x</button>
-            <button type="button" class="btn btn-sm btn-outline" style="padding: 0.2rem 0.5rem; font-size: 0.75rem;" onclick="setPlaybackSpeed(1.25)">1.25x</button>
-            <button type="button" class="btn btn-sm btn-outline" style="padding: 0.2rem 0.5rem; font-size: 0.75rem;" onclick="setPlaybackSpeed(1.5)">1.5x</button>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <div style="display: flex; gap: 2px; background: #0A101C; padding: 2px; border-radius: 3px; border: 1px solid #1E293B;">
+            <button type="button" class="btn-academic" style="padding: 2px 8px; font-size: 10px; color: #94A3B8;" onclick="setPlaybackSpeed(1.0)">1.0x</button>
+            <button type="button" class="btn-academic" style="padding: 2px 8px; font-size: 10px; color: #94A3B8;" onclick="setPlaybackSpeed(1.25)">1.25x</button>
+            <button type="button" class="btn-academic" style="padding: 2px 8px; font-size: 10px; color: #94A3B8;" onclick="setPlaybackSpeed(1.5)">1.5x</button>
           </div>
-
-          <!-- Local MP3 Fallback Picker Button -->
-          <label class="audio-fallback-btn" id="lbl-local-audio">
+          <label class="btn-academic btn-outline-dark" style="padding: 4px 10px; font-size: 11px; cursor: pointer;">
             <span>📁 Select Local MP3</span>
-            <input type="file" id="local-audio-file" accept="audio/mp3,audio/*" style="display: none;" onchange="handleLocalAudioFile(event)">
+            <input type="file" id="local-audio-file" accept="audio/*" style="display: none;" onchange="handleLocalAudioFile(event)">
           </label>
         </div>
       </div>
 
-      <!-- Native Audio Controller with Fallback Handler -->
-      <audio id="exam-native-audio" controls preload="auto" style="width: 100%; height: 38px; margin-top: 0.25rem;">
+      <audio id="exam-native-audio" controls preload="auto" style="width: 100%; height: 36px; border-radius: 3px;">
         Your browser does not support the audio element.
       </audio>
 
-      <!-- SharePoint Failure Alert (Hidden until error triggers) -->
-      <div id="audio-error-alert" class="alert alert-warning" style="display: none; margin-top: 0.5rem; margin-bottom: 0;">
-        <span>⚠️</span>
-        <div>
-          <strong>SharePoint Streaming Notice:</strong>
-          <span>Unable to stream audio directly from institutional SharePoint (CORS/Range restriction). Please click <strong>"Select Local MP3"</strong> above to load your audio file, or verify your browser network permissions.</span>
-        </div>
+      <!-- Alert -->
+      <div id="audio-error-alert" style="display: none; background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.3); border-radius: 3px; padding: 8px 12px; font-size: 11px; color: #FCD34D;">
+        ⚠️ SharePoint CORS Notice: Cloud audio streaming could not complete. Please use <strong>"Select Local MP3"</strong> to provide your Cambridge audio file directly.
       </div>
     </div>
 
-    <!-- Split Workspace (Passage / Questions) -->
-    <div class="exam-workspace" id="exam-workspace">
-      
-      <!-- Left Pane: Reading Passage or Listening Information -->
-      <section class="exam-pane" id="pane-context">
-        <div id="context-content">
-          <!-- Dynamically populated -->
+    <!-- Split Screen: Left (Passage/Context), Right (Questions) -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; flex: 1; min-height: 520px;" id="cbt-workspace-grid">
+      <!-- Left: Context Pane -->
+      <div style="background: #0F172A; border: 1px solid #1E293B; border-radius: 4px; padding: 20px; overflow-y: auto; max-height: calc(100vh - 220px);" id="pane-context">
+        <div id="context-content" class="passage-text" style="color: #CBD5E1; line-height: 1.8; font-size: 14px;">
+          <!-- Dynamically filled -->
         </div>
-      </section>
+      </div>
 
-      <!-- Right Pane: Questions & Answer Inputs -->
-      <section class="exam-pane" id="pane-questions">
+      <!-- Right: Questions Pane -->
+      <div style="background: #0F172A; border: 1px solid #1E293B; border-radius: 4px; padding: 20px; overflow-y: auto; max-height: calc(100vh - 220px);" id="pane-questions">
         <div id="questions-content">
-          <!-- Dynamically populated -->
+          <!-- Dynamically filled -->
         </div>
-      </section>
-
+      </div>
     </div>
-
-    <!-- Bottom Question Navigation Bar -->
-    <footer style="margin-top: 1.25rem; background: #111827; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1rem 1.25rem;">
-      <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
-        
-        <!-- Part Tabs -->
-        <div style="display: flex; gap: 0.5rem;" id="part-nav-tabs">
-          <button type="button" class="btn btn-secondary btn-sm active" onclick="switchPart(1)">Part 1</button>
-          <button type="button" class="btn btn-secondary btn-sm" onclick="switchPart(2)">Part 2</button>
-          <button type="button" class="btn btn-secondary btn-sm" onclick="switchPart(3)">Part 3</button>
-          <button type="button" class="btn btn-secondary btn-sm" onclick="switchPart(4)">Part 4</button>
-        </div>
-
-        <div style="font-size: 0.85rem; color: var(--text-muted);">
-          <span>Answered: </span>
-          <strong id="answered-counter" style="color: #34d399;">0 / 40</strong>
-        </div>
-      </div>
-
-      <!-- Question Jump Grid (1-40) -->
-      <div class="q-nav-grid" id="q-nav-grid">
-        <!-- Generated 1 to 40 buttons -->
-      </div>
-    </footer>
 
   </div>
 
-  <!-- Scorecard Result Modal -->
-  <div id="result-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(12px); z-index: 1000; align-items: center; justify-content: center; padding: 1.5rem;">
-    <div class="card" style="max-width: 580px; width: 100%; border-color: rgba(99, 102, 241, 0.4); text-align: center; padding: 2.5rem 2rem;">
-      <div style="font-size: 3rem; margin-bottom: 0.5rem;">🏆</div>
-      <h2>Test Attempt Completed!</h2>
-      <p style="color: var(--text-muted); margin-top: 0.25rem;">Here is your verified IELTS Computer-Delivered score.</p>
-
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 2rem 0;">
-        <div style="background: rgba(255,255,255,0.03); padding: 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--border);">
-          <div style="font-size: 0.8rem; color: var(--text-dim); text-transform: uppercase;">Overall Band</div>
-          <div id="modal-band-score" style="font-size: 2.75rem; font-weight: 800; font-family: var(--font-heading); color: #38bdf8;">7.5</div>
-        </div>
-        <div style="background: rgba(255,255,255,0.03); padding: 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--border);">
-          <div style="font-size: 0.8rem; color: var(--text-dim); text-transform: uppercase;">Raw Score</div>
-          <div id="modal-raw-score" style="font-size: 2.75rem; font-weight: 800; font-family: var(--font-heading); color: #34d399;">33 / 40</div>
-        </div>
-      </div>
-
-      <div style="display: flex; gap: 1rem; justify-content: center;">
-        <a href="results.html" class="btn btn-secondary">Review Past Results</a>
-        <a href="practice-test.html" class="btn btn-primary">Take Another Test</a>
-      </div>
+  <!-- Bottom Question Palette -->
+  <footer class="cbt-footer-palette">
+    <!-- Parts Navigation Tabs -->
+    <div id="part-nav-tabs" style="display: flex; gap: 6px;">
+      <button type="button" class="btn-academic btn-outline-dark active" style="padding: 4px 10px; font-size: 11px;" onclick="switchPart(1)">Part 1</button>
+      <button type="button" class="btn-academic btn-outline-dark" style="padding: 4px 10px; font-size: 11px;" onclick="switchPart(2)">Part 2</button>
+      <button type="button" class="btn-academic btn-outline-dark" style="padding: 4px 10px; font-size: 11px;" onclick="switchPart(3)">Part 3</button>
+      <button type="button" class="btn-academic btn-outline-dark" style="padding: 4px 10px; font-size: 11px;" onclick="switchPart(4)">Part 4</button>
     </div>
-  </div>
 
+    <!-- Questions Numbers (1 to 40) Grid / Ribbon -->
+    <div id="q-palette-container" style="display: flex; gap: 4px; align-items: center; overflow-x: auto; padding: 0 10px;">
+      <!-- Dynamically rendered (1 to 40) chips -->
+    </div>
+
+    <!-- Review & Submit Controls -->
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <span class="mono" style="font-size: 11px; color: #94A3B8;" id="answered-counter">0 / 40 Answered</span>
+      <button type="button" class="btn-academic btn-outline-dark" style="padding: 4px 10px; font-size: 11px;" id="btn-flag-review" onclick="toggleCurrentFlag()">
+        ⚑ Review Flag
+      </button>
+    </div>
+  </footer>
+
+  <!-- Practice Test Execution Logic -->
   <script type="module" src="../js/pages/practiceTest.js"></script>
 </body>
 </html>
