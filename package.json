@@ -5,6 +5,7 @@
   "type": "module",
   "description": "CSE412 IELTS Preparation Platform with Local Audio Streaming Backend",
   "scripts": {
+    "build": "echo 'Static build ready'",
     "dev": "npx -y serve . -l 3000",
     "start": "npx -y serve . -l 3000",
     "serve": "npx -y serve . -l 3000",

@@ -1,3 +1,9 @@
-# Vercel deployment exclusions
+# Vercel free tier deployment exclusions
 archive/
 Database/
+node_modules/
+*.mp3
+*.pdf
+.git/
+.vscode/
+.idea/
