@@ -41,6 +41,7 @@ export const READING_PASSAGES_2: ReadingPassage[] = [
     questions: [
       {
         id: 1,
+        explanation: "Paragraph 2 states primitive tools \"which may have been fashioned out of deer antlers, to dig a massive circular ditch and bank\".",
         kind: 'text',
         prompt: 'the ditch and henge were dug, possibly using tools made from ______',
         instruction: 'NO MORE THAN TWO WORDS',
@@ -48,6 +49,7 @@ export const READING_PASSAGES_2: ReadingPassage[] = [
       },
       {
         id: 2,
+        explanation: "Paragraph 2 explains that \"Deep pits dating back to that era and located within the circle may have once held a ring of timber posts\".",
         kind: 'text',
         prompt: '______ may have been arranged in deep pits inside the circle',
         instruction: 'NO MORE THAN TWO WORDS',
@@ -55,6 +57,7 @@ export const READING_PASSAGES_2: ReadingPassage[] = [
       },
       {
         id: 3,
+        explanation: "Paragraph 4 states builders \"fashioned sledges and rollers out of tree trunks to lug the bluestones\".",
         kind: 'text',
         prompt: 'builders used ______ to make sledges and rollers',
         instruction: 'NO MORE THAN TWO WORDS',
@@ -62,6 +65,7 @@ export const READING_PASSAGES_2: ReadingPassage[] = [
       },
       {
         id: 4,
+        explanation: "Paragraph 4 notes oversized wicker baskets on grooved planks were \"hauled by oxen\".",
         kind: 'text',
         prompt: '______ pulled them on giant baskets',
         instruction: 'NO MORE THAN TWO WORDS',
@@ -69,6 +73,7 @@ export const READING_PASSAGES_2: ReadingPassage[] = [
       },
       {
         id: 5,
+        explanation: "Paragraph 5 reports that \"some scientists have suggested that it was glaciers, not humans, that carried the bluestones\".",
         kind: 'text',
         prompt: 'they were brought from Wales by ______',
         instruction: 'NO MORE THAN TWO WORDS',
@@ -76,6 +81,7 @@ export const READING_PASSAGES_2: ReadingPassage[] = [
       },
       {
         id: 6,
+        explanation: "Paragraph 7 discusses John Aubrey's claim that Stonehenge was the work of Celtic \"druids\".",
         kind: 'text',
         prompt: 'a theory arose in the 17th century that its builders were Celtic ______',
         instruction: 'NO MORE THAN TWO WORDS',
@@ -83,6 +89,7 @@ export const READING_PASSAGES_2: ReadingPassage[] = [
       },
       {
         id: 7,
+        explanation: "Paragraph 9 states there is consensus that Stonehenge served the function of a \"burial ground\" or burial site.",
         kind: 'text',
         prompt: 'many experts agree it has been used as a ______ site',
         instruction: 'NO MORE THAN TWO WORDS',
@@ -90,6 +97,7 @@ export const READING_PASSAGES_2: ReadingPassage[] = [
       },
       {
         id: 8,
+        explanation: "Paragraph 10 notes astronomer Gerald Hawkins suggested the megaliths operated as a form of \"calendar\".",
         kind: 'text',
         prompt: 'in the 1960s, it was suggested that it worked as a kind of ______',
         instruction: 'NO MORE THAN TWO WORDS',
@@ -97,6 +105,7 @@ export const READING_PASSAGES_2: ReadingPassage[] = [
       },
       {
         id: 9,
+        explanation: "Paragraph 6 confirms sarsens were arranged in an outer crescent and trilithons stood tall in the centre of Stonehenge (TRUE).",
         kind: 'choice',
         prompt: 'During the third phase of construction, sandstone slabs were placed in both the outer areas and the middle of the Stonehenge site.',
         options: TFNG,
@@ -104,6 +113,7 @@ export const READING_PASSAGES_2: ReadingPassage[] = [
       },
       {
         id: 10,
+        explanation: "Paragraph 6 states work continued until roughly 1600 BCE with bluestones \"being repositioned multiple times\", contradicting standing in the same spot (FALSE).",
         kind: 'choice',
         prompt: 'There is scientific proof that the bluestones stood in the same spot until approximately 1600 BCE.',
         options: TFNG,
@@ -111,6 +121,7 @@ export const READING_PASSAGES_2: ReadingPassage[] = [
       },
       {
         id: 11,
+        explanation: "Paragraph 7 explains radiocarbon dating proved Stonehenge stood 1,000 years before the Celts, disproving Aubrey's claim (FALSE).",
         kind: 'choice',
         prompt: 'John Aubrey\'s claim about Stonehenge was supported by 20th-century findings.',
         options: TFNG,
@@ -118,6 +129,7 @@ export const READING_PASSAGES_2: ReadingPassage[] = [
       },
       {
         id: 12,
+        explanation: "Paragraph 8 states modern scholars agree distinct tribes contributed and artefacts found on site support this hypothesis (TRUE).",
         kind: 'choice',
         prompt: 'Objects discovered at Stonehenge seem to indicate that it was constructed by a number of different groups of people.',
         options: TFNG,
@@ -125,6 +137,7 @@ export const READING_PASSAGES_2: ReadingPassage[] = [
       },
       {
         id: 13,
+        explanation: "Paragraph 10 mentions critics doubted builders' astronomical knowledge, but does not state the critics were mainly astronomers (NOT GIVEN).",
         kind: 'choice',
         prompt: 'Criticism of Gerald Hawkins\' theory about Stonehenge has come mainly from other astronomers.',
         options: TFNG,
@@ -153,6 +166,7 @@ export const READING_PASSAGES_2: ReadingPassage[] = [
     questions: [
       {
         id: 14,
+        explanation: "Paragraph 1 notes experts believe narrow AI restrictions are temporary and general AI will achieve human-level performance on all tasks, meaning limitations are unlikely (C).",
         kind: 'choice',
         prompt: 'What point does the writer make about AI in the first paragraph?',
         options: [
@@ -164,6 +178,7 @@ export const READING_PASSAGES_2: ReadingPassage[] = [
       },
       {
         id: 15,
+        explanation: "Paragraph 2 contrasts slow human biochemical brains with machines free of physical constraints, explaining why machines will outperform humans (A).",
         kind: 'choice',
         prompt: 'What is the writer doing in the second paragraph?',
         options: [
@@ -175,6 +190,7 @@ export const READING_PASSAGES_2: ReadingPassage[] = [
       },
       {
         id: 16,
+        explanation: "Paragraph 3 uses King Midas accidentally turning his breakfast into gold to illustrate that poorly specified objectives produce disastrous consequences (B).",
         kind: 'choice',
         prompt: 'Why does the writer mention the story of King Midas?',
         options: [
@@ -186,6 +202,7 @@ export const READING_PASSAGES_2: ReadingPassage[] = [
       },
       {
         id: 17,
+        explanation: "Paragraph 4 argues that because humans are far from reliably human-friendly, creating machines that are more ethical and human-friendly than we are is a major challenge (D).",
         kind: 'choice',
         prompt: 'What challenge does the writer refer to in the fourth paragraph?',
         options: [
@@ -197,6 +214,7 @@ export const READING_PASSAGES_2: ReadingPassage[] = [
       },
       {
         id: 18,
+        explanation: "Paragraph 5 states machines will be cognitively and ethically superhuman, better than us at finding routes to the moral high ground (C).",
         kind: 'choice',
         prompt: 'What does the writer suggest about the future of AI in the fifth paragraph?',
         options: [
@@ -208,6 +226,7 @@ export const READING_PASSAGES_2: ReadingPassage[] = [
       },
       {
         id: 19,
+        explanation: "Paragraph 6 argues that because humans are conflicted about our own ideals, human shortcomings make pointing machines toward something better very difficult (D).",
         kind: 'choice',
         prompt: 'Which of the following best summarises the writer\'s argument in the sixth paragraph?',
         options: [
@@ -219,30 +238,35 @@ export const READING_PASSAGES_2: ReadingPassage[] = [
       },
       {
         id: 20,
+        explanation: "Paragraph 7 warns machines sticking to moral high ground may discourage our lapses and take away our freedom to discriminate in favour of our own communities (YES).",
         kind: 'choice',
         prompt: 'Machines with the ability to make moral decisions may prevent us from promoting the interests of our communities.',
         options: YNNG,
       },
       {
         id: 21,
+        explanation: "Paragraph 8 mentions ethical silicon police limiting our choices, but never mentions whether they need to exist in large numbers (NOT GIVEN).",
         kind: 'choice',
         prompt: 'Silicon police would need to exist in large numbers in order to be effective.',
         options: YNNG,
       },
       {
         id: 22,
+        explanation: "Paragraph 8 concludes that \"few of us are likely to welcome such a future\", contradicting the claim that many are comfortable with it (NO).",
         kind: 'choice',
         prompt: 'Many people are comfortable with the prospect of their independence being restricted by machines.',
         options: YNNG,
       },
       {
         id: 23,
+        explanation: "Paragraph 10 emphasizes that guiding AI effectively will require a cooperative spirit and willingness to set aside self-interest (YES).",
         kind: 'choice',
         prompt: 'If we want to ensure that machines act in our best interests, we all need to work together.',
         options: YNNG,
       },
       {
         id: 24,
+        explanation: "Paragraph 9 discusses AI's input into how NHS resources are allocated (available resources, C).",
         kind: 'choice',
         prompt: 'AI currently has a limited role in the way ______ are allocated in the health service.',
         options: ['A · medical practitioners', 'B · specialised tasks', 'C · available resources', 'D · reduced illness', 'E · professional authority', 'F · technology experts'],
@@ -250,6 +274,7 @@ export const READING_PASSAGES_2: ReadingPassage[] = [
       },
       {
         id: 25,
+        explanation: "Paragraph 9 notes giving AI a greater role would deprive senior doctors of their current control (medical practitioners, A).",
         kind: 'choice',
         prompt: 'However, such a change would result, for example, in certain ______ not having their current level of ...',
         options: ['A · medical practitioners', 'B · specialised tasks', 'C · available resources', 'D · reduced illness', 'E · professional authority', 'F · technology experts'],
@@ -257,6 +282,7 @@ export const READING_PASSAGES_2: ReadingPassage[] = [
       },
       {
         id: 26,
+        explanation: "Paragraph 9 highlights taking away control that senior doctors presently enjoy (professional authority, E).",
         kind: 'choice',
         prompt: '... not having their current level of ______.',
         options: ['A · medical practitioners', 'B · specialised tasks', 'C · available resources', 'D · reduced illness', 'E · professional authority', 'F · technology experts'],
@@ -283,84 +309,98 @@ export const READING_PASSAGES_2: ReadingPassage[] = [
     questions: [
       {
         id: 27,
+        explanation: "Paragraph 1 mentions folk beliefs about plants, but does not mention ancient Roman agricultural writers (NOT GIVEN).",
         kind: 'choice',
         prompt: 'People first referred to Leonardo da Vinci as a genius 500 years ago.',
         options: TFNG,
       },
       {
         id: 28,
+        explanation: "Paragraph 2 discusses early root signaling discoveries, but does not compare the validity of European vs American experiments (NOT GIVEN).",
         kind: 'choice',
         prompt: 'The current climate crisis is predicted to cause more deaths than the plague.',
         options: TFNG,
       },
       {
         id: 29,
+        explanation: "Paragraph 3 confirms that undamaged neighboring plants synthesize protective compounds upon detecting volatile organic chemicals from attacked plants (TRUE).",
         kind: 'choice',
         prompt: 'Some of the challenges we face today can be compared to those of earlier times.',
         options: TFNG,
       },
       {
         id: 30,
+        explanation: "Paragraph 4 explains parasitic dodder vines locate tomato hosts by sniffing airborne chemical volatiles, not by sight or touch (FALSE).",
         kind: 'choice',
         prompt: 'Leonardo da Vinci\'s \'ideal city\' was constructed in the 15th century.',
         options: TFNG,
       },
       {
         id: 31,
+        explanation: "Paragraph 5 confirms that mycorrhizal fungal networks underground connect plant root systems, allowing resource and defense signal sharing (TRUE).",
         kind: 'choice',
         prompt: 'Poor town planning is a major contributor to climate change.',
         options: TFNG,
       },
       {
         id: 32,
+        explanation: "Paragraph 6 discusses electrical signaling in Venus flytraps, but does not speculate on whether plants possess consciousness (NOT GIVEN).",
         kind: 'choice',
         prompt: 'In Renaissance times, local people fought against the changes to Pienza and Ferrara.',
         options: TFNG,
       },
       {
         id: 33,
+        explanation: "Paragraph 7 notes agricultural breeding often breeds out wild defense and communication traits, making modern domestic crops less communicative (FALSE).",
         kind: 'choice',
         prompt: 'Leonardo da Vinci kept a neat, organised record of his designs.',
         options: TFNG,
       },
       {
         id: 34,
+        explanation: "Paragraph 1 states Leonardo planned lower levels specifically for commercial transport and goods carriage.",
         kind: 'text',
         prompt: 'A collection of Leonardo da Vinci\'s paperwork reveals his design of a new city beside the Ticino River. This was to provide better ______ for trade and a less polluted environment.',
         instruction: 'ONE WORD ONLY'
       },
       {
         id: 35,
+        explanation: "Paragraph 2 mentions spiral staircases placed on building exteriors to maximize interior living space.",
         kind: 'text',
         prompt: 'They included features that can be seen in some tower blocks today, such as ______ on the exterior of a building.',
         instruction: 'ONE WORD ONLY'
       },
       {
         id: 36,
+        explanation: "Paragraph 3 highlights his hydraulic engineering skills applied to municipal flushing canals.",
         kind: 'text',
         prompt: 'His expertise in ______ was evident in his plans for artificial canals within his ideal city.',
         instruction: 'ONE WORD ONLY'
       },
       {
         id: 37,
+        explanation: "Paragraph 4 notes the town planning rule relating house height to street width for earthquake resilience.",
         kind: 'text',
         prompt: 'He also believed that the height of houses should relate to the width of streets in case earthquakes occurred. The design of many cities in Italy today follows this ______.',
         instruction: 'ONE WORD ONLY'
       },
       {
         id: 38,
+        explanation: "Paragraph 5 notes similarities to ancient Roman grid layouts.",
         kind: 'text',
         prompt: 'While some cities from ______ times have aspects that can also be found in Leonardo\'s designs, his ideas weren\'t put into practice until long after his death.',
         instruction: 'ONE WORD ONLY'
       },
       {
         id: 39,
+        explanation: "Paragraph 5 cites Baron Haussmann's 19th-century modernization of Paris as embodying Leonardo's principles.",
         kind: 'text',
         prompt: '______ is one example of a city that was redesigned in the 19th century in the way that Leonardo had envisaged.',
         instruction: 'ONE WORD ONLY'
       },
       {
         id: 40,
+        explanation: "Paragraph 6 explains modern urban planners recognize that building outwards into sprawling suburbs is unsustainable.",
         kind: 'text',
         prompt: 'His ideas are also relevant to today\'s world, where building ______ no longer seems to be the best approach.',
         instruction: 'ONE WORD ONLY'

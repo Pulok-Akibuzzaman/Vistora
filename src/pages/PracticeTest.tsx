@@ -4,7 +4,7 @@ import { READING_ANSWERS_2, READING_PASSAGES_2 } from '../data/readingTest2'
 import { READING_ANSWERS_3, READING_PASSAGES_3 } from '../data/readingTest3'
 import { READING_ANSWERS_4, READING_PASSAGES_4 } from '../data/readingTest4'
 import { READING_ANSWERS_21, READING_PASSAGES_21 } from '../data/readingTest21'
-import { LISTENING_ANSWERS } from '../data/listeningTest1'
+import { LISTENING_ANSWERS, LISTENING_PARTS_1 } from '../data/listeningTest1'
 import { LISTENING_ANSWERS_2, LISTENING_PARTS_2 } from '../data/listeningTest2'
 import FullTestResult from '../components/FullTestResult'
 import { saveExamResult } from '../lib/results'
@@ -573,9 +573,30 @@ function ListeningExam({
                       {q.instruction && <div className="mb-3 text-[11px] font-bold uppercase tracking-wider text-amber-400/80">{q.instruction}</div>}
                       {q.options && (
                         <div className="mb-4 grid gap-2 sm:grid-cols-1">
-                          {q.options.map(opt => (
-                            <div key={opt} className="rounded-lg border border-slate-700 bg-[#111A2E] px-3 py-2 text-xs text-slate-300">{opt}</div>
-                          ))}
+                          {q.options.map(opt => {
+                            const letterMatch = opt.match(/^([A-Z])\b/)
+                            const optLetter = letterMatch ? letterMatch[1] : ''
+                            const isSelected = !!optLetter && answers[q.id]?.toUpperCase() === optLetter
+                            return (
+                              <button
+                                key={opt}
+                                type="button"
+                                onClick={() => {
+                                  if (optLetter) {
+                                    setAnswer(q.id, optLetter)
+                                    setCurrentQ(q.id)
+                                  }
+                                }}
+                                className={`rounded-lg border px-3 py-2 text-left text-xs transition ${
+                                  isSelected
+                                    ? 'border-rose-500/80 bg-rose-500/20 text-rose-200 shadow-sm'
+                                    : 'border-slate-700 bg-[#111A2E] text-slate-300 hover:border-slate-500 hover:bg-[#16233d]'
+                                }`}
+                              >
+                                {opt}
+                              </button>
+                            )
+                          })}
                         </div>
                       )}
                       <div className="flex flex-wrap items-center gap-3">
@@ -784,11 +805,23 @@ function ReadingExam({ answers, setAnswers, currentQ, setCurrentQ, timeLeft, par
             {passage.questions.map((question, index) => {
               const previous = passage.questions[index - 1]
               const showHeading = index === 0 || previous.kind !== question.kind || previous.instruction !== question.instruction
+              let groupEndId = question.id
+              if (showHeading) {
+                let i = index
+                while (
+                  i + 1 < passage.questions.length &&
+                  passage.questions[i + 1].kind === question.kind &&
+                  passage.questions[i + 1].instruction === question.instruction
+                ) {
+                  i++
+                }
+                groupEndId = passage.questions[i].id
+              }
               return (
                 <div key={question.id} id={`reading-question-${question.id}`} className={`scroll-mt-4 ${currentQ === question.id ? 'border-l-2 border-electric pl-4' : ''}`}>
                   {showHeading && (
                     <div className="mb-4">
-                      <h3 className="font-plex text-sm font-bold text-ink">Questions {question.id}–{question.kind === 'text' ? passage.questions.filter(item => item.kind === question.kind && item.instruction === question.instruction).at(-1)?.id : passage.range[1]}</h3>
+                      <h3 className="font-plex text-sm font-bold text-ink">Questions {question.id}{groupEndId > question.id ? `–${groupEndId}` : ''}</h3>
                       <p className="mt-1 font-plex text-xs leading-5 text-graphite-mid">
                         {question.kind === 'text' ? `Complete each answer. Write ${question.instruction}.` : question.options?.includes('TRUE') ? 'Choose TRUE, FALSE or NOT GIVEN.' : question.options?.includes('YES') ? 'Choose YES, NO or NOT GIVEN.' : 'Choose the correct option.'}
                       </p>
@@ -2286,6 +2319,8 @@ export default function PracticeTest() {
 
     const listeningAnswerKey = selectedTestNum === 2 ? LISTENING_ANSWERS_2 : LISTENING_ANSWERS
     const listeningMarks = markAnswers(listeningAnswerKey, answers, listeningPairs(selectedTestNum))
+    const activeListeningParts = selectedTestNum === 2 ? LISTENING_PARTS_2 : LISTENING_PARTS_1
+    const listeningQuestionsMap = new Map(activeListeningParts.flatMap(p => p.questions).map(q => [q.id, q]))
     const listeningReviewItems = isListening
       ? Object.entries(listeningAnswerKey)
           .filter(([key]) => {
@@ -2294,17 +2329,18 @@ export default function PracticeTest() {
           })
           .map(([key, accepted]) => {
             const id = Number(key)
+            const q = listeningQuestionsMap.get(id)
             const userAns = answers[id]?.trim() || ''
             const correct = !!listeningMarks[id]
             const unanswered = !userAns
             return {
               id,
-              prompt: `Question ${id}`,
+              prompt: q?.prompt || `Question ${id}`,
               userAns,
               accepted,
               correct,
               unanswered,
-              explanation: undefined,
+              explanation: q?.explanation,
               passageReference: undefined,
             }
           })

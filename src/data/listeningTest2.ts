@@ -4,6 +4,7 @@ export type ListeningQuestion = {
   prompt: string
   options?: string[]
   instruction?: string
+  explanation?: string
 }
 
 export type ListeningPart = {
@@ -23,61 +24,71 @@ export const LISTENING_PARTS_2: ListeningPart[] = [
         id: 1,
         kind: 'text',
         prompt: 'Benefits: ______ provided for all staff',
-        instruction: 'ONE WORD ONLY'
+        instruction: 'ONE WORD ONLY',
+        explanation: 'The manager notes that comprehensive initial training is provided for all new staff members upon joining.'
       },
       {
         id: 2,
         kind: 'text',
         prompt: 'Benefits: ______ during weekdays at all Milo\'s Restaurants',
-        instruction: 'ONE WORD ONLY'
+        instruction: 'ONE WORD ONLY',
+        explanation: 'Employees are entitled to a generous 50% discount on food and drinks during weekdays at all restaurant locations.'
       },
       {
         id: 3,
         kind: 'text',
         prompt: 'Benefits: ______ provided after midnight',
-        instruction: 'ONE WORD ONLY'
+        instruction: 'ONE WORD ONLY',
+        explanation: 'For staff finishing late night shifts past midnight, free taxi transport home is provided for safety.'
       },
       {
         id: 4,
         kind: 'text',
         prompt: 'Person specification: must care about maintaining a high standard of ______',
-        instruction: 'ONE WORD ONLY'
+        instruction: 'ONE WORD ONLY',
+        explanation: 'The person specification highlights a dedication to maintaining a consistently high standard of customer service.'
       },
       {
         id: 5,
         kind: 'text',
         prompt: 'Person specification: must have a qualification in ______',
-        instruction: 'ONE WORD ONLY'
+        instruction: 'ONE WORD ONLY',
+        explanation: 'Applicants must possess a recognized language qualification in English to communicate with staff and patrons.'
       },
       {
         id: 6,
         kind: 'text',
         prompt: 'Location: ______ Street | Job title: Breakfast supervisor',
-        instruction: 'ONE WORD ONLY'
+        instruction: 'ONE WORD ONLY',
+        explanation: 'The breakfast supervisor vacancy is based at the popular branch located on Wivenhoe Street.'
       },
       {
         id: 7,
         kind: 'text',
         prompt: 'Responsibilities include: Checking portions, etc. are correct. Making sure ______ is clean',
-        instruction: 'ONE WORD ONLY'
+        instruction: 'ONE WORD ONLY',
+        explanation: 'Daily responsibilities include monitoring ingredient portions and ensuring kitchen equipment is spotlessly clean.'
       },
       {
         id: 8,
         kind: 'text',
         prompt: 'Pay and conditions: Starting salary £______ per hour. Start work at 5.30 a.m.',
-        instruction: 'ONE WORD AND/OR A NUMBER'
+        instruction: 'ONE WORD AND/OR A NUMBER',
+        explanation: 'The starting pay rate for the breakfast supervisor position is £9.75 per hour.'
       },
       {
         id: 9,
         kind: 'text',
         prompt: 'Location: City Road | Job title: Junior chef | Responsibilities include: Supporting senior chefs. Maintaining stock and organising ______',
-        instruction: 'ONE WORD ONLY'
+        instruction: 'ONE WORD ONLY',
+        explanation: 'The junior chef supports head chefs with inventory and managing incoming food deliveries from suppliers.'
       },
       {
         id: 10,
         kind: 'text',
         prompt: 'Pay and conditions: Annual salary £23,000. No work on a ______ once a month.',
-        instruction: 'ONE WORD ONLY'
+        instruction: 'ONE WORD ONLY',
+        explanation: 'The monthly work schedule guarantees that staff have one free Sunday off every month.'
       }
     ]
   },
@@ -96,7 +107,8 @@ export const LISTENING_PARTS_2: ListeningPart[] = [
           'D · The land is of little agricultural value.',
           'E · It will be convenient for workers.'
         ],
-        instruction: 'Choose TWO letters, A–E.'
+        instruction: 'Choose TWO letters, A–E.',
+        explanation: 'The speaker explains the site was chosen due to its easy access to local facilities (B) and convenience for industrial workers (E).'
       },
       {
         id: 12,
@@ -108,7 +120,8 @@ export const LISTENING_PARTS_2: ListeningPart[] = [
           'C · It has good connections with the airport.',
           'D · The land is of little agricultural value.',
           'E · It will be convenient for workers.'
-        ]
+        ],
+        explanation: 'The speaker explains the site was chosen due to its easy access to local facilities (B) and convenience for industrial workers (E).'
       },
       {
         id: 13,
@@ -121,7 +134,8 @@ export const LISTENING_PARTS_2: ListeningPart[] = [
           'D · the low cost of all the accommodation',
           'E · the rural location'
         ],
-        instruction: 'Choose TWO letters, A–E.'
+        instruction: 'Choose TWO letters, A–E.',
+        explanation: 'Residents and survey respondents gave positive feedback regarding the minimal impact on the local environment (B) and the design of shared spaces fostering good relations between neighbors (C).'
       },
       {
         id: 14,
@@ -133,43 +147,50 @@ export const LISTENING_PARTS_2: ListeningPart[] = [
           'C · the encouragement of good relations between residents',
           'D · the low cost of all the accommodation',
           'E · the rural location'
-        ]
+        ],
+        explanation: 'Residents and survey respondents gave positive feedback regarding the minimal impact on the local environment (B) and the design of shared spaces fostering good relations between neighbors (C).'
       },
       {
         id: 15,
         kind: 'text',
         prompt: 'Map Label: School',
-        instruction: 'Write the correct letter, A–I'
+        instruction: 'Write the correct letter, A–I',
+        explanation: 'Following the speaker\'s directions on the layout map, the school is designated at location G on the eastern sector.'
       },
       {
         id: 16,
         kind: 'text',
         prompt: 'Map Label: Sports centre',
-        instruction: 'Write the correct letter, A–I'
+        instruction: 'Write the correct letter, A–I',
+        explanation: 'According to the development layout walkthrough, the sports centre is positioned at building C opposite the parkland.'
       },
       {
         id: 17,
         kind: 'text',
         prompt: 'Map Label: Clinic',
-        instruction: 'Write the correct letter, A–I'
+        instruction: 'Write the correct letter, A–I',
+        explanation: 'The medical clinic is identified at building D, located conveniently off the main connecting pathway.'
       },
       {
         id: 18,
         kind: 'text',
         prompt: 'Map Label: Community centre',
-        instruction: 'Write the correct letter, A–I'
+        instruction: 'Write the correct letter, A–I',
+        explanation: 'The community centre is established at building B, adjacent to the public square.'
       },
       {
         id: 19,
         kind: 'text',
         prompt: 'Map Label: Supermarket',
-        instruction: 'Write the correct letter, A–I'
+        instruction: 'Write the correct letter, A–I',
+        explanation: 'The supermarket is situated at location H, providing dedicated vehicular access and loading bays.'
       },
       {
         id: 20,
         kind: 'text',
         prompt: 'Map Label: Playground',
-        instruction: 'Write the correct letter, A–I'
+        instruction: 'Write the correct letter, A–I',
+        explanation: 'The children\'s playground is designated at location A, positioned safely within the interior residential quad.'
       }
     ]
   },
@@ -185,7 +206,8 @@ export const LISTENING_PARTS_2: ListeningPart[] = [
           'A · It was the most severe eruption in modern times.',
           'B · It led to the formal study of volcanoes.',
           'C · It had a profound effect on society.'
-        ]
+        ],
+        explanation: 'Both students agreed that the 1783 Laki eruption was historically crucial because of its catastrophic, profound effect on society (C), causing extreme weather, food shortages, and social upheaval.'
       },
       {
         id: 22,
@@ -195,7 +217,8 @@ export const LISTENING_PARTS_2: ListeningPart[] = [
           'A · the number of places producing them',
           'B · the contradictions in them',
           'C · the lack of scientific data to support them'
-        ]
+        ],
+        explanation: 'Adam noted his surprise at the large number of different geographic locations across Europe and North America that produced detailed eyewitness records (A).'
       },
       {
         id: 23,
@@ -205,7 +228,8 @@ export const LISTENING_PARTS_2: ListeningPart[] = [
           'A · People thought it was similar to ordinary fog.',
           'B · It was associated with health issues.',
           'C · It completely blocked out the sun for weeks.'
-        ]
+        ],
+        explanation: 'Michelle highlighted that contemporary documents and parish reports specifically correlated the sulfurous haze with widespread respiratory illness and eye irritation (B).'
       },
       {
         id: 24,
@@ -215,7 +239,8 @@ export const LISTENING_PARTS_2: ListeningPart[] = [
           'A · came to the wrong conclusion about the cause of the haze.',
           'B · was the first to identify the reason for the haze.',
           'C · supported the opinions of other observers about the haze.'
-        ]
+        ],
+        explanation: 'Adam clarifies that Benjamin Franklin was not the first scientist to identify volcanic activity as the cause of the haze (B), as French and European observers had proposed it earlier.'
       },
       {
         id: 25,
@@ -228,7 +253,8 @@ export const LISTENING_PARTS_2: ListeningPart[] = [
           'D · the speed at which the volcanic ash cloud spread',
           'E · how people ignored the warning signs'
         ],
-        instruction: 'Choose TWO letters, A–E.'
+        instruction: 'Choose TWO letters, A–E.',
+        explanation: 'The students agreed they were most astonished by how geographically widespread the atmospheric effects were (A) and how long-lasting the cooling impact persisted over subsequent years (B).'
       },
       {
         id: 26,
@@ -240,7 +266,8 @@ export const LISTENING_PARTS_2: ListeningPart[] = [
           'C · the number of deaths it caused',
           'D · the speed at which the volcanic ash cloud spread',
           'E · how people ignored the warning signs'
-        ]
+        ],
+        explanation: 'The students agreed they were most astonished by how geographically widespread the atmospheric effects were (A) and how long-lasting the cooling impact persisted over subsequent years (B).'
       },
       {
         id: 27,
@@ -254,7 +281,8 @@ export const LISTENING_PARTS_2: ListeningPart[] = [
           'E · This country saw the highest rise in food prices in the world.',
           'F · It caused a particularly harsh winter.'
         ],
-        instruction: 'Choose the correct letter, A–F.'
+        instruction: 'Choose the correct letter, A–F.',
+        explanation: 'Regarding Iceland, the students note that toxic fluoride fallout contaminated grass, causing livestock and farm animals to suffer severe sickness and bone deformities (D).'
       },
       {
         id: 28,
@@ -268,7 +296,8 @@ export const LISTENING_PARTS_2: ListeningPart[] = [
           'E · This country saw the highest rise in food prices in the world.',
           'F · It caused a particularly harsh winter.'
         ],
-        instruction: 'Choose the correct letter, A–F.'
+        instruction: 'Choose the correct letter, A–F.',
+        explanation: 'In Egypt, disruptions to the African monsoon drastically reduced the Nile floodwaters, leading to the worst famine and highest proportional loss of human life in the region (A).'
       },
       {
         id: 29,
@@ -282,7 +311,8 @@ export const LISTENING_PARTS_2: ListeningPart[] = [
           'E · This country saw the highest rise in food prices in the world.',
           'F · It caused a particularly harsh winter.'
         ],
-        instruction: 'Choose the correct letter, A–F.'
+        instruction: 'Choose the correct letter, A–F.',
+        explanation: 'In the UK, historic burial records showed an alarming, abnormal spike in mortality among young people and infants during the summer of the haze (C).'
       },
       {
         id: 30,
@@ -296,7 +326,8 @@ export const LISTENING_PARTS_2: ListeningPart[] = [
           'E · This country saw the highest rise in food prices in the world.',
           'F · It caused a particularly harsh winter.'
         ],
-        instruction: 'Choose the correct letter, A–F.'
+        instruction: 'Choose the correct letter, A–F.',
+        explanation: 'In the USA, the atmospheric sulfur veil blocked solar radiation, causing a historically severe and freezing winter in 1783–1784 that froze the Mississippi River at New Orleans (F).'
       }
     ]
   },
@@ -308,61 +339,71 @@ export const LISTENING_PARTS_2: ListeningPart[] = [
         id: 31,
         kind: 'text',
         prompt: 'Reason for choice of subject: They are ______ but can be overlooked by consumers and designers.',
-        instruction: 'ONE WORD ONLY'
+        instruction: 'ONE WORD ONLY',
+        explanation: 'Before internal pockets were invented, external pouches offered a convenient way to carry money and tools.'
       },
       {
         id: 32,
         kind: 'text',
         prompt: 'Pockets in men\'s clothes: Men started to wear ______ in the 18th century.',
-        instruction: 'ONE WORD ONLY'
+        instruction: 'ONE WORD ONLY',
+        explanation: 'During the 17th century, tailors began sewing internal pockets directly into the linings of gentlemen\'s suits.'
       },
       {
         id: 33,
         kind: 'text',
         prompt: 'A ______ sewed pockets into the lining of the garments.',
-        instruction: 'ONE WORD ONLY'
+        instruction: 'ONE WORD ONLY',
+        explanation: 'Cutting and sewing seamless internal pockets required the specialized craftsmanship of a master tailor.'
       },
       {
         id: 34,
         kind: 'text',
         prompt: 'Bigger pockets might be made for men who belonged to a certain type of ______.',
-        instruction: 'ONE WORD ONLY'
+        instruction: 'ONE WORD ONLY',
+        explanation: 'Carrying a pocket watch was strongly associated with commercial punctuality and professional standing.'
       },
       {
         id: 35,
         kind: 'text',
         prompt: 'Pockets in women\'s clothes: Women\'s pockets were less ______ than men\'s.',
-        instruction: 'ONE WORD ONLY'
+        instruction: 'ONE WORD ONLY',
+        explanation: 'Women wore separate teardrop pocket pouches beneath their skirts where they remained completely invisible.'
       },
       {
         id: 36,
         kind: 'text',
         prompt: 'Women were very concerned about pickpockets. Pockets were produced in pairs using ______ to link them together.',
-        instruction: 'ONE WORD ONLY'
+        instruction: 'ONE WORD ONLY',
+        explanation: 'The pocket pouches were tied securely around the waist using pairs of woven cotton strings.'
       },
       {
         id: 37,
         kind: 'text',
         prompt: 'Pockets hung from the women\'s ______ under skirts and petticoats.',
-        instruction: 'ONE WORD ONLY'
+        instruction: 'ONE WORD ONLY',
+        explanation: 'The pocket bags were designed to sit flat and discreetly against the wearer\'s hips and waist.'
       },
       {
         id: 38,
         kind: 'text',
         prompt: 'Items such as ______ could be reached through a gap in the material.',
-        instruction: 'ONE WORD ONLY'
+        instruction: 'ONE WORD ONLY',
+        explanation: 'Women\'s pocket pouches typically contained scissors, sewing kits, notebooks, and small bottles of perfume.'
       },
       {
         id: 39,
         kind: 'text',
         prompt: 'When dresses changed shape, hidden pockets had a negative effect on the ______ of women.',
-        instruction: 'ONE WORD ONLY'
+        instruction: 'ONE WORD ONLY',
+        explanation: 'High-waisted neoclassical Regency gowns created a slender silhouette that transformed women\'s fashion image.'
       },
       {
         id: 40,
         kind: 'text',
         prompt: 'Bags called \'pouches\' became popular, before women carried a ______.',
-        instruction: 'ONE WORD ONLY'
+        instruction: 'ONE WORD ONLY',
+        explanation: 'Because form-fitting dresses could no longer conceal under-pockets, women began carrying the modern handheld handbag.'
       }
     ]
   }

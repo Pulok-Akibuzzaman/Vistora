@@ -8,8 +8,8 @@ import { READING_ANSWERS_2, READING_PASSAGES_2 } from '../data/readingTest2'
 import { READING_ANSWERS_3, READING_PASSAGES_3 } from '../data/readingTest3'
 import { READING_ANSWERS_4, READING_PASSAGES_4 } from '../data/readingTest4'
 import { READING_ANSWERS_21, READING_PASSAGES_21 } from '../data/readingTest21'
-import { LISTENING_ANSWERS } from '../data/listeningTest1'
-import { LISTENING_ANSWERS_2 } from '../data/listeningTest2'
+import { LISTENING_ANSWERS, LISTENING_PARTS_1 } from '../data/listeningTest1'
+import { LISTENING_ANSWERS_2, LISTENING_PARTS_2 } from '../data/listeningTest2'
 
 const FILTERS = ['All', 'Full Test', 'Reading', 'Listening', 'Writing', 'Speaking'] as const
 
@@ -130,20 +130,25 @@ function ResultDetail({ result, userName }: { result: StoredExamResult; userName
     if (!isListening || !result.userAnswers) return []
     // Listening tests other than Test 2 show Test 1's questions in the practice centre
     const listeningAnswers = testNumber === 2 ? LISTENING_ANSWERS_2 : LISTENING_ANSWERS
+    const activeParts = testNumber === 2 ? LISTENING_PARTS_2 : LISTENING_PARTS_1
+    const questionsMap = new Map(activeParts.flatMap(p => p.questions).map(q => [q.id, q]))
     const marks = markAnswers(listeningAnswers, result.userAnswers, listeningPairs(testNumber))
     return Object.entries(listeningAnswers).filter(([key]) => {
       const id = Number(key)
       return part === undefined || (id >= (part - 1) * 10 + 1 && id <= part * 10)
     }).map(([key, accepted]) => {
       const id = Number(key)
+      const q = questionsMap.get(id)
       const userAns = result.userAnswers ? (result.userAnswers[id] || result.userAnswers[key] || '') : ''
       const correct = !!marks[id]
       return {
         id,
+        prompt: q?.prompt || `Question ${id}`,
         userAns: userAns.trim(),
         accepted,
         correct,
         unanswered: !userAns.trim(),
+        explanation: q?.explanation,
       }
     })
   }, [isListening, testNumber, part, result.userAnswers])
@@ -593,6 +598,12 @@ function ResultDetail({ result, userName }: { result: StoredExamResult; userName
                   </span>
                 </div>
 
+                {item.prompt && (
+                  <div className="mt-3 font-plex text-sm font-semibold leading-6 text-ink">
+                    {item.prompt}
+                  </div>
+                )}
+
                 <div className="mt-3 grid gap-3 sm:grid-cols-2">
                   <div className="rounded-sm border border-divider p-2.5">
                     <div className="font-mono text-[10px] uppercase text-graphite-light">Your Response</div>
@@ -607,6 +618,17 @@ function ResultDetail({ result, userName }: { result: StoredExamResult; userName
                     </div>
                   </div>
                 </div>
+
+                {item.explanation && (
+                  <div className="mt-4 rounded-sm border border-divider bg-surface-2 p-4">
+                    <div className="flex items-center gap-1.5 font-mono text-xs font-bold uppercase tracking-wider text-ink">
+                      <span>💡 Why wrong / right & Audio Context</span>
+                    </div>
+                    <p className="mt-1.5 font-plex text-sm leading-6 text-graphite">
+                      {item.explanation}
+                    </p>
+                  </div>
+                )}
               </article>
             ))}
           </div>
