@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sign In & Register — Vistora IELTS</title>
-  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="../css/main.css">
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎓</text></svg>">
   <style>
     .auth-wrapper {
@@ -50,11 +50,11 @@
   <!-- Top Navigation -->
   <header class="navbar">
     <div class="container nav-container">
-      <a href="index.html" class="brand">
+      <a href="../index.html" class="brand">
         <span>Vistora</span>
         <span class="brand-badge">IELTS CBT</span>
       </a>
-      <a href="index.html" class="btn btn-outline btn-sm">← Back to Home</a>
+      <a href="../index.html" class="btn btn-outline btn-sm">← Back to Home</a>
     </div>
   </header>
 
@@ -109,8 +109,8 @@
   </main>
 
   <script type="module">
-    import { signIn, signUp, getCurrentUser } from './js/lib/auth.js';
-    import { setSupabaseConfig, isSupabaseConfigured } from './js/lib/supabaseClient.js';
+    import { signIn, signUp, getCurrentUser } from '../js/lib/auth.js';
+    import { setSupabaseConfig, isSupabaseConfigured } from '../js/lib/supabaseClient.js';
 
     let currentMode = 'login';
 

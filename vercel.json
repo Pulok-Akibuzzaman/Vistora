@@ -3,8 +3,18 @@
   "cleanUrls": true,
   "trailingSlash": false,
   "rewrites": [
-    { "source": "/exam/(.*)", "destination": "/practice-test.html" },
-    { "source": "/exam", "destination": "/practice-test.html" }
+    { "source": "/exam/(.*)", "destination": "/pages/practice-test.html" },
+    { "source": "/exam", "destination": "/pages/practice-test.html" },
+    { "source": "/practice-test", "destination": "/pages/practice-test.html" },
+    { "source": "/dashboard", "destination": "/pages/dashboard.html" },
+    { "source": "/login", "destination": "/pages/login.html" },
+    { "source": "/results", "destination": "/pages/results.html" },
+    { "source": "/profile", "destination": "/pages/profile.html" },
+    { "source": "/forum", "destination": "/pages/forum.html" },
+    { "source": "/writing-eval", "destination": "/pages/writing-eval.html" },
+    { "source": "/exam-dates", "destination": "/pages/exam-dates.html" },
+    { "source": "/resources", "destination": "/pages/resources.html" },
+    { "source": "/admin", "destination": "/pages/admin.html" }
   ],
   "headers": [
     {

@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Dashboard — Vistora IELTS</title>
-  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="../css/main.css">
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
 </head>
 <body>
@@ -12,7 +12,7 @@
   <!-- Top Navigation -->
   <header class="navbar">
     <div class="container nav-container">
-      <a href="index.html" class="brand">
+      <a href="../index.html" class="brand">
         <span>Vistora</span>
         <span class="brand-badge" style="background: var(--accent);">ADMIN</span>
       </a>
@@ -89,8 +89,8 @@
   </main>
 
   <script type="module">
-    import { getCurrentUser } from './js/lib/auth.js';
-    import { supabase, isSupabaseConfigured } from './js/lib/supabaseClient.js';
+    import { getCurrentUser } from '../js/lib/auth.js';
+    import { supabase, isSupabaseConfigured } from '../js/lib/supabaseClient.js';
 
     async function checkAdminAccess() {
       const user = await getCurrentUser();
