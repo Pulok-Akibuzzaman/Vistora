@@ -11,7 +11,7 @@ import { saveExamResult } from '../lib/results'
 import { checkBackendHealth, getStreamUrl, saveExamResultApi, evaluateSpeakingApi, type BackendHealth, type SpeakingEvaluationResult } from '../lib/api'
 import { useAuth } from '../lib/authContext'
 import { countCorrect, listeningPairs, markAnswers, readingPairs } from '../lib/scoring'
-import { themeText } from '../lib/theme'
+import { themeText, ThemeToggle } from '../lib/theme'
 import { NavLink } from 'react-router'
 
 type TestType = 'Reading' | 'Listening' | 'Writing' | 'Speaking' | 'Full Test'
@@ -374,6 +374,7 @@ function ListeningExam({
           <span className="hidden items-center gap-1.5 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-3 py-1.5 text-[11px] font-medium text-emerald-400 md:flex">
             {answered} answered
           </span>
+          <ThemeToggle className="h-9 w-9 rounded-lg border-slate-700 bg-slate-800/80 text-slate-200 hover:text-white hover:border-slate-500" />
           <button onClick={onFinish} className="flex items-center gap-1.5 rounded-lg border border-rose-500/60 px-3 py-2 text-[11px] font-bold text-rose-300 transition hover:bg-rose-600 hover:text-white sm:px-3.5">
             <span className="hidden sm:inline">End Test</span><span className="sm:hidden">End</span>
           </button>
@@ -684,11 +685,12 @@ function ReadingExam({ answers, setAnswers, currentQ, setCurrentQ, timeLeft, par
             <div className="font-plex text-xs text-graphite-mid">Academic Reading · Test {selectedTestNumber}{part ? ` · Passage ${part}` : ''}</div>
           </div>
         </div>
-        <div className="flex items-center gap-5">
+        <div className="flex items-center gap-3 sm:gap-5">
           <div className="text-right">
             <div className={`font-mono text-sm font-semibold ${timeLeft < 300 ? 'text-accent' : 'text-ink'}`}>{formatTime(timeLeft)}</div>
             <div className="font-mono text-xs uppercase text-graphite-light">Time left</div>
           </div>
+          <ThemeToggle className="h-9 w-9 rounded-sm border-divider bg-surface text-ink hover:border-line-strong" />
           <button onClick={onFinish} className="rounded-sm bg-navy px-4 py-2 font-plex text-xs font-semibold text-white">Finish</button>
         </div>
       </header>
@@ -911,8 +913,9 @@ function WritingExam({ answers, setAnswers, currentTask, setCurrentTask, timeLef
           <div className="border-r border-divider pr-5 font-plex text-2xl font-bold tracking-tight text-accent">IELTS</div>
           <div><div className="font-plex text-xs font-semibold text-ink">Test taker ID</div><div className="font-plex text-xs text-graphite-mid">Academic Writing · Test 1{part ? ` · Task ${part}` : ''}</div></div>
         </div>
-        <div className="flex items-center gap-5">
+        <div className="flex items-center gap-3 sm:gap-5">
           <div className="text-right"><div className={`font-mono text-sm font-semibold ${timeLeft < 300 ? 'text-accent' : 'text-ink'}`}>{formatTime(timeLeft)}</div><div className="font-mono text-xs uppercase text-graphite-light">Time left</div></div>
+          <ThemeToggle className="h-9 w-9 rounded-sm border-divider bg-surface text-ink hover:border-line-strong" />
           <button onClick={onFinish} className="rounded-sm bg-navy px-4 py-2 font-plex text-xs font-semibold text-white">Finish</button>
         </div>
       </header>
@@ -1369,8 +1372,9 @@ function SpeakingExam({ currentPart, setCurrentPart, timeLeft, part, onRecording
           <div className="border-r border-divider pr-5 font-plex text-2xl font-bold tracking-tight text-accent">IELTS</div>
           <div><div className="font-plex text-xs font-semibold text-ink">Test taker ID</div><div className="font-plex text-xs text-graphite-mid">Speaking · Test 1{part ? ` · Part ${part}` : ''}</div></div>
         </div>
-        <div className="flex items-center gap-5">
+        <div className="flex items-center gap-3 sm:gap-5">
           <div className="text-right"><div className={`font-mono text-sm font-semibold ${timeLeft < 60 ? 'text-accent' : 'text-ink'}`}>{formatTime(timeLeft)}</div><div className="font-mono text-xs uppercase text-graphite-light">Time left</div></div>
+          <ThemeToggle className="h-9 w-9 rounded-sm border-divider bg-surface text-ink hover:border-line-strong" />
           <button disabled={recording} onClick={handleFinishExam} className="rounded-sm bg-navy px-4 py-2 font-plex text-xs font-semibold text-white disabled:opacity-40">Finish</button>
         </div>
       </header>
