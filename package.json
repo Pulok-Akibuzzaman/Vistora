@@ -5,10 +5,11 @@
   "type": "module",
   "description": "CSE412 IELTS Preparation Platform with Local Audio Streaming Backend",
   "scripts": {
-    "setup": "npm --prefix backend install && npm --prefix \"Frontend UI\" install",
-    "dev": "node start-dev.js",
-    "start": "node start-dev.js",
-    "backend": "cd backend && npm start",
-    "frontend": "cd \"Frontend UI\" && npm run dev"
+    "dev": "npx -y serve . -l 3000",
+    "start": "npx -y serve . -l 3000",
+    "serve": "npx -y serve . -l 3000",
+    "legacy:dev": "node start-dev.js",
+    "legacy:backend": "cd backend && npm start",
+    "legacy:frontend": "cd \"Frontend UI\" && npm run dev"
   }
 }

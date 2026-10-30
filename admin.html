@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard — Vistora IELTS</title>
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
+</head>
+<body>
+
+  <!-- Top Navigation -->
+  <header class="navbar">
+    <div class="container nav-container">
+      <a href="index.html" class="brand">
+        <span>Vistora</span>
+        <span class="brand-badge" style="background: var(--accent);">ADMIN</span>
+      </a>
+      
+      <div class="nav-actions">
+        <a href="dashboard.html" class="btn btn-outline btn-sm">Student Dashboard</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container" style="padding: 2.5rem 1.5rem;">
+    <!-- Access Control Alert Area -->
+    <div id="admin-auth-guard" style="display: none;">
+      <div class="card" style="text-align: center; padding: 4rem 2rem; max-width: 550px; margin: 3rem auto;">
+        <div style="font-size: 3rem; margin-bottom: 1rem;">🔒</div>
+        <h2>Access Restricted</h2>
+        <p style="color: var(--text-muted); margin: 0.5rem 0 1.5rem;">
+          This portal requires administrator privileges verified through Supabase Row Level Security (RLS) policies.
+        </p>
+        <a href="login.html" class="btn btn-primary">Sign In as Administrator</a>
+      </div>
+    </div>
+
+    <!-- Admin Content Area -->
+    <div id="admin-content" style="display: none;">
+      <div style="margin-bottom: 2rem;">
+        <span class="badge badge-indigo">Supabase Admin Control</span>
+        <h1 style="margin-top: 0.5rem;">System Administration</h1>
+        <p style="color: var(--text-muted); font-size: 0.95rem;">
+          Manage registered candidates, inspect exam submissions, and moderate forum threads.
+        </p>
+      </div>
+
+      <!-- Quick Metrics -->
+      <div class="grid-3" style="margin-bottom: 2.5rem;">
+        <div class="card">
+          <span style="font-size: 1.5rem;">👥</span>
+          <div style="font-size: 2rem; font-weight: 800; margin-top: 0.5rem;" id="admin-user-count">0</div>
+          <p style="color: var(--text-muted); font-size: 0.875rem;">Registered Profiles</p>
+        </div>
+        <div class="card">
+          <span style="font-size: 1.5rem;">📊</span>
+          <div style="font-size: 2rem; font-weight: 800; color: #38bdf8; margin-top: 0.5rem;" id="admin-exam-count">0</div>
+          <p style="color: var(--text-muted); font-size: 0.875rem;">Total Exam Submissions</p>
+        </div>
+        <div class="card">
+          <span style="font-size: 1.5rem;">💬</span>
+          <div style="font-size: 2rem; font-weight: 800; color: #34d399; margin-top: 0.5rem;" id="admin-thread-count">0</div>
+          <p style="color: var(--text-muted); font-size: 0.875rem;">Forum Threads</p>
+        </div>
+      </div>
+
+      <!-- Users & Exam Results Tabs -->
+      <div class="card">
+        <h3 style="margin-bottom: 1rem;">Recent Candidates & Exam Submissions</h3>
+        <div id="admin-submissions-table" style="overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+            <thead>
+              <tr style="border-bottom: 1px solid var(--border); text-align: left; color: var(--text-muted);">
+                <th style="padding: 0.75rem 0.5rem;">Date</th>
+                <th style="padding: 0.75rem 0.5rem;">Test Title</th>
+                <th style="padding: 0.75rem 0.5rem;">Type</th>
+                <th style="padding: 0.75rem 0.5rem;">Score</th>
+                <th style="padding: 0.75rem 0.5rem;">Overall Band</th>
+              </tr>
+            </thead>
+            <tbody id="admin-table-body">
+              <!-- Populated dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script type="module">
+    import { getCurrentUser } from './js/lib/auth.js';
+    import { supabase, isSupabaseConfigured } from './js/lib/supabaseClient.js';
+
+    async function checkAdminAccess() {
+      const user = await getCurrentUser();
+      if (!user || user.role !== 'admin') {
+        document.getElementById('admin-auth-guard').style.display = 'block';
+        return;
+      }
+
+      document.getElementById('admin-content').style.display = 'block';
+      loadAdminData();
+    }
+
+    async function loadAdminData() {
+      let results = [];
+      let profiles = [];
+      let threads = [];
+
+      if (isSupabaseConfigured() && supabase) {
+        try {
+          const { data: resData } = await supabase.from('exam_results').select('*').order('completed_at', { ascending: false }).limit(20);
+          if (resData) results = resData;
+
+          const { data: profData } = await supabase.from('profiles').select('*');
+          if (profData) profiles = profData;
+
+          const { data: thrData } = await supabase.from('forum_threads').select('*');
+          if (thrData) threads = thrData;
+        } catch (err) {
+          console.warn('Admin fetch error:', err);
+        }
+      }
+
+      if (results.length === 0) {
+        results = JSON.parse(localStorage.getItem('vistora_exam_results') || '[]');
+      }
+
+      document.getElementById('admin-user-count').innerText = profiles.length || 1;
+      document.getElementById('admin-exam-count').innerText = results.length;
+      document.getElementById('admin-thread-count').innerText = threads.length || 3;
+
+      const tbody = document.getElementById('admin-table-body');
+      if (results.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-muted);">No exam attempts recorded yet.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = results.map(r => `
+        <tr style="border-bottom: 1px solid var(--border);">
+          <td style="padding: 0.75rem 0.5rem; color: var(--text-dim);">${new Date(r.completed_at || r.completedAt || Date.now()).toLocaleDateString('en-GB')}</td>
+          <td style="padding: 0.75rem 0.5rem; font-weight: 600;">${r.test_title || r.testTitle}</td>
+          <td style="padding: 0.75rem 0.5rem;"><span class="badge ${r.test_type === 'Listening' ? 'badge-primary' : 'badge-indigo'}">${r.test_type || r.testType}</span></td>
+          <td style="padding: 0.75rem 0.5rem; color: #34d399;">${r.correct_answers ?? r.correctAnswers ?? 0} / 40</td>
+          <td style="padding: 0.75rem 0.5rem; font-weight: 800; color: #f87171;">Band ${Number(r.overall_band || r.overallBand || 0).toFixed(1)}</td>
+        </tr>
+      `).join('');
+    }
+
+    checkAdminAccess();
+  </script>
+</body>
+</html>

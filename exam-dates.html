@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Official British Council Exam Dates — Vistora</title>
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📅</text></svg>">
+</head>
+<body>
+
+  <!-- Top Navigation -->
+  <header class="navbar">
+    <div class="container nav-container">
+      <a href="index.html" class="brand">
+        <span>Vistora</span>
+        <span class="brand-badge">IELTS CBT</span>
+      </a>
+      
+      <nav>
+        <ul class="nav-links">
+          <li><a href="practice-test.html" class="nav-link">Practice Tests</a></li>
+          <li><a href="results.html" class="nav-link">Results</a></li>
+          <li><a href="forum.html" class="nav-link">Community Forum</a></li>
+          <li><a href="exam-dates.html" class="nav-link active">Exam Dates</a></li>
+          <li><a href="dashboard.html" class="nav-link">Dashboard</a></li>
+        </ul>
+      </nav>
+
+      <div class="nav-actions">
+        <a href="practice-test.html" class="btn btn-primary btn-sm">Practice Now</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container" style="padding: 2.5rem 1.5rem;">
+    <div style="margin-bottom: 2rem;">
+      <span class="badge badge-primary">British Council Bangladesh</span>
+      <h1 style="margin-top: 0.5rem;">Official IELTS Test Dates & Venues</h1>
+      <p style="color: var(--text-muted); font-size: 0.95rem;">
+        View verified test schedules across Dhaka, Chattogram, and Sylhet. Book directly through the official British Council portal.
+      </p>
+    </div>
+
+    <!-- Filter Controls -->
+    <div class="card" style="margin-bottom: 2rem; padding: 1.25rem;">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+        <div class="form-group" style="margin-bottom: 0;">
+          <label class="form-label" for="filter-city">City</label>
+          <select id="filter-city" class="form-control" onchange="applyFilters()">
+            <option value="All">All Cities</option>
+            <option value="Dhaka">Dhaka</option>
+            <option value="Chattogram">Chattogram</option>
+            <option value="Sylhet">Sylhet</option>
+          </select>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 0;">
+          <label class="form-label" for="filter-format">Format</label>
+          <select id="filter-format" class="form-control" onchange="applyFilters()">
+            <option value="All">All Formats</option>
+            <option value="Computer-delivered">Computer-delivered (CBT)</option>
+            <option value="Paper-based">Paper-based</option>
+          </select>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 0;">
+          <label class="form-label" for="filter-module">Module</label>
+          <select id="filter-module" class="form-control" onchange="applyFilters()">
+            <option value="All">All Modules</option>
+            <option value="Academic">Academic</option>
+            <option value="General Training">General Training</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Exam Dates Grid -->
+    <div id="dates-container" class="grid-2">
+      <!-- Dynamically populated -->
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-bottom">
+        <div>© 2026 Vistora Platform. East West University.</div>
+        <a href="https://www.britishcouncil.org.bd/en/exam/ielts/book-test" target="_blank" style="color: #60a5fa;">Official British Council Portal</a>
+      </div>
+    </div>
+  </footer>
+
+  <script type="module">
+    import { getComputedExamDates } from './js/data/examDatesData.js';
+
+    const allDates = getComputedExamDates();
+
+    window.applyFilters = function() {
+      const city = document.getElementById('filter-city').value;
+      const format = document.getElementById('filter-format').value;
+      const module = document.getElementById('filter-module').value;
+
+      const filtered = allDates.filter(d => {
+        if (city !== 'All' && d.city !== city) return false;
+        if (format !== 'All' && d.format !== format) return false;
+        if (module !== 'All' && d.module !== module) return false;
+        return true;
+      });
+
+      renderDates(filtered);
+    };
+
+    function renderDates(list) {
+      const container = document.getElementById('dates-container');
+      if (list.length === 0) {
+        container.innerHTML = `
+          <div class="card" style="text-align: center; grid-column: 1 / -1; padding: 3rem;">
+            <p style="color: var(--text-muted);">No official test dates matched your selected filters.</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = list.map(item => `
+        <div class="card">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
+            <div>
+              <span class="badge ${item.format.includes('Computer') ? 'badge-primary' : 'badge-indigo'}">${item.format}</span>
+              <span class="badge badge-success" style="margin-left: 0.35rem;">${item.module}</span>
+            </div>
+            <strong style="color: #38bdf8; font-family: var(--font-mono); font-size: 1.1rem;">${item.dateString}</strong>
+          </div>
+
+          <h3 style="font-size: 1.15rem; margin-bottom: 0.4rem;">${item.city} — ${item.venue}</h3>
+          <p style="color: var(--text-muted); font-size: 0.875rem; margin-bottom: 1.25rem;">
+            Standard Fee: <strong>${item.fee}</strong> · Status: <span style="color: #34d399;">${item.availability}</span>
+          </p>
+
+          <a href="${item.registrationUrl}" target="_blank" class="btn btn-secondary btn-sm" style="width: 100%;">
+            Book on British Council Portal ↗
+          </a>
+        </div>
+      `).join('');
+    }
+
+    renderDates(allDates);
+  </script>
+</body>
+</html>

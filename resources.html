@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cambridge Preparation Resources — Vistora IELTS</title>
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>">
+</head>
+<body>
+
+  <!-- Top Navigation -->
+  <header class="navbar">
+    <div class="container nav-container">
+      <a href="index.html" class="brand">
+        <span>Vistora</span>
+        <span class="brand-badge">IELTS CBT</span>
+      </a>
+      
+      <nav>
+        <ul class="nav-links">
+          <li><a href="practice-test.html" class="nav-link">Practice Tests</a></li>
+          <li><a href="results.html" class="nav-link">Results</a></li>
+          <li><a href="forum.html" class="nav-link">Community Forum</a></li>
+          <li><a href="resources.html" class="nav-link active">Resources</a></li>
+          <li><a href="dashboard.html" class="nav-link">Dashboard</a></li>
+        </ul>
+      </nav>
+
+      <div class="nav-actions">
+        <a href="practice-test.html" class="btn btn-primary btn-sm">Practice Now</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container" style="padding: 2.5rem 1.5rem;">
+    <div style="margin-bottom: 2rem;">
+      <span class="badge badge-indigo">Official Cambridge Guides</span>
+      <h1 style="margin-top: 0.5rem;">IELTS Strategy Guides & Materials</h1>
+      <p style="color: var(--text-muted); font-size: 0.95rem;">
+        Essential tactics for achieving Band 8+ across Reading, Listening, Writing, and Speaking.
+      </p>
+    </div>
+
+    <!-- Official Links Banner -->
+    <div class="card" style="margin-bottom: 2.5rem; background: rgba(30, 41, 59, 0.6);">
+      <h3 style="margin-bottom: 0.75rem;">Official Examination Portals</h3>
+      <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+        <a href="https://takeielts.britishcouncil.org" target="_blank" class="btn btn-outline btn-sm">British Council Prep ↗</a>
+        <a href="https://ielts.idp.com/prepare" target="_blank" class="btn btn-outline btn-sm">IDP Preparation ↗</a>
+        <a href="https://www.cambridgeenglish.org/exams-and-tests/ielts/" target="_blank" class="btn btn-outline btn-sm">Cambridge English ↗</a>
+        <a href="https://www.wgtn.ac.nz/lals/resources/academicwordlist" target="_blank" class="btn btn-outline btn-sm">Academic Word List (AWL) ↗</a>
+      </div>
+    </div>
+
+    <!-- Strategy Guides Grid -->
+    <div class="grid-2" id="resources-grid">
+      <!-- Dynamically populated -->
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-bottom">
+        <div>© 2026 Vistora Platform. East West University.</div>
+        <a href="index.html">Home</a>
+      </div>
+    </div>
+  </footer>
+
+  <script type="module">
+    import { STUDY_RESOURCES } from './js/data/resourcesData.js';
+
+    const container = document.getElementById('resources-grid');
+    container.innerHTML = STUDY_RESOURCES.map(r => `
+      <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
+          <span class="badge badge-primary">${r.category}</span>
+          <span class="badge badge-warning">${r.tag}</span>
+        </div>
+
+        <h3 style="font-size: 1.15rem; margin-bottom: 0.5rem;">${r.title}</h3>
+        <p style="color: var(--text-muted); font-size: 0.925rem; margin-bottom: 1rem;">${r.desc}</p>
+
+        <div style="background: rgba(255,255,255,0.02); border-left: 3px solid var(--accent); padding: 0.75rem 1rem; border-radius: var(--radius-sm); margin-bottom: 1.25rem;">
+          <div style="font-size: 0.8rem; font-weight: 700; color: #a5b4fc; margin-bottom: 0.4rem;">KEY TAKEAWAYS</div>
+          <ul style="padding-left: 1.2rem; font-size: 0.875rem; color: #cbd5e1; display: flex; flex-direction: column; gap: 0.35rem;">
+            ${r.tips.map(t => `<li>${t}</li>`).join('')}
+          </ul>
+        </div>
+
+        <a href="${r.externalUrl}" target="_blank" class="btn btn-secondary btn-sm" style="width: 100%;">
+          Open Official Guide ↗
+        </a>
+      </div>
+    `).join('');
+  </script>
+</body>
+</html>
