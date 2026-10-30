@@ -371,9 +371,12 @@ function ListeningExam({
             <span className="hidden text-[10px] font-semibold uppercase text-slate-400 sm:inline">Remaining</span>
             <span className="font-mono text-sm font-bold tabular-nums text-amber-300">{formatTime(timeLeft)}</span>
           </div>
-          <span className="hidden items-center gap-1.5 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-3 py-1.5 text-[11px] font-medium text-emerald-400 md:flex">
-            {answered} answered
-          </span>
+          <div className="hidden items-center gap-2 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-3 py-1.5 md:flex">
+            <span className="font-mono text-[11px] font-medium text-emerald-400">{answered}/{totalQuestions} answered</span>
+            <div className="w-16 h-1.5 bg-slate-800 rounded-full overflow-hidden">
+              <div className="h-full bg-emerald-400 transition-all duration-300 rounded-full" style={{ width: `${Math.min(100, (answered / (totalQuestions || 1)) * 100)}%` }} />
+            </div>
+          </div>
           <ThemeToggle className="h-9 w-9 rounded-lg border-slate-700 bg-slate-800/80 text-slate-200 hover:text-white hover:border-slate-500" />
           <button onClick={onFinish} className="flex items-center gap-1.5 rounded-lg border border-rose-500/60 px-3 py-2 text-[11px] font-bold text-rose-300 transition hover:bg-rose-600 hover:text-white sm:px-3.5">
             <span className="hidden sm:inline">End Test</span><span className="sm:hidden">End</span>
@@ -567,44 +570,81 @@ function ListeningExam({
                   </h2>
                 </div>
                 <div className="space-y-4">
-                  {LISTENING_PARTS_2[currentPart - 1]?.questions.map(q => (
-                    <div key={q.id} id={`listening-question-${q.id}`} className={`rounded-xl border p-4 transition ${currentQ === q.id ? 'border-rose-500/80 bg-[#111C30] shadow-[0_0_15px_rgba(225,29,72,0.12)]' : 'border-slate-800/70 bg-[#090E17]/80'}`}>
-                      <div className="mb-2 text-sm font-semibold text-slate-100">{q.id}. {q.prompt}</div>
-                      {q.instruction && <div className="mb-3 text-[11px] font-bold uppercase tracking-wider text-amber-400/80">{q.instruction}</div>}
-                      {q.options && (
-                        <div className="mb-4 grid gap-2 sm:grid-cols-1">
-                          {q.options.map(opt => {
-                            const letterMatch = opt.match(/^([A-Z])\b/)
-                            const optLetter = letterMatch ? letterMatch[1] : ''
-                            const isSelected = !!optLetter && answers[q.id]?.toUpperCase() === optLetter
-                            return (
-                              <button
-                                key={opt}
-                                type="button"
-                                onClick={() => {
-                                  if (optLetter) {
-                                    setAnswer(q.id, optLetter)
-                                    setCurrentQ(q.id)
-                                  }
-                                }}
-                                className={`rounded-lg border px-3 py-2 text-left text-xs transition ${
-                                  isSelected
-                                    ? 'border-rose-500/80 bg-rose-500/20 text-rose-200 shadow-sm'
-                                    : 'border-slate-700 bg-[#111A2E] text-slate-300 hover:border-slate-500 hover:bg-[#16233d]'
-                                }`}
-                              >
-                                {opt}
-                              </button>
-                            )
-                          })}
+                  {LISTENING_PARTS_2[currentPart - 1]?.questions.map(q => {
+                    const pair = listeningPairs(selectedTestNumber).find(([a, b]) => a === q.id || b === q.id)
+                    const pairAnswers = pair
+                      ? [answers[pair[0]]?.toUpperCase(), answers[pair[1]]?.toUpperCase()].filter(Boolean)
+                      : []
+                    return (
+                      <div key={q.id} id={`listening-question-${q.id}`} className={`rounded-xl border p-4 transition ${currentQ === q.id ? 'border-rose-500/80 bg-[#111C30] shadow-[0_0_15px_rgba(225,29,72,0.12)]' : 'border-slate-800/70 bg-[#090E17]/80'}`}>
+                        <div className="mb-2 text-sm font-semibold text-slate-100">{q.id}. {q.prompt}</div>
+                        {q.instruction && <div className="mb-2 text-[11px] font-bold uppercase tracking-wider text-amber-400/80">{q.instruction}</div>}
+                        {pair && (
+                          <div className="mb-3 flex items-center gap-2 text-xs text-rose-300">
+                            <span className="font-mono text-[10px] uppercase tracking-wider bg-rose-500/20 border border-rose-500/40 px-2 py-0.5 rounded">
+                              Connected Questions {pair[0]} & {pair[1]}
+                            </span>
+                            <span>Selected: {pairAnswers.join(', ') || '(Choose TWO)'}</span>
+                          </div>
+                        )}
+                        {q.options && (
+                          <div className="mb-4 grid gap-2 sm:grid-cols-1">
+                            {q.options.map(opt => {
+                              const letterMatch = opt.match(/^([A-Z])\b/)
+                              const optLetter = letterMatch ? letterMatch[1] : ''
+                              const isSelected = pair
+                                ? pairAnswers.includes(optLetter)
+                                : !!optLetter && answers[q.id]?.toUpperCase() === optLetter
+                              return (
+                                <button
+                                  key={opt}
+                                  type="button"
+                                  onClick={() => {
+                                    if (!optLetter) return
+                                    if (pair) {
+                                      const [firstId, secondId] = pair
+                                      const isCurrentlyFirst = answers[firstId]?.toUpperCase() === optLetter
+                                      const isCurrentlySecond = answers[secondId]?.toUpperCase() === optLetter
+                                      if (isCurrentlyFirst) {
+                                        setAnswer(firstId, '')
+                                      } else if (isCurrentlySecond) {
+                                        setAnswer(secondId, '')
+                                      } else if (!answers[firstId]) {
+                                        setAnswer(firstId, optLetter)
+                                        setCurrentQ(firstId)
+                                      } else if (!answers[secondId]) {
+                                        setAnswer(secondId, optLetter)
+                                        setCurrentQ(secondId)
+                                      } else {
+                                        const targetId = q.id === firstId ? firstId : secondId
+                                        setAnswer(targetId, optLetter)
+                                        setCurrentQ(targetId)
+                                      }
+                                    } else {
+                                      const currentVal = answers[q.id]?.toUpperCase()
+                                      setAnswer(q.id, currentVal === optLetter ? '' : optLetter)
+                                      setCurrentQ(q.id)
+                                    }
+                                  }}
+                                  className={`rounded-lg border px-3 py-2 text-left text-xs transition ${
+                                    isSelected
+                                      ? 'border-rose-500/80 bg-rose-500/20 text-rose-200 shadow-sm font-semibold'
+                                      : 'border-slate-700 bg-[#111A2E] text-slate-300 hover:border-slate-500 hover:bg-[#16233d]'
+                                  }`}
+                                >
+                                  {opt}
+                                </button>
+                              )
+                            })}
+                          </div>
+                        )}
+                        <div className="flex flex-wrap items-center gap-3">
+                          <span className="text-xs text-slate-400">Your Answer:</span>
+                          <input aria-label={`Answer ${q.id}`} type="text" value={answers[q.id] || ''} onFocus={() => setCurrentQ(q.id)} onChange={event => setAnswer(q.id, event.target.value)} className="w-full max-w-[200px] border-b border-dashed border-slate-600 bg-[#0A101C] px-2 py-1.5 font-mono text-sm font-bold text-rose-300 placeholder-slate-600 focus:border-rose-400 focus:outline-none" placeholder="..." />
                         </div>
-                      )}
-                      <div className="flex flex-wrap items-center gap-3">
-                        <span className="text-xs text-slate-400">Your Answer:</span>
-                        <input aria-label={`Answer ${q.id}`} type="text" value={answers[q.id] || ''} onFocus={() => setCurrentQ(q.id)} onChange={event => setAnswer(q.id, event.target.value)} className="w-full max-w-[200px] border-b border-dashed border-slate-600 bg-[#0A101C] px-2 py-1.5 font-mono text-sm font-bold text-rose-300 placeholder-slate-600 focus:border-rose-400 focus:outline-none" placeholder="..." />
                       </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               </section>
             ) : (
@@ -730,8 +770,8 @@ type ReadingExamProps = {
 }
 
 function ReadingExam({ answers, setAnswers, currentQ, setCurrentQ, timeLeft, part, selectedTestNumber = 1, onFinish }: ReadingExamProps) {
-  const passageIndex = currentQ <= 13 ? 0 : currentQ <= 26 ? 1 : 2
   const activePassages = selectedTestNumber === 21 ? READING_PASSAGES_21 : selectedTestNumber === 4 ? READING_PASSAGES_4 : selectedTestNumber === 3 ? READING_PASSAGES_3 : selectedTestNumber === 2 ? READING_PASSAGES_2 : READING_PASSAGES
+  const passageIndex = part !== undefined ? part - 1 : currentQ <= 13 ? 0 : currentQ <= 26 ? 1 : 2
   const passage = activePassages[passageIndex] || activePassages[0]
   const answered = Object.keys(answers).filter(key => {
     const num = Number(key)
@@ -751,6 +791,18 @@ function ReadingExam({ answers, setAnswers, currentQ, setCurrentQ, timeLeft, par
     const match = option.match(/^([A-I]|(?:i|ii|iii|iv|v|vi|vii|viii|ix|x))\s*·/)
     return match ? match[1] : option
   }
+  const rPairs = readingPairs(selectedTestNumber)
+
+  // Dynamically detect if current question references a specific paragraph
+  const currentQuestionObj = passage.questions.find(q => q.id === currentQ)
+  const activeParagraphLetter = useMemo(() => {
+    if (!currentQuestionObj) return null
+    const promptMatch = currentQuestionObj.prompt.match(/(?:paragraph|section)\s+([A-G])\b/i)
+    if (promptMatch) return promptMatch[1].toUpperCase()
+    const refMatch = currentQuestionObj.passageReference?.match(/(?:paragraph|section)\s+([A-G])\b/i)
+    if (refMatch) return refMatch[1].toUpperCase()
+    return null
+  }, [currentQuestionObj])
 
   return (
     <main className="fixed inset-x-0 bottom-0 top-14 z-30 flex flex-col bg-surface">
@@ -760,6 +812,18 @@ function ReadingExam({ answers, setAnswers, currentQ, setCurrentQ, timeLeft, par
           <div>
             <div className="font-plex text-xs font-semibold text-ink">Test taker ID</div>
             <div className="font-plex text-xs text-graphite-mid">Academic Reading · Test {selectedTestNumber}{part ? ` · Passage ${part}` : ''}</div>
+          </div>
+        </div>
+        <div className="hidden sm:flex flex-col items-center gap-1 min-w-[200px]">
+          <div className="flex justify-between w-full font-mono text-[11px] text-graphite-mid">
+            <span>Answered: <strong className="text-ink">{answered}/{totalQuestions}</strong></span>
+            <span>{Math.round((answered / (totalQuestions || 1)) * 100)}%</span>
+          </div>
+          <div className="h-1.5 w-full bg-divider/60 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-emerald-500 transition-all duration-300 rounded-full"
+              style={{ width: `${Math.min(100, (answered / (totalQuestions || 1)) * 100)}%` }}
+            />
           </div>
         </div>
         <div className="flex items-center gap-3 sm:gap-5">
@@ -785,11 +849,22 @@ function ReadingExam({ answers, setAnswers, currentQ, setCurrentQ, timeLeft, par
             <div className="mt-5 space-y-5 font-plex text-sm leading-7 text-ink">
               {passage.paragraphs.map((paragraph, index) => {
                 const match = paragraph.match(/^([A-Z]\.)\s+([\s\S]*)$/)
+                const isParagraphActive = match && activeParagraphLetter === match[1][0].toUpperCase()
                 if (match) {
                   const label = match[1]
                   return (
-                    <p key={index} className="whitespace-pre-line">
-                      <strong className="mr-2 inline-block font-bold text-ink">{label}</strong>
+                    <p
+                      key={index}
+                      id={`reading-paragraph-${match[1][0]}`}
+                      className={`whitespace-pre-line transition-all duration-300 ${
+                        isParagraphActive
+                          ? 'border-l-4 border-electric pl-3 bg-electric/5 rounded-r py-1 ring-1 ring-electric/20'
+                          : ''
+                      }`}
+                    >
+                      <strong className={`mr-2 inline-block font-bold ${isParagraphActive ? 'text-accent' : 'text-ink'}`}>
+                        {label}
+                      </strong>
                       {match[2]}
                     </p>
                   )
@@ -817,8 +892,22 @@ function ReadingExam({ answers, setAnswers, currentQ, setCurrentQ, timeLeft, par
                 }
                 groupEndId = passage.questions[i].id
               }
+              const pair = rPairs.find(([a, b]) => a === question.id || b === question.id)
+              const pairSelectedValues = pair
+                ? [answers[pair[0]]?.toUpperCase(), answers[pair[1]]?.toUpperCase()].filter(Boolean)
+                : []
+
               return (
-                <div key={question.id} id={`reading-question-${question.id}`} className={`scroll-mt-4 ${currentQ === question.id ? 'border-l-2 border-electric pl-4' : ''}`}>
+                <div
+                  key={question.id}
+                  id={`reading-question-${question.id}`}
+                  onClick={() => setCurrentQ(question.id)}
+                  className={`scroll-mt-4 rounded-sm p-3 transition-all ${
+                    currentQ === question.id
+                      ? 'border-l-4 border-electric bg-surface-2/60 shadow-sm'
+                      : 'border-l-4 border-transparent hover:bg-surface-2/30'
+                  }`}
+                >
                   {showHeading && (
                     <div className="mb-4">
                       <h3 className="font-plex text-sm font-bold text-ink">Questions {question.id}{groupEndId > question.id ? `–${groupEndId}` : ''}</h3>
@@ -828,10 +917,62 @@ function ReadingExam({ answers, setAnswers, currentQ, setCurrentQ, timeLeft, par
                     </div>
                   )}
                   <div className="font-plex text-sm font-semibold leading-6 text-ink"><span className="mr-2 font-mono">{question.id}</span>{question.prompt}</div>
+                  {pair && (
+                    <div className="mt-2 flex items-center gap-2 text-xs text-graphite-mid">
+                      <span className="font-mono text-[10px] uppercase tracking-wider bg-electric/10 text-accent border border-electric/30 px-2 py-0.5 rounded">
+                        Connected Questions {pair[0]} & {pair[1]}
+                      </span>
+                      <span>Selected: {pairSelectedValues.join(', ') || '(Choose TWO)'}</span>
+                    </div>
+                  )}
                   {question.kind === 'text' ? (
                     <input aria-label={`Reading answer ${question.id}`} value={answers[question.id] || ''} onFocus={() => setCurrentQ(question.id)} onChange={event => setAnswer(question.id, event.target.value)} className="mt-3 w-full max-w-sm rounded-sm border border-graphite-light bg-surface px-3 py-2 font-plex text-sm outline-none focus:border-electric focus:ring-1 focus:ring-electric" placeholder="Type your answer" />
+                  ) : pair ? (
+                    <div className="mt-3 space-y-2">
+                      {question.options?.map(option => {
+                        const val = optionValue(option).toUpperCase()
+                        const isChecked = pairSelectedValues.includes(val)
+                        const togglePair = () => {
+                          const [firstId, secondId] = pair
+                          const isFirst = answers[firstId]?.toUpperCase() === val
+                          const isSecond = answers[secondId]?.toUpperCase() === val
+                          if (isFirst) {
+                            setAnswer(firstId, '')
+                          } else if (isSecond) {
+                            setAnswer(secondId, '')
+                          } else if (!answers[firstId]) {
+                            setAnswer(firstId, val)
+                            setCurrentQ(firstId)
+                          } else if (!answers[secondId]) {
+                            setAnswer(secondId, val)
+                            setCurrentQ(secondId)
+                          } else {
+                            const targetId = question.id === firstId ? firstId : secondId
+                            setAnswer(targetId, val)
+                            setCurrentQ(targetId)
+                          }
+                        }
+                        return (
+                          <div
+                            key={option}
+                            onClick={togglePair}
+                            className={`flex cursor-pointer items-start gap-3 rounded-sm border px-3 py-2 font-plex text-sm transition ${
+                              isChecked ? 'border-electric bg-electric-dim' : 'border-transparent hover:bg-surface-2'
+                            }`}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={isChecked}
+                              onChange={() => {}}
+                              className="mt-1 accent-electric pointer-events-none"
+                            />
+                            <span>{option}</span>
+                          </div>
+                        )
+                      })}
+                    </div>
                   ) : question.options && question.options.length > 7 ? (
-                    <select aria-label={`Reading answer ${question.id}`} value={answers[question.id] || ''} onChange={event => setAnswer(question.id, event.target.value)} className="mt-3 w-full rounded-sm border border-graphite-light bg-surface px-3 py-2 font-plex text-sm">
+                    <select aria-label={`Reading answer ${question.id}`} value={answers[question.id] || ''} onFocus={() => setCurrentQ(question.id)} onChange={event => setAnswer(question.id, event.target.value)} className="mt-3 w-full rounded-sm border border-graphite-light bg-surface px-3 py-2 font-plex text-sm">
                       <option value="">Select an answer</option>
                       {question.options.map(option => <option key={option} value={optionValue(option)}>{option}</option>)}
                     </select>
@@ -840,7 +981,7 @@ function ReadingExam({ answers, setAnswers, currentQ, setCurrentQ, timeLeft, par
                       {question.options?.map(option => {
                         const value = optionValue(option)
                         return (
-                          <label key={option} className={`flex cursor-pointer items-start gap-3 rounded-sm border px-3 py-2 font-plex text-sm ${answers[question.id] === value ? 'border-electric bg-electric-dim' : 'border-transparent hover:bg-surface-2'}`}>
+                          <label key={option} onClick={() => setCurrentQ(question.id)} className={`flex cursor-pointer items-start gap-3 rounded-sm border px-3 py-2 font-plex text-sm transition ${answers[question.id] === value ? 'border-electric bg-electric-dim' : 'border-transparent hover:bg-surface-2'}`}>
                             <input type="radio" name={`reading-${question.id}`} checked={answers[question.id] === value} onChange={() => setAnswer(question.id, value)} className="mt-1 accent-electric" />
                             <span>{option}</span>
                           </label>
@@ -1701,8 +1842,14 @@ export default function PracticeTest() {
 
   // Sync book/test when test selection changes
   useEffect(() => {
-    if (selectedTest.book) setSelectedBook(selectedTest.book)
-    if (selectedTest.testNumber) setSelectedTestNum(selectedTest.testNumber)
+    const book = selectedTest.book || '18'
+    const testNum = selectedTest.testNumber || 1
+    setSelectedBook(book)
+    setSelectedTestNum(testNum)
+    if (!audioUrl || !audioUrl.startsWith('blob:')) {
+      setAudioUrl(getStreamUrl(book, testNum, 1))
+      setAudioName(`IELTS ${book} · Test ${testNum} · Part 1`)
+    }
   }, [selectedTest])
 
   const visibleTests = filter === 'All' ? TESTS : TESTS.filter(test => test.type === filter)
@@ -2731,12 +2878,15 @@ export default function PracticeTest() {
                       value={`${selectedBook}-${selectedTestNum}`}
                       onChange={e => {
                         const [b, t] = e.target.value.split('-')
+                        const num = Number(t)
                         setSelectedBook(b)
-                        setSelectedTestNum(Number(t))
+                        setSelectedTestNum(num)
                         if (!audioUrl.startsWith('blob:')) {
-                          setAudioUrl(getStreamUrl(b, Number(t), 1))
-                          setAudioName(`IELTS ${b} · Test ${t} · Part 1`)
+                          setAudioUrl(getStreamUrl(b, num, 1))
+                          setAudioName(`IELTS ${b} · Test ${num} · Part 1`)
                         }
+                        const matched = TESTS.find(test => test.type === selectedTest.type && test.book === b && test.testNumber === num)
+                        if (matched) setSelectedTest(matched)
                       }}
                       className="w-full rounded border border-graphite-light/40 bg-surface px-3 py-2 font-plex text-xs text-ink focus:outline-none focus:ring-1 focus:ring-electric"
                     >

@@ -58,4 +58,8 @@ export function saveExamResult(result: StoredExamResult, userEmail?: string) {
 
   // Asynchronously synchronize directly to Supabase public.exam_results
   saveExamResultApi(result as any).catch(() => {})
+
+  try {
+    window.dispatchEvent(new CustomEvent('vistora:result-saved', { detail: result }))
+  } catch {}
 }

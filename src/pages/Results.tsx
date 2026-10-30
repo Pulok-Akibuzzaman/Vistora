@@ -706,19 +706,30 @@ export default function Results() {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
+    const loadResults = () => {
+      fetchResults(user?.email, user?.id)
+        .then(data => {
+          setResults(data)
+          if (data.length > 0) {
+            setSelectedId(prev => (prev && data.some(d => d.id === prev) ? prev : data[0].id))
+          } else {
+            setSelectedId('')
+          }
+        })
+        .finally(() => {
+          setIsLoading(false)
+        })
+    }
+
     setIsLoading(true)
-    fetchResults(user?.email, user?.id)
-      .then(data => {
-        setResults(data)
-        if (data.length > 0) {
-          setSelectedId(data[0].id)
-        } else {
-          setSelectedId('')
-        }
-      })
-      .finally(() => {
-        setIsLoading(false)
-      })
+    loadResults()
+
+    window.addEventListener('vistora:result-saved', loadResults)
+    window.addEventListener('storage', loadResults)
+    return () => {
+      window.removeEventListener('vistora:result-saved', loadResults)
+      window.removeEventListener('storage', loadResults)
+    }
   }, [user?.email, user?.id])
 
   // Filter items dynamically based on module

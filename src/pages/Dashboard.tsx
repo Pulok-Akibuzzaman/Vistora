@@ -62,17 +62,28 @@ export default function Dashboard() {
 
   // Load live data from backend
   useEffect(() => {
-    fetchDashboardStats(user?.email).then(data => {
-      if (data) setStats(data)
-    }).catch(() => {})
+    const loadData = () => {
+      fetchDashboardStats(user?.email).then(data => {
+        if (data) setStats(data)
+      }).catch(() => {})
 
-    fetchTasks().then(setTasks).catch(() => {})
+      fetchTasks().then(setTasks).catch(() => {})
 
-    fetchResults(user?.email, user?.id).then(results => {
-      setExamResults(results)
-      if (results.length > 0) setSelectedResultId(results[0].id)
-      else setSelectedResultId('')
-    }).catch(() => {})
+      fetchResults(user?.email, user?.id).then(results => {
+        setExamResults(results)
+        if (results.length > 0) setSelectedResultId(results[0].id)
+        else setSelectedResultId('')
+      }).catch(() => {})
+    }
+
+    loadData()
+
+    window.addEventListener('vistora:result-saved', loadData)
+    window.addEventListener('storage', loadData)
+    return () => {
+      window.removeEventListener('vistora:result-saved', loadData)
+      window.removeEventListener('storage', loadData)
+    }
   }, [user?.email, user?.id])
 
   const addTask = async (event: FormEvent) => {
