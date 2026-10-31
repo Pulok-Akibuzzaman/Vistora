@@ -200,8 +200,22 @@ Vistora/
 | **TypeScript** | Programming Language | Like JavaScript with a safety net. It catches typos and errors while coding so students never experience broken buttons or missing data during an exam. |
 | **Vite 8** | Dev Server & Bundler | Starts the local website in less than 1 second and packages all code cleanly for fast production loading. |
 | **Supabase** | Cloud Database & Auth | Provides a secure PostgreSQL database in the cloud to store user accounts, test scores, study tasks, and discussion threads across devices. |
+| **Puku.sh AI** | AI Academic Engine | Evaluates student essays against official IELTS band criteria, analyzes speaking pace, and drafts academic SOPs and CVs. |
 | **Vanilla CSS + Tokens** | Styling & Theme | Delivers the authentic dark and light exam-room look matching the official British Council test screen. |
 | **Vercel** | Cloud Hosting | Automatically deploys our updates directly from GitHub to a worldwide content delivery network for fast global access. |
+
+---
+
+## 🤖 AI Technologies & Credits
+
+Vistora integrates artificial intelligence for in-platform academic features and was engineered with the assistance of modern AI tools:
+
+### Runtime Platform AI
+- **[Puku.sh AI](https://puku.sh) (`puku-ai-2.8`)**: Powers live IELTS Writing essay evaluation, speaking response analysis, academic document drafting (CV, SOP, Personal Statement, Cover Letter), and automated Cambridge PDF question extraction.
+
+### AI Development & Pair-Programming Assistance
+- **[Google Antigravity](https://deepmind.google) / [Google Gemini](https://gemini.google.com)**: Assisted with system architecture, database schema design, real-time Supabase synchronization, offline Cambridge test engine, and full-stack integration.
+- **[Anthropic Claude](https://claude.ai)**: Assisted with initial UI component scaffolding, styling design tokens, and user flow ideation.
 
 ---
 
