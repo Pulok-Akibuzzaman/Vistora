@@ -19,7 +19,7 @@ export interface CustomTest {
   difficulty: string
   status: 'New' | 'In progress'
   passages: ReadingPassage[]
-  answers: Record<number, string | string[]>
+  answers: Record<number, string[]>
   createdAt: string
   author?: string
 }
@@ -106,7 +106,7 @@ export async function extractTextFromPdfFile(file: File): Promise<string> {
 export async function scanIeltsExamWithAi(
   rawText: string,
   meta: { book: string; testNumber: number; part?: number; title?: string }
-): Promise<{ passages: ReadingPassage[]; answers: Record<number, string | string[]> } | null> {
+): Promise<{ passages: ReadingPassage[]; answers: Record<number, string[]> } | null> {
   const systemPrompt = `You are an expert Cambridge / British Council IELTS Exam Parser.
 Given raw text from an official IELTS Reading test PDF, extract:
 1. The reading passages (Part 1, 2, or 3, or all 3).
@@ -173,9 +173,18 @@ Generate the exact JSON structure for the passages, questions, and verified answ
 
     const parsed = JSON.parse(cleanJson)
     if (parsed && Array.isArray(parsed.passages) && parsed.passages.length > 0) {
+      const normalizedAnswers: Record<number, string[]> = {}
+      if (parsed.answers && typeof parsed.answers === 'object') {
+        Object.entries(parsed.answers).forEach(([k, v]) => {
+          const num = Number(k)
+          if (!isNaN(num)) {
+            normalizedAnswers[num] = Array.isArray(v) ? (v as any[]).map(String) : [String(v)]
+          }
+        })
+      }
       return {
         passages: parsed.passages,
-        answers: parsed.answers || {},
+        answers: normalizedAnswers,
       }
     }
   } catch (err) {
@@ -192,12 +201,12 @@ Generate the exact JSON structure for the passages, questions, and verified answ
 function parseDeterministicIelts(
   rawText: string,
   meta: { book: string; testNumber: number; part?: number; title?: string }
-): { passages: ReadingPassage[]; answers: Record<number, string | string[]> } {
+): { passages: ReadingPassage[]; answers: Record<number, string[]> } {
   const lines = rawText.split('\n').map(l => l.trim()).filter(Boolean)
   const title = meta.title || `Cambridge IELTS ${meta.book} Test ${meta.testNumber} Reading`
   const paragraphs: string[] = []
   const questions: ReadingQuestion[] = []
-  const answers: Record<number, string> = {}
+  const answers: Record<number, string[]> = {}
 
   let qCount = 1
   for (const line of lines) {
@@ -214,7 +223,7 @@ function parseDeterministicIelts(
         options: isTFNG ? ['TRUE', 'FALSE', 'NOT GIVEN'] : undefined,
         instruction: isTFNG ? 'TRUE / FALSE / NOT GIVEN' : 'NO MORE THAN TWO WORDS',
       })
-      answers[qNum] = isTFNG ? 'TRUE' : 'answer'
+      answers[qNum] = isTFNG ? ['TRUE'] : ['answer']
       qCount = Math.max(qCount, qNum + 1)
     } else if (line.length > 50 && !line.startsWith('---')) {
       paragraphs.push(line)
@@ -230,7 +239,7 @@ function parseDeterministicIelts(
         prompt: `Question ${i} based on the passage text: ______`,
         instruction: 'ONE WORD ONLY',
       })
-      answers[i] = 'word'
+      answers[i] = ['word']
     }
   }
 
@@ -263,7 +272,7 @@ import type { ReadingPassage } from './readingTest21'
 
 export const READING_PASSAGES_CUSTOM_${test.book}_${test.testNumber}: ReadingPassage[] = ${JSON.stringify(test.passages, null, 2)}
 
-export const READING_ANSWERS_CUSTOM_${test.book}_${test.testNumber}: Record<number, string | string[]> = ${JSON.stringify(test.answers, null, 2)}
+export const READING_ANSWERS_CUSTOM_${test.book}_${test.testNumber}: Record<number, string[]> = ${JSON.stringify(test.answers, null, 2)}
 `
 }
 

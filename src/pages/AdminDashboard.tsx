@@ -60,7 +60,7 @@ export default function AdminDashboard() {
 
   // Scanned / Extracted test preview state
   const [scannedPassages, setScannedPassages] = useState<ReadingPassage[]>([])
-  const [scannedAnswers, setScannedAnswers] = useState<Record<number, string | string[]>>({})
+  const [scannedAnswers, setScannedAnswers] = useState<Record<number, string[]>>({})
   const [publishedTests, setPublishedTests] = useState<CustomTest[]>(() => getCustomTests())
   const [publishSuccessMsg, setPublishSuccessMsg] = useState('')
 
@@ -675,7 +675,7 @@ export default function AdminDashboard() {
                             <div className="flex items-center justify-between">
                               <span className="font-mono text-xs font-bold text-ink">Q{q.id} ({q.kind})</span>
                               <span className="font-mono text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                                Key: {String(scannedAnswers[q.id] || '—')}
+                                Key: {Array.isArray(scannedAnswers[q.id]) ? scannedAnswers[q.id].join(' / ') : String(scannedAnswers[q.id] || '—')}
                               </span>
                             </div>
                             <p className="mt-1 text-xs text-ink line-clamp-2">{q.prompt}</p>
