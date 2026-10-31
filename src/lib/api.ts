@@ -545,7 +545,7 @@ export async function fetchResults(email?: string, userId?: string): Promise<Sto
         targetUserId = session.user.id
         if (session.user.email) targetEmail = session.user.email.toLowerCase().trim()
       }
-    } catch {}
+    } catch { }
   }
 
   // If the user is unauthenticated, NEVER expose any other user's exam results
@@ -597,7 +597,7 @@ export async function fetchResults(email?: string, userId?: string): Promise<Sto
         localResults = JSON.parse(rawUser)
       }
     }
-  } catch {}
+  } catch { }
 
   // 3. Fallback to Express backend if active locally (passing user-specific filters)
   let backendResults: StoredExamResult[] = []
@@ -611,7 +611,7 @@ export async function fetchResults(email?: string, userId?: string): Promise<Sto
       const data = await res.json()
       backendResults = data.results || []
     }
-  } catch {}
+  } catch { }
 
   // 4. Combine and deduplicate
   const seenIds = new Set<string>()
@@ -640,7 +640,7 @@ export async function fetchResults(email?: string, userId?: string): Promise<Sto
       combined.push(item)
 
       // Auto-backfill unsynced local exam result into Supabase in background
-      saveExamResultApi(item).catch(() => {})
+      saveExamResultApi(item).catch(() => { })
     }
   }
 
@@ -658,7 +658,7 @@ export async function saveExamResultApi(result: StoredExamResult): Promise<Store
       const list: StoredExamResult[] = raw ? JSON.parse(raw) : []
       const updated = [result, ...list.filter(r => r.id !== result.id)].slice(0, 50)
       window.localStorage.setItem(userKey, JSON.stringify(updated))
-    } catch {}
+    } catch { }
   }
 
   // 2. Direct Supabase insertion into public.exam_results
@@ -729,7 +729,7 @@ export async function saveExamResultApi(result: StoredExamResult): Promise<Store
       const data = await res.json()
       if (data?.result) return data.result
     }
-  } catch {}
+  } catch { }
 
   return result
 }
@@ -745,7 +745,7 @@ export async function deleteExamResultApi(id: string, userEmail?: string): Promi
         window.localStorage.setItem(userKey, JSON.stringify(local.filter(item => item.id !== id)))
       }
     }
-  } catch {}
+  } catch { }
 
   // 2. Remove from Supabase if valid UUID
   try {
@@ -770,7 +770,7 @@ export async function fetchDashboardStats(email?: string): Promise<DashboardStat
     const url = email ? `${API_BASE}/dashboard/stats?email=${encodeURIComponent(email)}` : `${API_BASE}/dashboard/stats`
     const res = await fetch(url, { signal: AbortSignal.timeout(1200) })
     if (res.ok) return await res.json()
-  } catch {}
+  } catch { }
 
   // Synthesize dynamic dashboard analytics from exam results
   try {
@@ -824,7 +824,7 @@ export async function fetchDashboardStats(email?: string): Promise<DashboardStat
         })),
       }
     }
-  } catch {}
+  } catch { }
 
   return null
 }
@@ -852,7 +852,7 @@ export async function fetchPlatformPublicStats(): Promise<PlatformPublicStats> {
         const parsed = JSON.parse(raw)
         if (Array.isArray(parsed)) customCount = parsed.length
       }
-    } catch {}
+    } catch { }
   }
   const practiceModules = 49 + customCount
 
@@ -950,7 +950,7 @@ export async function fetchTasks(userId?: string): Promise<StudyTask[]> {
       const parsed = JSON.parse(stored)
       if (Array.isArray(parsed)) return parsed
     }
-  } catch {}
+  } catch { }
 
   return []
 }
@@ -988,7 +988,7 @@ export async function createTask(title: string, due = 'TODAY', userId?: string):
           const stored = window.localStorage.getItem(key)
           const list: StudyTask[] = stored ? JSON.parse(stored) : []
           window.localStorage.setItem(key, JSON.stringify([newTask, ...list]))
-        } catch {}
+        } catch { }
         return newTask
       }
     }
@@ -1003,14 +1003,14 @@ export async function createTask(title: string, due = 'TODAY', userId?: string):
     const stored = window.localStorage.getItem(key)
     const list: StudyTask[] = stored ? JSON.parse(stored) : []
     window.localStorage.setItem(key, JSON.stringify([fallbackTask, ...list]))
-  } catch {}
+  } catch { }
   return fallbackTask
 }
 
 export async function toggleTaskComplete(id: number, complete: boolean, userId?: string): Promise<StudyTask> {
   try {
     await supabase.from('study_tasks').update({ complete }).eq('id', id)
-  } catch {}
+  } catch { }
 
   try {
     const targetKey = getTaskKey(userId)
@@ -1032,10 +1032,10 @@ export async function toggleTaskComplete(id: number, complete: boolean, userId?:
             const updated = list.map(t => t.id === id ? { ...t, complete } : t)
             window.localStorage.setItem(k, JSON.stringify(updated))
           }
-        } catch {}
+        } catch { }
       }
     }
-  } catch {}
+  } catch { }
 
   return { id, title: '', due: '', complete }
 }
@@ -1044,7 +1044,7 @@ export async function deleteTaskApi(id: number, userId?: string): Promise<boolea
   try {
     const { error } = await supabase.from('study_tasks').delete().eq('id', id)
     if (error) console.warn('[Supabase study_tasks] Delete note:', error)
-  } catch {}
+  } catch { }
 
   try {
     const targetKey = getTaskKey(userId)
@@ -1066,10 +1066,10 @@ export async function deleteTaskApi(id: number, userId?: string): Promise<boolea
             const filtered = list.filter(t => t.id !== id)
             window.localStorage.setItem(k, JSON.stringify(filtered))
           }
-        } catch {}
+        } catch { }
       }
     }
-  } catch {}
+  } catch { }
 
   return true
 }
@@ -1107,7 +1107,7 @@ export async function fetchUserBookmarks(userId?: string): Promise<number[]> {
           }
           return list
         }
-      } catch {}
+      } catch { }
     }
 
     // 2. Try Supabase Auth user metadata (database-backed)
@@ -1146,7 +1146,7 @@ export async function fetchUserBookmarks(userId?: string): Promise<number[]> {
           return parsed.map(Number).filter(n => !isNaN(n))
         }
       }
-    } catch {}
+    } catch { }
   }
 
   return []
@@ -1162,7 +1162,7 @@ export async function saveUserBookmarks(bookmarkIds: number[], userId?: string):
       const key = getBookmarkKey(userId)
       window.localStorage.setItem(key, JSON.stringify(sanitized))
       window.localStorage.setItem('vistora-saved-resources', JSON.stringify(sanitized))
-    } catch {}
+    } catch { }
   }
 
   try {
@@ -1179,7 +1179,7 @@ export async function saveUserBookmarks(bookmarkIds: number[], userId?: string):
           const rows = sanitized.map(id => ({ user_id: targetUserId, resource_id: id }))
           await supabase.from('resource_bookmarks').insert(rows)
         }
-      } catch {}
+      } catch { }
     }
 
     // 3. Persist to Supabase Auth user metadata (database-backed)
@@ -1508,6 +1508,26 @@ export async function evaluateSpeakingApi(params: {
 // --------------------------------------------------------------------------
 
 const FORUM_STORAGE_KEY = 'vistora_community_threads'
+const DELETED_FORUM_STORAGE_KEY = 'vistora_forum_deleted_threads'
+
+export function getLocalDeletedThreadIds(): Set<string> {
+  if (typeof window === 'undefined') return new Set()
+  try {
+    const raw = window.localStorage.getItem(DELETED_FORUM_STORAGE_KEY)
+    if (raw) return new Set(JSON.parse(raw).map(String))
+  } catch {}
+  return new Set()
+}
+
+export function addLocalDeletedThreadId(id: string | number) {
+  if (typeof window === 'undefined') return
+  try {
+    const current = getLocalDeletedThreadIds()
+    current.add(String(id))
+    window.localStorage.setItem(DELETED_FORUM_STORAGE_KEY, JSON.stringify(Array.from(current)))
+  } catch {}
+}
+
 const getVoteStorageKey = (uid?: string) => `vistora_forum_votes_${uid || 'guest'}`
 
 const SEED_FORUM_THREADS: ForumThread[] = [
@@ -1622,31 +1642,99 @@ const SEED_FORUM_THREADS: ForumThread[] = [
 ]
 
 export async function fetchForumThreads(category?: string, query?: string, userIdentifier?: string): Promise<ForumThread[]> {
-  // 1. Load community threads from persistent local storage
-  let threads: ForumThread[] = []
-  try {
-    const raw = window.localStorage.getItem(FORUM_STORAGE_KEY)
-    if (raw) {
-      threads = JSON.parse(raw)
-    }
-  } catch {}
+  const deletedSet = getLocalDeletedThreadIds()
 
-  // If local storage is empty, initialize with SEED_FORUM_THREADS
-  if (!threads || threads.length === 0) {
-    threads = SEED_FORUM_THREADS
+  // 1. Attempt to fetch from central live API /api/forum (Supabase-backed)
+  try {
+    const res = await fetch(`${API_BASE}/forum`, { signal: AbortSignal.timeout(3500) })
+    if (res.ok) {
+      const data = await res.json()
+      if (data.success && Array.isArray(data.threads)) {
+        // Sync persistent server-side deletedIds into local tombstone set
+        if (Array.isArray(data.deletedIds)) {
+          for (const dId of data.deletedIds) {
+            deletedSet.add(String(dId))
+          }
+          if (typeof window !== 'undefined') {
+            window.localStorage.setItem(DELETED_FORUM_STORAGE_KEY, JSON.stringify(Array.from(deletedSet)))
+          }
+        }
+
+        const userVotes: Record<number, 'up' | 'down'> = {}
+        if (typeof window !== 'undefined') {
+          try {
+            const voteRaw = window.localStorage.getItem(getVoteStorageKey(userIdentifier))
+            if (voteRaw) Object.assign(userVotes, JSON.parse(voteRaw))
+          } catch {}
+        }
+
+        const liveThreads: ForumThread[] = data.threads
+          .filter((t: any) => !deletedSet.has(String(t.id)))
+          .map((t: any) => {
+            const up = typeof t.upvotes === 'number' ? t.upvotes : 0
+            const userVote = userVotes[t.id] || null
+            return {
+              ...t,
+              upvotes: up,
+              downvotes: 0,
+              score: up,
+              userVote,
+              replyList: t.replyList || [],
+            }
+          })
+
+        // Update local cache with exact cloud state
+        if (typeof window !== 'undefined') {
+          window.localStorage.setItem(FORUM_STORAGE_KEY, JSON.stringify(liveThreads))
+        }
+
+        let filtered = liveThreads
+        if (category && category !== 'All Topics') {
+          filtered = filtered.filter(t => t.category === category)
+        }
+        if (query) {
+          const lower = query.toLowerCase()
+          filtered = filtered.filter(t =>
+            t.title.toLowerCase().includes(lower) ||
+            t.content.toLowerCase().includes(lower) ||
+            t.tags?.some((tag: string) => tag.toLowerCase().includes(lower))
+          )
+        }
+        return sortForumThreads(filtered)
+      }
+    }
+  } catch (err) {
+    console.warn('API forum fetch fallback to local cache:', err)
+  }
+
+  // 2. Offline / local fallback
+  let threads: ForumThread[] = []
+  if (typeof window !== 'undefined') {
     try {
-      window.localStorage.setItem(FORUM_STORAGE_KEY, JSON.stringify(threads))
+      const raw = window.localStorage.getItem(FORUM_STORAGE_KEY)
+      if (raw) threads = JSON.parse(raw)
     } catch {}
   }
 
-  // 2. Load user vote map for current user
-  let userVotes: Record<number, 'up' | 'down'> = {}
-  try {
-    const voteRaw = window.localStorage.getItem(getVoteStorageKey(userIdentifier))
-    if (voteRaw) userVotes = JSON.parse(voteRaw)
-  } catch {}
+  if (!threads || threads.length === 0) {
+    threads = SEED_FORUM_THREADS.filter(t => !deletedSet.has(String(t.id)))
+    if (typeof window !== 'undefined') {
+      try {
+        window.localStorage.setItem(FORUM_STORAGE_KEY, JSON.stringify(threads))
+      } catch {}
+    }
+  } else {
+    threads = threads.filter(t => !deletedSet.has(String(t.id)))
+  }
 
-  // 3. Decorate threads with userVote and score
+  let userVotes: Record<number, 'up' | 'down'> = {}
+  if (typeof window !== 'undefined') {
+    try {
+      const voteRaw = window.localStorage.getItem(getVoteStorageKey(userIdentifier))
+      if (voteRaw) userVotes = JSON.parse(voteRaw)
+    } catch {}
+  }
+
   threads = threads.map(t => {
     const upvotes = typeof t.upvotes === 'number' ? t.upvotes : 0
     const downvotes = typeof t.downvotes === 'number' ? t.downvotes : 0
@@ -1661,57 +1749,10 @@ export async function fetchForumThreads(category?: string, query?: string, userI
     }
   })
 
-  // 4. Try live fetch from Supabase to merge live database posts
-  try {
-    let q = supabase
-      .from('forum_threads')
-      .select('*')
-      .order('pinned', { ascending: false })
-      .order('created_at', { ascending: false })
-
-    if (category && category !== 'All Topics') {
-      q = q.eq('category', category)
-    }
-
-    const { data, error } = await q
-    if (!error && data && data.length > 0) {
-      const liveIds = new Set(data.map((r: any) => r.id))
-      const extraLocal = threads.filter(t => !liveIds.has(t.id))
-      const fromDb: ForumThread[] = data.map((t: any) => {
-        const localMatch = threads.find(x => x.id === t.id)
-        const up = typeof t.upvotes === 'number' ? t.upvotes : (localMatch?.upvotes || 0)
-        const down = typeof t.downvotes === 'number' ? t.downvotes : (localMatch?.downvotes || 0)
-        return {
-          id: t.id,
-          category: t.category,
-          title: t.title,
-          author: t.author_name || localMatch?.author || 'Community Member',
-          avatar: t.author_avatar || localMatch?.avatar || 'CM',
-          country: t.country || localMatch?.country || 'Bangladesh',
-          time: new Date(t.created_at).toLocaleDateString(),
-          preview: t.preview || t.content?.slice(0, 140),
-          content: t.content,
-          replies: t.replies ?? (localMatch?.replyList?.length || 0),
-          upvotes: up,
-          downvotes: down,
-          score: up - down,
-          tags: t.tags || [],
-          solved: Boolean(t.solved),
-          pinned: Boolean(t.pinned),
-          replyList: localMatch?.replyList || [],
-          userVote: userVotes[t.id] || null,
-        }
-      })
-      threads = [...fromDb, ...extraLocal]
-    }
-  } catch {}
-
-  // 5. Filter by category
   if (category && category !== 'All Topics') {
     threads = threads.filter(t => t.category === category)
   }
 
-  // 6. Filter by query
   if (query) {
     const lower = query.toLowerCase()
     threads = threads.filter(t =>
@@ -1721,7 +1762,6 @@ export async function fetchForumThreads(category?: string, query?: string, userI
     )
   }
 
-  // 7. Sort: pinned posts first (admin pinned or top-voted), then by score descending
   return sortForumThreads(threads)
 }
 
@@ -1735,7 +1775,7 @@ export async function voteForumThreadApi(
   try {
     const raw = window.localStorage.getItem(voteKey)
     if (raw) userVotes = JSON.parse(raw)
-  } catch {}
+  } catch { }
 
   const currentVote = userVotes[threadId] || null
   let newVote: 'up' | 'down' | null = null
@@ -1751,7 +1791,7 @@ export async function voteForumThreadApi(
 
   try {
     window.localStorage.setItem(voteKey, JSON.stringify(userVotes))
-  } catch {}
+  } catch { }
 
   let finalUp = 0
   let finalDown = 0
@@ -1779,7 +1819,7 @@ export async function voteForumThreadApi(
       return t
     })
     window.localStorage.setItem(FORUM_STORAGE_KEY, JSON.stringify(threads))
-  } catch {}
+  } catch { }
 
   // Also try updating backend / Supabase
   try {
@@ -1789,7 +1829,7 @@ export async function voteForumThreadApi(
       body: JSON.stringify({ direction: newVote }),
       signal: AbortSignal.timeout(800),
     })
-  } catch {}
+  } catch { }
 
   return { upvotes: finalUp, downvotes: finalDown, score: finalUp - finalDown, userVote: newVote }
 }
@@ -1836,7 +1876,7 @@ export async function replyToForumThreadApi(
       return t
     })
     window.localStorage.setItem(FORUM_STORAGE_KEY, JSON.stringify(threads))
-  } catch {}
+  } catch { }
 
   // Try updating Supabase
   try {
@@ -1846,7 +1886,7 @@ export async function replyToForumThreadApi(
       user_id: session?.user?.id || authorId || null,
       content: content.trim(),
     })
-  } catch {}
+  } catch { }
 
   if (!updatedThread) {
     updatedThread = {
@@ -1885,58 +1925,80 @@ export async function createForumThreadApi(data: {
   authorEmail?: string
 }): Promise<ForumThread> {
   const authorName = data.author || 'Candidate'
-  const newThread: ForumThread = {
-    id: Date.now(),
-    category: data.category,
-    title: data.title,
-    author: authorName,
-    authorId: data.authorId,
-    authorEmail: data.authorEmail,
-    avatar: authorName.split(' ').filter(Boolean).map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'CA',
-    country: 'Bangladesh',
-    time: 'Just now',
-    preview: data.content.slice(0, 140),
-    content: data.content,
-    replies: 0,
-    upvotes: 1,
-    downvotes: 0,
-    score: 1,
-    tags: data.tags && data.tags.length ? data.tags : [data.category],
-    solved: false,
-    pinned: false,
-    replyList: [],
-    userVote: 'up',
+  let newThread: ForumThread | null = null
+
+  // 1. Try to create via live Supabase-backed API
+  try {
+    const res = await fetch(`${API_BASE}/forum`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title: data.title,
+        category: data.category,
+        content: data.content,
+        tags: data.tags,
+        author: authorName,
+        authorId: data.authorId,
+        authorEmail: data.authorEmail,
+      }),
+      signal: AbortSignal.timeout(4000),
+    })
+    if (res.ok) {
+      const json = await res.json()
+      if (json.success && json.thread) {
+        newThread = json.thread
+      }
+    }
+  } catch (err) {
+    console.warn('Live forum creation error, fallback local:', err)
   }
 
-  // Save to persistent community threads
-  try {
-    const raw = window.localStorage.getItem(FORUM_STORAGE_KEY)
-    const threads: ForumThread[] = raw ? JSON.parse(raw) : SEED_FORUM_THREADS
-    window.localStorage.setItem(FORUM_STORAGE_KEY, JSON.stringify([newThread, ...threads]))
-  } catch {}
-
-  // Record author's upvote
-  try {
-    const voteKey = getVoteStorageKey(authorName)
-    const rawVotes = window.localStorage.getItem(voteKey)
-    const votes = rawVotes ? JSON.parse(rawVotes) : {}
-    votes[newThread.id] = 'up'
-    window.localStorage.setItem(voteKey, JSON.stringify(votes))
-  } catch {}
-
-  // Also attempt Supabase insert
-  try {
-    const { data: { session } } = await supabase.auth.getSession()
-    if (session?.user?.id && isValidUUID(session.user.id)) {
-      await supabase.from('forum_threads').insert({
-        user_id: session.user.id,
-        category: data.category,
-        title: data.title,
-        content: data.content,
-        tags: data.tags || [],
-      })
+  if (!newThread) {
+    newThread = {
+      id: Date.now(),
+      category: data.category,
+      title: data.title,
+      author: authorName,
+      authorId: data.authorId,
+      authorEmail: data.authorEmail,
+      avatar: authorName.split(' ').filter(Boolean).map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'CA',
+      country: 'Bangladesh',
+      time: 'Just now',
+      preview: data.content.slice(0, 140),
+      content: data.content,
+      replies: 0,
+      upvotes: 1,
+      downvotes: 0,
+      score: 1,
+      tags: data.tags && data.tags.length ? data.tags : [data.category],
+      solved: false,
+      pinned: false,
+      replyList: [],
+      userVote: 'up',
     }
-  } catch {}
+  }
+
+  if (typeof window !== 'undefined') {
+    try {
+      const raw = window.localStorage.getItem(FORUM_STORAGE_KEY)
+      const threads: ForumThread[] = raw ? JSON.parse(raw) : SEED_FORUM_THREADS
+      window.localStorage.setItem(FORUM_STORAGE_KEY, JSON.stringify([newThread, ...threads.filter(t => t.id !== newThread!.id)]))
+    } catch {}
+
+    try {
+      const voteKey = getVoteStorageKey(authorName)
+      const rawVotes = window.localStorage.getItem(voteKey)
+      const votes = rawVotes ? JSON.parse(rawVotes) : {}
+      votes[newThread.id] = 'up'
+      window.localStorage.setItem(voteKey, JSON.stringify(votes))
+    } catch {}
+
+    try {
+      const channel = new BroadcastChannel('vistora_forum_channel')
+      channel.postMessage({ type: 'THREAD_CREATED', thread: newThread })
+      channel.close()
+    } catch {}
+  }
 
   return newThread
 }
@@ -1945,30 +2007,46 @@ export async function deleteForumThreadApi(
   threadId: number | string,
   user?: UserProfile | null
 ): Promise<boolean> {
-  // 1. Delete from localStorage
-  try {
-    const raw = window.localStorage.getItem(FORUM_STORAGE_KEY)
-    if (raw) {
-      const threads: ForumThread[] = JSON.parse(raw)
-      const filtered = threads.filter(t => String(t.id) !== String(threadId))
-      window.localStorage.setItem(FORUM_STORAGE_KEY, JSON.stringify(filtered))
-    }
-  } catch {}
+  // 1. Record persistent tombstone in local deleted set
+  addLocalDeletedThreadId(threadId)
 
-  // 2. Delete from Supabase
+  // 2. Remove from local storage
+  if (typeof window !== 'undefined') {
+    try {
+      const raw = window.localStorage.getItem(FORUM_STORAGE_KEY)
+      if (raw) {
+        const threads: ForumThread[] = JSON.parse(raw)
+        const filtered = threads.filter(t => String(t.id) !== String(threadId))
+        window.localStorage.setItem(FORUM_STORAGE_KEY, JSON.stringify(filtered))
+      }
+    } catch {}
+  }
+
+  // 3. Delete from central live API /api/forum (Supabase-backed)
+  try {
+    await fetch(`${API_BASE}/forum?id=${encodeURIComponent(threadId)}`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: threadId, userId: user?.id, role: user?.role }),
+      signal: AbortSignal.timeout(3000),
+    })
+  } catch (err) {
+    console.warn('Live forum delete API error:', err)
+  }
+
+  // 4. Also attempt direct Supabase delete as backup
   try {
     await supabase.from('forum_threads').delete().eq('id', threadId)
   } catch {}
 
-  // 3. Delete from backend if active
-  try {
-    await fetch(`${API_BASE}/forum/threads/${threadId}`, {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId: user?.id, role: user?.role }),
-      signal: AbortSignal.timeout(2000),
-    })
-  } catch {}
+  // 5. Broadcast to other open tabs / windows in real-time
+  if (typeof window !== 'undefined') {
+    try {
+      const channel = new BroadcastChannel('vistora_forum_channel')
+      channel.postMessage({ type: 'THREAD_DELETED', threadId })
+      channel.close()
+    } catch {}
+  }
 
   return true
 }
@@ -1996,12 +2074,12 @@ export async function deleteForumReplyApi(
       })
       window.localStorage.setItem(FORUM_STORAGE_KEY, JSON.stringify(threads))
     }
-  } catch {}
+  } catch { }
 
   // 2. Delete from Supabase
   try {
     await supabase.from('forum_replies').delete().eq('id', replyId)
-  } catch {}
+  } catch { }
 
   return true
 }
@@ -2052,29 +2130,49 @@ export async function togglePinForumThreadApi(
   let newPinnedState = false
 
   // 1. Update in localStorage
-  try {
-    const raw = window.localStorage.getItem(FORUM_STORAGE_KEY)
-    if (raw) {
-      let threads: ForumThread[] = JSON.parse(raw)
-      threads = threads.map(t => {
-        if (String(t.id) === String(threadId)) {
-          newPinnedState = !(t.adminPinned || t.pinned)
-          return {
-            ...t,
-            adminPinned: newPinnedState,
-            pinned: newPinnedState,
+  if (typeof window !== 'undefined') {
+    try {
+      const raw = window.localStorage.getItem(FORUM_STORAGE_KEY)
+      if (raw) {
+        let threads: ForumThread[] = JSON.parse(raw)
+        threads = threads.map(t => {
+          if (String(t.id) === String(threadId)) {
+            newPinnedState = !(t.adminPinned || t.pinned)
+            return {
+              ...t,
+              adminPinned: newPinnedState,
+              pinned: newPinnedState,
+            }
           }
-        }
-        return t
-      })
-      window.localStorage.setItem(FORUM_STORAGE_KEY, JSON.stringify(threads))
-    }
-  } catch {}
+          return t
+        })
+        window.localStorage.setItem(FORUM_STORAGE_KEY, JSON.stringify(threads))
+      }
+    } catch { }
+  }
 
-  // 2. Update in Supabase
+  // 2. Update via live API / Supabase
   try {
-    await supabase.from('forum_threads').update({ is_pinned: newPinnedState }).eq('id', threadId)
-  } catch {}
+    await fetch(`${API_BASE}/forum`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'pin', id: threadId, pinned: newPinnedState }),
+      signal: AbortSignal.timeout(2500),
+    })
+  } catch { }
+
+  try {
+    await supabase.from('forum_threads').update({ pinned: newPinnedState }).eq('id', threadId)
+  } catch { }
+
+  // 3. Broadcast to other open tabs / windows
+  if (typeof window !== 'undefined') {
+    try {
+      const channel = new BroadcastChannel('vistora_forum_channel')
+      channel.postMessage({ type: 'PIN_TOGGLED', threadId, pinned: newPinnedState })
+      channel.close()
+    } catch { }
+  }
 
   return newPinnedState
 }

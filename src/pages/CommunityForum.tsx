@@ -51,6 +51,32 @@ export default function CommunityForum() {
 
   useEffect(() => {
     loadThreads()
+
+    // Real-time synchronization across different tabs and user accounts
+    if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+      const channel = new BroadcastChannel('vistora_forum_channel')
+      channel.onmessage = (event) => {
+        const data = event.data
+        if (data?.type === 'THREAD_DELETED') {
+          setThreads(prev => prev.filter(t => String(t.id) !== String(data.threadId)))
+          setActiveThreadId(curr => (String(curr) === String(data.threadId) ? null : curr))
+        } else if (data?.type === 'THREAD_CREATED' && data.thread) {
+          setThreads(prev => sortForumThreads([data.thread, ...prev.filter(t => String(t.id) !== String(data.thread.id))]))
+        } else if (data?.type === 'PIN_TOGGLED') {
+          setThreads(prev => {
+            const updated = prev.map(t =>
+              String(t.id) === String(data.threadId)
+                ? { ...t, adminPinned: data.pinned, pinned: data.pinned }
+                : t
+            )
+            return sortForumThreads(updated)
+          })
+        }
+      }
+      return () => {
+        channel.close()
+      }
+    }
   }, [activeCat, search, userIdentifier])
 
   const handleCreateThread = async (e: React.FormEvent) => {
