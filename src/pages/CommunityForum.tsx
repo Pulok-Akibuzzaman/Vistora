@@ -4,6 +4,9 @@ import {
   createForumThreadApi,
   replyToForumThreadApi,
   voteForumThreadApi,
+  deleteForumThreadApi,
+  deleteForumReplyApi,
+  canDeleteForumItem,
   type ForumThread,
 } from '../lib/api'
 import { useAuth } from '../lib/authContext'
@@ -61,6 +64,8 @@ export default function CommunityForum() {
         content: newContent,
         tags: tags.length ? tags : [newCategory],
         author: authorName,
+        authorId: user?.id,
+        authorEmail: user?.email,
       })
       setThreads(prev => [thread, ...prev])
       setNewPostOpen(false)
@@ -82,7 +87,9 @@ export default function CommunityForum() {
       const { reply, thread } = await replyToForumThreadApi(
         activeThreadId,
         replyText,
-        authorName
+        authorName,
+        user?.id,
+        user?.email
       )
       setThreads(prev =>
         prev.map(t =>
@@ -99,6 +106,55 @@ export default function CommunityForum() {
       setReplyText('')
     } finally {
       setSubmittingReply(false)
+    }
+  }
+
+  const handleDeleteThread = async (threadId: number, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation()
+    const target = threads.find(t => t.id === threadId)
+    const isAdmin = user?.role?.toLowerCase() === 'admin'
+    const confirmMsg = isAdmin && target?.author !== user?.name
+      ? `As Admin, are you sure you want to delete this thread by "${target?.author || 'Community Member'}"?`
+      : 'Are you sure you want to delete this discussion thread?'
+
+    if (!window.confirm(confirmMsg)) return
+
+    try {
+      await deleteForumThreadApi(threadId, user)
+      setThreads(prev => prev.filter(t => t.id !== threadId))
+      if (activeThreadId === threadId) {
+        setActiveThreadId(null)
+      }
+    } catch (err) {
+      console.error('Failed to delete thread:', err)
+    }
+  }
+
+  const handleDeleteReply = async (threadId: number, replyId: string) => {
+    const isAdmin = user?.role?.toLowerCase() === 'admin'
+    const confirmMsg = isAdmin
+      ? 'Are you sure you want to delete this reply?'
+      : 'Are you sure you want to delete your reply?'
+
+    if (!window.confirm(confirmMsg)) return
+
+    try {
+      await deleteForumReplyApi(threadId, replyId, user)
+      setThreads(prev =>
+        prev.map(t => {
+          if (t.id === threadId) {
+            const replyList = (t.replyList || []).filter(r => r.id !== replyId)
+            return {
+              ...t,
+              replies: replyList.length,
+              replyList,
+            }
+          }
+          return t
+        })
+      )
+    } catch (err) {
+      console.error('Failed to delete reply:', err)
     }
   }
 
@@ -145,6 +201,16 @@ export default function CommunityForum() {
                 <span className="mono text-[9px] px-2 py-0.5 bg-success-soft text-positive-strong font-bold" style={{ borderRadius: 2 }}>
                   SOLVED ✓
                 </span>
+              )}
+              {canDeleteForumItem(activeThread, user) && (
+                <button
+                  type="button"
+                  onClick={e => handleDeleteThread(activeThread.id, e)}
+                  className="mono text-[10px] text-rose-600 hover:text-white hover:bg-rose-600 border border-rose-300 px-2.5 py-0.5 rounded transition-all flex items-center gap-1 font-semibold cursor-pointer shadow-xs ml-1"
+                  title={user?.role?.toLowerCase() === 'admin' ? 'Admin: Delete this thread' : 'Delete your thread'}
+                >
+                  🗑️ Delete Thread
+                </button>
               )}
             </div>
 
@@ -220,17 +286,29 @@ export default function CommunityForum() {
           <div className="divide-y divide-divider-faint">
             {activeThread.replyList && activeThread.replyList.length > 0 ? (
               activeThread.replyList.map(rep => (
-                <div key={rep.id} className="p-5">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="w-6 h-6 bg-violet-dim flex items-center justify-center text-accent-2 text-[9px] font-bold" style={{ borderRadius: 3 }}>
-                      {rep.avatar}
+                <div key={rep.id} className="p-5 flex items-start justify-between gap-3">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-6 h-6 bg-violet-dim flex items-center justify-center text-accent-2 text-[9px] font-bold" style={{ borderRadius: 3 }}>
+                        {rep.avatar}
+                      </div>
+                      <span className="text-xs font-medium text-ink plex">{rep.author}</span>
+                      <span className="mono text-[10px] text-subtle">{rep.time}</span>
                     </div>
-                    <span className="text-xs font-medium text-ink plex">{rep.author}</span>
-                    <span className="mono text-[10px] text-subtle">{rep.time}</span>
+                    <p className="text-[12px] text-graphite leading-relaxed whitespace-pre-line" style={{ fontFamily: 'Inter, sans-serif' }}>
+                      {rep.content}
+                    </p>
                   </div>
-                  <p className="text-[12px] text-graphite leading-relaxed whitespace-pre-line" style={{ fontFamily: 'Inter, sans-serif' }}>
-                    {rep.content}
-                  </p>
+                  {canDeleteForumItem(rep, user) && (
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteReply(activeThread.id, rep.id)}
+                      className="mono text-[10px] text-rose-600 hover:text-rose-800 hover:bg-rose-50 border border-rose-200 px-2 py-0.5 rounded transition-colors cursor-pointer flex-shrink-0 flex items-center gap-1"
+                      title={user?.role?.toLowerCase() === 'admin' ? 'Admin: Delete this reply' : 'Delete your reply'}
+                    >
+                      🗑️ Delete
+                    </button>
+                  )}
                 </div>
               ))
             ) : (
@@ -427,7 +505,7 @@ export default function CommunityForum() {
                   <p className="text-xs text-muted line-clamp-2 leading-relaxed">
                     {thread.preview || thread.content}
                   </p>
-                  <div className="flex items-center gap-3 mt-3">
+                  <div className="flex items-center gap-3 mt-3 flex-wrap">
                     <span className="text-[11px] text-graphite font-medium">{thread.author}</span>
                     <span className="mono text-[10px] text-subtle">{thread.time}</span>
                     <div className="flex items-center gap-1 ml-auto sm:ml-0">
@@ -437,6 +515,16 @@ export default function CommunityForum() {
                         </span>
                       ))}
                     </div>
+                    {canDeleteForumItem(thread, user) && (
+                      <button
+                        type="button"
+                        onClick={e => handleDeleteThread(thread.id, e)}
+                        className="mono text-[10px] text-rose-600 hover:text-white hover:bg-rose-600 border border-rose-300 px-2 py-0.5 rounded transition-all flex items-center gap-1 font-semibold cursor-pointer ml-auto sm:ml-2 shadow-xs"
+                        title={user?.role?.toLowerCase() === 'admin' ? 'Admin: Delete this thread' : 'Delete your thread'}
+                      >
+                        🗑️ Delete
+                      </button>
+                    )}
                   </div>
                 </div>
 

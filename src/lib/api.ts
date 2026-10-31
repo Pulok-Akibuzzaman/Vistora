@@ -111,6 +111,8 @@ export interface StudyTask {
 export interface ForumReply {
   id: string
   author: string
+  authorId?: string
+  authorEmail?: string
   avatar: string
   time: string
   content: string
@@ -121,6 +123,8 @@ export interface ForumThread {
   category: string
   title: string
   author: string
+  authorId?: string
+  authorEmail?: string
   avatar: string
   country: string
   time: string
@@ -1801,12 +1805,16 @@ export async function upvoteForumThreadApi(threadId: number, userIdentifier?: st
 export async function replyToForumThreadApi(
   threadId: number,
   content: string,
-  author?: string
+  author?: string,
+  authorId?: string,
+  authorEmail?: string
 ): Promise<{ reply: ForumReply; thread: ForumThread }> {
   const authorName = author || 'Student'
   const reply: ForumReply = {
     id: `reply-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
     author: authorName,
+    authorId,
+    authorEmail,
     avatar: authorName.split(' ').filter(Boolean).map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'ST',
     time: 'Just now',
     content: content.trim(),
@@ -1838,9 +1846,7 @@ export async function replyToForumThreadApi(
     const { data: { session } } = await supabase.auth.getSession()
     await supabase.from('forum_replies').insert({
       thread_id: threadId,
-      author_id: session?.user?.id || null,
-      author_name: authorName,
-      author_avatar: reply.avatar,
+      user_id: session?.user?.id || authorId || null,
       content: content.trim(),
     })
   } catch {}
@@ -1851,6 +1857,8 @@ export async function replyToForumThreadApi(
       category: 'General',
       title: 'Discussion Thread',
       author: authorName,
+      authorId,
+      authorEmail,
       avatar: reply.avatar,
       country: 'Bangladesh',
       time: 'Recently',
@@ -1876,6 +1884,8 @@ export async function createForumThreadApi(data: {
   content: string
   tags?: string[]
   author?: string
+  authorId?: string
+  authorEmail?: string
 }): Promise<ForumThread> {
   const authorName = data.author || 'Candidate'
   const newThread: ForumThread = {
@@ -1883,6 +1893,8 @@ export async function createForumThreadApi(data: {
     category: data.category,
     title: data.title,
     author: authorName,
+    authorId: data.authorId,
+    authorEmail: data.authorEmail,
     avatar: authorName.split(' ').filter(Boolean).map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'CA',
     country: 'Bangladesh',
     time: 'Just now',
@@ -1920,7 +1932,7 @@ export async function createForumThreadApi(data: {
     const { data: { session } } = await supabase.auth.getSession()
     if (session?.user?.id && isValidUUID(session.user.id)) {
       await supabase.from('forum_threads').insert({
-        author_id: session.user.id,
+        user_id: session.user.id,
         category: data.category,
         title: data.title,
         content: data.content,
@@ -1930,4 +1942,82 @@ export async function createForumThreadApi(data: {
   } catch {}
 
   return newThread
+}
+
+export async function deleteForumThreadApi(
+  threadId: number | string,
+  user?: UserProfile | null
+): Promise<boolean> {
+  // 1. Delete from localStorage
+  try {
+    const raw = window.localStorage.getItem(FORUM_STORAGE_KEY)
+    if (raw) {
+      const threads: ForumThread[] = JSON.parse(raw)
+      const filtered = threads.filter(t => String(t.id) !== String(threadId))
+      window.localStorage.setItem(FORUM_STORAGE_KEY, JSON.stringify(filtered))
+    }
+  } catch {}
+
+  // 2. Delete from Supabase
+  try {
+    await supabase.from('forum_threads').delete().eq('id', threadId)
+  } catch {}
+
+  // 3. Delete from backend if active
+  try {
+    await fetch(`${API_BASE}/forum/threads/${threadId}`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId: user?.id, role: user?.role }),
+      signal: AbortSignal.timeout(2000),
+    })
+  } catch {}
+
+  return true
+}
+
+export async function deleteForumReplyApi(
+  threadId: number | string,
+  replyId: string,
+  user?: UserProfile | null
+): Promise<boolean> {
+  // 1. Delete from localStorage
+  try {
+    const raw = window.localStorage.getItem(FORUM_STORAGE_KEY)
+    if (raw) {
+      let threads: ForumThread[] = JSON.parse(raw)
+      threads = threads.map(t => {
+        if (String(t.id) === String(threadId)) {
+          const replyList = (t.replyList || []).filter(r => r.id !== replyId)
+          return {
+            ...t,
+            replies: replyList.length,
+            replyList,
+          }
+        }
+        return t
+      })
+      window.localStorage.setItem(FORUM_STORAGE_KEY, JSON.stringify(threads))
+    }
+  } catch {}
+
+  // 2. Delete from Supabase
+  try {
+    await supabase.from('forum_replies').delete().eq('id', replyId)
+  } catch {}
+
+  return true
+}
+
+export function canDeleteForumItem(
+  item: { author?: string; authorId?: string; authorEmail?: string },
+  user?: UserProfile | null
+): boolean {
+  if (!user) return false
+  if (user.role?.toLowerCase() === 'admin') return true
+  if (item.authorId && user.id && item.authorId === user.id) return true
+  if (item.authorEmail && user.email && item.authorEmail.toLowerCase() === user.email.toLowerCase()) return true
+  if (item.author && user.name && item.author.trim().toLowerCase() === user.name.trim().toLowerCase()) return true
+  if (item.author && user.email && item.author.trim().toLowerCase() === user.email.split('@')[0].toLowerCase()) return true
+  return false
 }
