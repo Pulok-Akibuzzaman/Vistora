@@ -278,3 +278,25 @@ DROP POLICY IF EXISTS "Users can delete own upvotes" ON public.forum_upvotes;
 CREATE POLICY "Users can delete own upvotes"
   ON public.forum_upvotes FOR DELETE
   USING (auth.uid() = user_id);
+
+-- -----------------------------------------------------------------------------
+-- 8. RESOURCE BOOKMARKS TABLE
+-- -----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS public.resource_bookmarks (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  resource_id INT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT TIMEZONE('utc', NOW()),
+  CONSTRAINT unique_user_resource_bookmark UNIQUE (user_id, resource_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_resource_bookmarks_user ON public.resource_bookmarks(user_id);
+
+ALTER TABLE public.resource_bookmarks ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Users can manage own resource bookmarks" ON public.resource_bookmarks;
+CREATE POLICY "Users can manage own resource bookmarks"
+  ON public.resource_bookmarks FOR ALL
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
+

@@ -1070,6 +1070,127 @@ export async function deleteTaskApi(id: number, userId?: string): Promise<boolea
 }
 
 // --------------------------------------------------------------------------
+// User Resource Bookmarks (Supabase-Synced & Dynamic)
+// --------------------------------------------------------------------------
+
+function getBookmarkKey(userId?: string) {
+  return `vistora-bookmarks_${userId || 'current'}`
+}
+
+export async function fetchUserBookmarks(userId?: string): Promise<number[]> {
+  let targetUserId = userId && isValidUUID(userId) ? userId : null
+
+  try {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (session?.user?.id && isValidUUID(session.user.id)) {
+      targetUserId = session.user.id
+    }
+
+    // 1. Try dedicated Supabase table if present
+    if (targetUserId) {
+      try {
+        const { data, error } = await supabase
+          .from('resource_bookmarks')
+          .select('resource_id')
+          .eq('user_id', targetUserId)
+
+        if (!error && Array.isArray(data)) {
+          const list = data.map((r: any) => Number(r.resource_id)).filter(n => !isNaN(n))
+          if (typeof window !== 'undefined') {
+            window.localStorage.setItem(getBookmarkKey(targetUserId), JSON.stringify(list))
+            window.localStorage.setItem('vistora-saved-resources', JSON.stringify(list))
+          }
+          return list
+        }
+      } catch {}
+    }
+
+    // 2. Try Supabase Auth user metadata (database-backed)
+    if (session?.user) {
+      const meta = session.user.user_metadata || {}
+      if (Array.isArray(meta.bookmarked_resources)) {
+        const list = meta.bookmarked_resources.map(Number).filter((n: number) => !isNaN(n))
+        if (typeof window !== 'undefined') {
+          window.localStorage.setItem(getBookmarkKey(session.user.id), JSON.stringify(list))
+          window.localStorage.setItem('vistora-saved-resources', JSON.stringify(list))
+        }
+        return list
+      }
+    }
+  } catch (err) {
+    console.warn('[Supabase bookmarks] Fetch error:', err)
+  }
+
+  // 3. Fallback to localStorage cache
+  if (typeof window !== 'undefined') {
+    try {
+      const targetKey = getBookmarkKey(targetUserId || userId)
+      let stored = window.localStorage.getItem(targetKey)
+      if (!stored) {
+        stored = window.localStorage.getItem('vistora-saved-resources')
+      }
+      if (stored) {
+        const parsed = JSON.parse(stored)
+        if (Array.isArray(parsed)) {
+          // Clean out legacy mock seed [1, 101] if present
+          if (parsed.length === 2 && parsed.includes(1) && parsed.includes(101)) {
+            window.localStorage.removeItem('vistora-saved-resources')
+            window.localStorage.removeItem(targetKey)
+            return []
+          }
+          return parsed.map(Number).filter(n => !isNaN(n))
+        }
+      }
+    } catch {}
+  }
+
+  return []
+}
+
+export async function saveUserBookmarks(bookmarkIds: number[], userId?: string): Promise<void> {
+  const sanitized = Array.from(new Set(bookmarkIds.map(Number).filter(n => !isNaN(n))))
+  let targetUserId = userId && isValidUUID(userId) ? userId : null
+
+  // 1. Sync local cache immediately
+  if (typeof window !== 'undefined') {
+    try {
+      const key = getBookmarkKey(userId)
+      window.localStorage.setItem(key, JSON.stringify(sanitized))
+      window.localStorage.setItem('vistora-saved-resources', JSON.stringify(sanitized))
+    } catch {}
+  }
+
+  try {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (session?.user?.id && isValidUUID(session.user.id)) {
+      targetUserId = session.user.id
+    }
+
+    // 2. Try dedicated table if present
+    if (targetUserId) {
+      try {
+        await supabase.from('resource_bookmarks').delete().eq('user_id', targetUserId)
+        if (sanitized.length > 0) {
+          const rows = sanitized.map(id => ({ user_id: targetUserId, resource_id: id }))
+          await supabase.from('resource_bookmarks').insert(rows)
+        }
+      } catch {}
+    }
+
+    // 3. Persist to Supabase Auth user metadata (database-backed)
+    if (session?.user) {
+      await supabase.auth.updateUser({
+        data: {
+          bookmarked_resources: sanitized,
+        },
+      })
+    }
+  } catch (err) {
+    console.warn('[Supabase bookmarks] Save error:', err)
+  }
+}
+
+// --------------------------------------------------------------------------
 // AI Writing Evaluation & Document Generator
 // --------------------------------------------------------------------------
 

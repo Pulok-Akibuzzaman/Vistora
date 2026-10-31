@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { fetchPdfResources } from '../lib/api'
+import { fetchPdfResources, fetchUserBookmarks, saveUserBookmarks } from '../lib/api'
+import { useAuth } from '../lib/authContext'
 import { themeBg, themeText } from '../lib/theme'
 import {
   STATIC_RESOURCES,
@@ -9,6 +10,7 @@ import {
 
 const CATEGORIES = [
   'All',
+  'Bookmarked',
   'Official Books',
   'Reading',
   'Writing',
@@ -42,19 +44,20 @@ const TYPE_TEXT: Record<string, string> = {
 }
 
 export default function ResourceLibrary() {
+  const { user } = useAuth()
   const [resources, setResources] = useState<ResourceItem[]>(STATIC_RESOURCES)
   const [selectedResource, setSelectedResource] = useState<ResourceItem | null>(null)
   const [cat, setCat] = useState('All')
   const [difficulty, setDifficulty] = useState('All')
   const [search, setSearch] = useState('')
-  const [saved, setSaved] = useState<Set<number>>(() => {
-    try {
-      const stored = localStorage.getItem('vistora-saved-resources')
-      return stored ? new Set(JSON.parse(stored)) : new Set([1, 101])
-    } catch {
-      return new Set([1, 101])
-    }
-  })
+  const [saved, setSaved] = useState<Set<number>>(new Set())
+
+  // Dynamic Supabase & user-scoped bookmark synchronization
+  useEffect(() => {
+    fetchUserBookmarks(user?.id).then(bookmarks => {
+      setSaved(new Set(bookmarks))
+    }).catch(() => {})
+  }, [user?.id])
 
   useEffect(() => {
     fetchPdfResources().then(data => {
@@ -102,7 +105,8 @@ export default function ResourceLibrary() {
       const updated = new Set(prev)
       if (updated.has(id)) updated.delete(id)
       else updated.add(id)
-      localStorage.setItem('vistora-saved-resources', JSON.stringify(Array.from(updated)))
+      const arr = Array.from(updated)
+      saveUserBookmarks(arr, user?.id).catch(() => {})
       return updated
     })
   }
@@ -130,7 +134,11 @@ export default function ResourceLibrary() {
   const filtered = resources.filter(r => {
     const matchesCat =
       cat === 'All' ||
-      (cat === 'Official Books' ? r.category === 'Official Books' : r.category === cat)
+      (cat === 'Bookmarked'
+        ? saved.has(r.id)
+        : cat === 'Official Books'
+          ? r.category === 'Official Books'
+          : r.category === cat)
     const matchesDiff = difficulty === 'All' || r.difficulty.includes(difficulty)
     const matchesSearch =
       search === '' ||
@@ -156,10 +164,20 @@ export default function ResourceLibrary() {
             <div className="mono text-base font-bold text-accent">{resources.length}+</div>
             <div className="mono text-[9px] text-[#EF4444] tracking-widest">RESOURCES</div>
           </div>
-          <div className="bg-violet-dim border border-rose-line px-4 py-2 text-center" style={{ borderRadius: 3 }}>
-            <div className="mono text-base font-bold text-accent-2">{saved.size}</div>
-            <div className="mono text-[9px] text-accent-2 tracking-widest">BOOKMARKED</div>
-          </div>
+          <button
+            type="button"
+            onClick={() => setCat(prev => prev === 'Bookmarked' ? 'All' : 'Bookmarked')}
+            className={`border px-4 py-2 text-center transition-all cursor-pointer ${
+              cat === 'Bookmarked'
+                ? 'bg-[#BE123C] border-[#BE123C] text-white shadow-md'
+                : 'bg-violet-dim border-rose-line hover:border-accent-2'
+            }`}
+            style={{ borderRadius: 3 }}
+            title="Click to view bookmarked resources"
+          >
+            <div className={`mono text-base font-bold ${cat === 'Bookmarked' ? 'text-white' : 'text-accent-2'}`}>{saved.size}</div>
+            <div className={`mono text-[9px] tracking-widest ${cat === 'Bookmarked' ? 'text-white' : 'text-accent-2'}`}>BOOKMARKED</div>
+          </button>
         </div>
       </div>
 
@@ -330,7 +348,13 @@ export default function ResourceLibrary() {
       {filtered.length === 0 && (
         <div className="text-center py-16">
           <div className="text-2xl text-faint-2 mb-3">◎</div>
-          <div className="text-sm text-subtle plex">No resources found matching "{search}"</div>
+          <div className="text-sm text-subtle plex">
+            {cat === 'Bookmarked'
+              ? 'No bookmarked resources yet. Click the star icon (☆) on any resource card to save it.'
+              : search
+                ? `No resources found matching "${search}"`
+                : 'No resources found in this category'}
+          </div>
         </div>
       )}
 
