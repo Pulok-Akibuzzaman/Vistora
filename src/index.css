@@ -817,3 +817,37 @@ textarea::placeholder {
   :root:not([data-theme='dark']) .listening-exam ::-webkit-scrollbar-thumb {
     background: #CBD5E1;
   }
+
+
+/* ==========================================================================
+   PRINT / PDF MEDIA STYLES
+   Ensures that saving/printing PDF produces a pristine document without
+   website navigation, footers, sidebars, or application chrome.
+   ========================================================================== */
+@media print {
+  nav,
+  header,
+  footer,
+  aside,
+  button,
+  .no-print,
+  [data-no-print] {
+    display: none !important;
+  }
+
+  body,
+  html,
+  #root {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    overflow: visible !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .max-w-\[1400px\] {
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+}

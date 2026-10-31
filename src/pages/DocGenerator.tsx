@@ -198,6 +198,285 @@ ${name}`
   }
 }
 
+
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+}
+
+function formatDocumentToHtml(rawContent: string, docTitle: string, docType: DocType): string {
+  const lines = rawContent.split(/\r?\n/)
+  const bodyHtml: string[] = []
+  let inList = false
+
+  const closeListIfOpen = () => {
+    if (inList) {
+      bodyHtml.push('</ul>')
+      inList = false
+    }
+  }
+
+  const isHeading = (line: string): boolean => {
+    const trimmed = line.trim()
+    if (!trimmed) return false
+    if (trimmed.startsWith('# ') || trimmed.startsWith('## ') || trimmed.startsWith('### ')) return true
+    if (trimmed.length > 55) return false
+    const lettersOnly = trimmed.replace(/[^A-Za-z]/g, '')
+    if (lettersOnly.length >= 3 && trimmed === trimmed.toUpperCase()) return true
+    return false
+  }
+
+  const isMetaLine = (line: string): boolean => {
+    return (
+      line.startsWith('Email:') ||
+      line.startsWith('Applicant:') ||
+      line.startsWith('Target Program:') ||
+      line.startsWith('Target Course:') ||
+      line.startsWith('Institution:') ||
+      line.startsWith('Position Applied:') ||
+      line.startsWith('Company:') ||
+      line.startsWith('Date:') ||
+      line.startsWith('RE:') ||
+      line.startsWith('Professional Profile:') ||
+      line.startsWith('Location:') ||
+      line.startsWith('English Proficiency:')
+    )
+  }
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim()
+
+    if (!line) {
+      closeListIfOpen()
+      continue
+    }
+
+    if (line.startsWith('•') || line.startsWith('- ') || line.startsWith('* ')) {
+      if (!inList) {
+        bodyHtml.push('<ul class="doc-list">')
+        inList = true
+      }
+      const itemText = line.replace(/^[•\-\*]\s*/, '')
+      bodyHtml.push('  <li>' + escapeHtml(itemText) + '</li>')
+      continue
+    }
+
+    closeListIfOpen()
+
+    // First heading is main document title
+    if (i === 0 || (bodyHtml.length === 0 && isHeading(line))) {
+      const cleanTitle = line.replace(/^#+\s*/, '')
+      bodyHtml.push('<div class="doc-main-header"><h1 class="doc-main-title">' + escapeHtml(cleanTitle) + '</h1></div>')
+      continue
+    }
+
+    // Candidate name (e.g. line right after title in CV or Cover letter)
+    if (bodyHtml.length === 1 && lines[i - 1]?.trim() === '' && isHeading(line)) {
+      bodyHtml.push('<div class="doc-candidate-name">' + escapeHtml(line) + '</div>')
+      continue
+    }
+
+    if (isHeading(line)) {
+      const cleanHeading = line.replace(/^#+\s*/, '')
+      bodyHtml.push('<h2 class="doc-section-heading">' + escapeHtml(cleanHeading) + '</h2>')
+      continue
+    }
+
+    if (isMetaLine(line)) {
+      const isCentered = docType === 'cv' || line.includes('Email:') || line.includes('Professional Profile:')
+      bodyHtml.push('<div class="' + (isCentered ? 'doc-meta-line' : 'doc-meta-line-left') + '">' + escapeHtml(line) + '</div>')
+      continue
+    }
+
+    if (line.startsWith('Dear ') || line.startsWith('Sincerely,') || line.startsWith('Regards,') || line.startsWith('Hiring Committee')) {
+      bodyHtml.push('<p class="doc-salutation">' + escapeHtml(line) + '</p>')
+      continue
+    }
+
+    bodyHtml.push('<p class="doc-paragraph">' + escapeHtml(line) + '</p>')
+  }
+
+  closeListIfOpen()
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>${escapeHtml(docTitle)}</title>
+  <style>
+    @page {
+      size: A4 portrait;
+      margin: 20mm 18mm 20mm 18mm;
+    }
+    *, *::before, *::after {
+      box-sizing: border-box;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: #ffffff !important;
+      color: #0f172a !important;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      font-size: 10.5pt;
+      line-height: 1.55;
+    }
+    .print-sheet {
+      width: 100%;
+      max-width: 100%;
+      margin: 0 auto;
+    }
+    .doc-main-header {
+      text-align: center;
+      margin-bottom: 12pt;
+      padding-bottom: 6pt;
+      border-bottom: 2px solid #0f172a;
+    }
+    .doc-main-title {
+      font-size: 17pt;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #0f172a;
+      margin: 0;
+    }
+    .doc-candidate-name {
+      font-size: 13pt;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      color: #0f172a;
+      margin: 6pt 0 4pt 0;
+      text-align: center;
+    }
+    .doc-meta-line {
+      font-size: 9.5pt;
+      color: #334155;
+      margin: 2pt 0;
+      line-height: 1.4;
+      text-align: center;
+    }
+    .doc-meta-line-left {
+      font-size: 9.5pt;
+      color: #334155;
+      margin: 2pt 0;
+      line-height: 1.4;
+      text-align: left;
+    }
+    .doc-section-heading {
+      font-size: 11pt;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: #0f172a;
+      margin-top: 14pt;
+      margin-bottom: 4pt;
+      padding-bottom: 2pt;
+      border-bottom: 1.5px solid #cbd5e1;
+      page-break-after: avoid;
+      break-after: avoid;
+    }
+    .doc-salutation {
+      margin: 10pt 0 4pt 0;
+      font-weight: 600;
+      font-size: 10.5pt;
+      color: #0f172a;
+    }
+    .doc-paragraph {
+      margin: 6pt 0;
+      font-size: 10.5pt;
+      line-height: 1.6;
+      color: #1e293b;
+      text-align: justify;
+      text-justify: inter-word;
+    }
+    .doc-list {
+      margin: 3pt 0 6pt 0;
+      padding-left: 16pt;
+      list-style-type: disc;
+    }
+    .doc-list li {
+      margin-bottom: 3pt;
+      font-size: 10pt;
+      line-height: 1.5;
+      color: #1e293b;
+    }
+  </style>
+</head>
+<body>
+  <div class="print-sheet">
+    ${bodyHtml.join('\n    ')}
+  </div>
+</body>
+</html>`
+}
+
+function printFormattedDocument(rawContent: string, docTitle: string, docType: DocType): void {
+  const formattedHtml = formatDocumentToHtml(rawContent, docTitle, docType)
+
+  // Use an isolated hidden iframe so printing excludes all website layout, navbar, and footer
+  const iframe = document.createElement('iframe')
+  iframe.style.position = 'fixed'
+  iframe.style.top = '-10000px'
+  iframe.style.left = '-10000px'
+  iframe.style.width = '0'
+  iframe.style.height = '0'
+  iframe.style.border = 'none'
+  iframe.setAttribute('aria-hidden', 'true')
+  document.body.appendChild(iframe)
+
+  const doc = iframe.contentWindow?.document
+  if (!doc) {
+    const win = window.open('', '_blank')
+    if (win) {
+      win.document.open()
+      win.document.write(formattedHtml)
+      win.document.close()
+      win.focus()
+      setTimeout(() => win.print(), 350)
+    }
+    return
+  }
+
+  doc.open()
+  doc.write(formattedHtml)
+  doc.close()
+
+  const cleanup = () => {
+    setTimeout(() => {
+      try {
+        if (iframe.parentNode) {
+          document.body.removeChild(iframe)
+        }
+      } catch {
+        // ignore cleanup error
+      }
+    }, 2500)
+  }
+
+  setTimeout(() => {
+    try {
+      iframe.contentWindow?.focus()
+      iframe.contentWindow?.print()
+    } catch (err) {
+      console.warn('Iframe print failed, opening popup window:', err)
+      const win = window.open('', '_blank')
+      if (win) {
+        win.document.open()
+        win.document.write(formattedHtml)
+        win.document.close()
+        win.focus()
+        setTimeout(() => win.print(), 350)
+      }
+    } finally {
+      cleanup()
+    }
+  }, 250)
+}
+
 export default function DocGenerator() {
   const { user } = useAuth()
   const [docType, setDocType] = useState<DocType>('cv')
@@ -301,6 +580,15 @@ export default function DocGenerator() {
     URL.revokeObjectURL(url)
   }
 
+  
+  const handlePrintPdf = () => {
+    if (!generatedText) return
+    const docTypeName = DOC_TYPES.find(d => d.id === docType)?.label || 'Application Document'
+    const applicantName = (form.name || user?.name || 'Applicant').trim()
+    const pageTitle = `${docTypeName} - ${applicantName}`
+    printFormattedDocument(generatedText, pageTitle, docType)
+  }
+
   const cleanSymbolsNow = () => {
     if (generatedText) {
       setGeneratedText(prev => stripMarkdown(prev))
@@ -309,14 +597,14 @@ export default function DocGenerator() {
 
   return (
     <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-8">
-      <div className="label-tag mb-1">AI DOCUMENT GENERATOR · VISTORA</div>
-      <h1 className="text-2xl font-bold text-ink plex tracking-tight mb-1">Application Document Generator</h1>
-      <p className="text-sm text-muted mb-6" style={{ fontFamily: 'Inter, sans-serif' }}>
+      <div className="label-tag mb-1 no-print">AI DOCUMENT GENERATOR · VISTORA</div>
+      <h1 className="text-2xl font-bold text-ink plex tracking-tight mb-1 no-print">Application Document Generator</h1>
+      <p className="text-sm text-muted mb-6 no-print" style={{ fontFamily: 'Inter, sans-serif' }}>
         Generate custom, professionally structured academic and career documents tailored to your profile.
       </p>
 
       {/* Doc type selector */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6 no-print">
         {DOC_TYPES.map(d => (
           <button
             key={d.id}
@@ -346,7 +634,7 @@ export default function DocGenerator() {
 
       <div className="grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-4">
         {/* Form */}
-        <div className="bg-surface border border-divider" style={{ borderRadius: 4 }}>
+        <div className="bg-surface border border-divider no-print" style={{ borderRadius: 4 }}>
           <div className="px-5 py-4 border-b border-divider-soft flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="w-1 h-4 bg-[#DC2626]" style={{ borderRadius: 1 }} />
@@ -419,7 +707,7 @@ export default function DocGenerator() {
 
         {/* Preview */}
         <div className="bg-surface border border-divider flex flex-col" style={{ borderRadius: 4 }}>
-          <div className="px-5 py-4 border-b border-divider-soft flex flex-wrap items-center justify-between gap-2 flex-shrink-0">
+          <div className="px-5 py-4 border-b border-divider-soft flex flex-wrap items-center justify-between gap-2 flex-shrink-0 no-print">
             <div className="flex items-center gap-2.5">
               <span className="w-1 h-4 bg-[#BE123C]" style={{ borderRadius: 1 }} />
               <span className="text-sm font-semibold text-ink plex">Document Preview</span>
@@ -470,8 +758,9 @@ export default function DocGenerator() {
               </button>
               <button
                 type="button"
-                onClick={() => generatedText && window.print()}
+                onClick={handlePrintPdf}
                 disabled={!isGenerated || !generatedText}
+                title="Format and print or save document as PDF"
                 className="mono text-[10px] text-white bg-navy px-3 py-1.5 hover:bg-navy-mid transition-colors rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
                 Print / PDF
@@ -501,13 +790,18 @@ export default function DocGenerator() {
                   </p>
                 </div>
               ) : (
-                <textarea
-                  value={generatedText}
-                  onChange={e => setGeneratedText(e.target.value)}
-                  className="w-full text-[13px] text-graphite leading-[1.85] outline-none border-none resize-y bg-transparent flex-1"
-                  style={{ fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', minHeight: 520 }}
-                  placeholder="Your generated document will appear here..."
-                />
+                <>
+                  <textarea
+                    value={generatedText}
+                    onChange={e => setGeneratedText(e.target.value)}
+                    className="w-full text-[13px] text-graphite leading-[1.85] outline-none border-none resize-y bg-transparent flex-1 print:hidden"
+                    style={{ fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', minHeight: 520 }}
+                    placeholder="Your generated document will appear here..."
+                  />
+                  <div className="hidden print:block text-ink whitespace-pre-wrap font-serif text-[11pt] leading-[1.6]">
+                    {generatedText}
+                  </div>
+                </>
               )}
             </div>
           </div>
