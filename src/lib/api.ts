@@ -324,18 +324,105 @@ export const SHAREPOINT_AUDIO_URLS: Record<string, string> = {
   '20-4-4': 'https://ewubd-my.sharepoint.com/:u:/g/personal/2023-3-60-051_std_ewubd_edu/IQDFvSWXP7xOR6O6LlwaHiDnAZsSotOO-cwfe3ex2326IHg?download=1',
 }
 
+export const CUSTOM_SHAREPOINT_KEY = 'vistora-custom-sharepoint-audio'
+
+/**
+ * Loads admin-defined custom SharePoint / OneDrive audio links from localStorage
+ */
+export function getCustomSharepointUrls(): Record<string, string> {
+  try {
+    if (typeof window === 'undefined') return {}
+    const stored = window.localStorage.getItem(CUSTOM_SHAREPOINT_KEY)
+    return stored ? JSON.parse(stored) : {}
+  } catch {
+    return {}
+  }
+}
+
+/**
+ * Saves or updates a custom SharePoint / OneDrive audio link
+ */
+export function saveCustomSharepointUrl(book: string | number, test: string | number, part: string | number, url: string): void {
+  const cleanBook = String(book).replace(/[^0-9]/g, '')
+  const key = `${cleanBook}-${test}-${part}`
+  const existing = getCustomSharepointUrls()
+  existing[key] = url.trim()
+  if (typeof window !== 'undefined') {
+    window.localStorage.setItem(CUSTOM_SHAREPOINT_KEY, JSON.stringify(existing))
+  }
+}
+
+/**
+ * Deletes a custom SharePoint audio link
+ */
+export function deleteCustomSharepointUrl(key: string): void {
+  const existing = getCustomSharepointUrls()
+  delete existing[key]
+  if (typeof window !== 'undefined') {
+    window.localStorage.setItem(CUSTOM_SHAREPOINT_KEY, JSON.stringify(existing))
+  }
+}
+
+/**
+ * Returns all available audio tracks (both official default and admin-added custom links)
+ */
+export function getAllSharepointAudioTracks(): Array<{ key: string; book: string; test: number; part: number; url: string; isCustom: boolean }> {
+  const custom = getCustomSharepointUrls()
+  const map = new Map<string, { key: string; book: string; test: number; part: number; url: string; isCustom: boolean }>()
+
+  for (const [key, url] of Object.entries(SHAREPOINT_AUDIO_URLS)) {
+    const parts = key.split('-')
+    map.set(key, {
+      key,
+      book: parts[0] || '18',
+      test: Number(parts[1]) || 1,
+      part: Number(parts[2]) || 1,
+      url,
+      isCustom: false,
+    })
+  }
+
+  for (const [key, url] of Object.entries(custom)) {
+    const parts = key.split('-')
+    map.set(key, {
+      key,
+      book: parts[0] || '18',
+      test: Number(parts[1]) || 1,
+      part: Number(parts[2]) || 1,
+      url,
+      isCustom: true,
+    })
+  }
+
+  return Array.from(map.values()).sort((a, b) => {
+    const bA = parseInt(a.book) || 0
+    const bB = parseInt(b.book) || 0
+    if (bA !== bB) return bA - bB
+    if (a.test !== b.test) return a.test - b.test
+    return a.part - b.part
+  })
+}
+
 /**
  * Returns the exact direct SharePoint / OneDrive sharing URL for an audio track if mapped.
  */
 export function getSharepointAudioUrl(book: string | number, test: string | number, part: string | number): string | null {
   const cleanBook = String(book).replace(/[^0-9]/g, '')
   const key = `${cleanBook}-${test}-${part}`
+  const custom = getCustomSharepointUrls()
+  if (custom[key]) return custom[key]
   return SHAREPOINT_AUDIO_URLS[key] || null
 }
 
 export function getStreamUrl(book: string | number, test: string | number, part: string | number): string {
   const cleanBook = String(book).replace(/[^0-9]/g, '')
   const key = `${cleanBook}-${test}-${part}`
+
+  // Check if admin provided a custom SharePoint/audio URL
+  const custom = getCustomSharepointUrls()
+  if (custom[key]) {
+    return custom[key]
+  }
 
   // On localhost, prioritize the high-performance local streaming endpoint
   if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {

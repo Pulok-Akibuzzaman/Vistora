@@ -13,6 +13,8 @@ import { useAuth } from '../lib/authContext'
 import { countCorrect, listeningPairs, markAnswers, readingPairs } from '../lib/scoring'
 import { themeText, ThemeToggle } from '../lib/theme'
 import { NavLink } from 'react-router'
+import { getCustomTests, type CustomTest } from '../lib/customTests'
+import type { ReadingPassage } from '../data/readingTest21'
 
 type TestType = 'Reading' | 'Listening' | 'Writing' | 'Speaking' | 'Full Test'
 
@@ -766,11 +768,12 @@ type ReadingExamProps = {
   timeLeft: number
   part?: number
   selectedTestNumber?: number
+  customPassages?: ReadingPassage[]
   onFinish: () => void
 }
 
-function ReadingExam({ answers, setAnswers, currentQ, setCurrentQ, timeLeft, part, selectedTestNumber = 1, onFinish }: ReadingExamProps) {
-  const activePassages = selectedTestNumber === 21 ? READING_PASSAGES_21 : selectedTestNumber === 4 ? READING_PASSAGES_4 : selectedTestNumber === 3 ? READING_PASSAGES_3 : selectedTestNumber === 2 ? READING_PASSAGES_2 : READING_PASSAGES
+function ReadingExam({ answers, setAnswers, currentQ, setCurrentQ, timeLeft, part, selectedTestNumber = 1, customPassages, onFinish }: ReadingExamProps) {
+  const activePassages = customPassages && customPassages.length > 0 ? customPassages : selectedTestNumber === 21 ? READING_PASSAGES_21 : selectedTestNumber === 4 ? READING_PASSAGES_4 : selectedTestNumber === 3 ? READING_PASSAGES_3 : selectedTestNumber === 2 ? READING_PASSAGES_2 : READING_PASSAGES
   const passageIndex = part !== undefined ? part - 1 : currentQ <= 13 ? 0 : currentQ <= 26 ? 1 : 2
   const passage = activePassages[passageIndex] || activePassages[0]
   const answered = Object.keys(answers).filter(key => {
@@ -1852,7 +1855,38 @@ export default function PracticeTest() {
     }
   }, [selectedTest])
 
-  const visibleTests = filter === 'All' ? TESTS : TESTS.filter(test => test.type === filter)
+  const [customTests, setCustomTests] = useState<CustomTest[]>(() => getCustomTests())
+
+  useEffect(() => {
+    const handler = () => {
+      setCustomTests(getCustomTests())
+    }
+    window.addEventListener('vistora:custom-tests-updated', handler)
+    return () => window.removeEventListener('vistora:custom-tests-updated', handler)
+  }, [])
+
+  const allTests = useMemo(() => {
+    const mappedCustom: Test[] = customTests.map(ct => ({
+      id: ct.id,
+      type: ct.type,
+      module: ct.module,
+      title: ct.title,
+      questions: ct.passages.flatMap(p => p.questions).length || 40,
+      duration: ct.duration || 60,
+      difficulty: ct.difficulty || 'Custom Official Format',
+      status: ct.status,
+      part: ct.part,
+      book: ct.book,
+      testNumber: ct.testNumber,
+    }))
+    return [...mappedCustom, ...TESTS]
+  }, [customTests])
+
+  const activeCustomTest = useMemo(() => {
+    return customTests.find(ct => ct.id === selectedTest.id) || null
+  }, [customTests, selectedTest.id])
+
+  const visibleTests = filter === 'All' ? allTests : allTests.filter(test => test.type === filter)
   const answered = Object.keys(answers).filter(key => answers[Number(key)]?.trim()).length
   const listeningScore = useMemo(() => {
     // Score against the test whose questions were shown, which follows the audio source selection
@@ -1861,9 +1895,9 @@ export default function PracticeTest() {
   }, [answers, selectedTestNum])
 
   const readingMarks = useMemo(() => {
-    const activeAnswers = selectedTest.testNumber === 21 ? READING_ANSWERS_21 : selectedTest.testNumber === 4 ? READING_ANSWERS_4 : selectedTest.testNumber === 3 ? READING_ANSWERS_3 : selectedTest.testNumber === 2 ? READING_ANSWERS_2 : READING_ANSWERS
+    const activeAnswers = activeCustomTest ? activeCustomTest.answers : selectedTest.testNumber === 21 ? READING_ANSWERS_21 : selectedTest.testNumber === 4 ? READING_ANSWERS_4 : selectedTest.testNumber === 3 ? READING_ANSWERS_3 : selectedTest.testNumber === 2 ? READING_ANSWERS_2 : READING_ANSWERS
     return markAnswers(activeAnswers, answers, readingPairs(selectedTest.testNumber))
-  }, [answers, selectedTest.testNumber])
+  }, [answers, selectedTest.testNumber, activeCustomTest])
   const readingScore = countCorrect(readingMarks)
 
   const listeningBand = (raw: number) => {
@@ -2438,8 +2472,8 @@ export default function PracticeTest() {
     const displayedBand = isListening ? listeningBand(projectedListeningScore) : readingBand(projectedReadingScore)
     const correctAnswers = isListening ? listeningScore : readingScore
 
-    const activePassages = selectedTest.testNumber === 21 ? READING_PASSAGES_21 : selectedTest.testNumber === 4 ? READING_PASSAGES_4 : selectedTest.testNumber === 3 ? READING_PASSAGES_3 : selectedTest.testNumber === 2 ? READING_PASSAGES_2 : READING_PASSAGES
-    const activeAnswers = selectedTest.testNumber === 21 ? READING_ANSWERS_21 : selectedTest.testNumber === 4 ? READING_ANSWERS_4 : selectedTest.testNumber === 3 ? READING_ANSWERS_3 : selectedTest.testNumber === 2 ? READING_ANSWERS_2 : READING_ANSWERS
+    const activePassages = activeCustomTest ? activeCustomTest.passages : selectedTest.testNumber === 21 ? READING_PASSAGES_21 : selectedTest.testNumber === 4 ? READING_PASSAGES_4 : selectedTest.testNumber === 3 ? READING_PASSAGES_3 : selectedTest.testNumber === 2 ? READING_PASSAGES_2 : READING_PASSAGES
+    const activeAnswers = activeCustomTest ? activeCustomTest.answers : selectedTest.testNumber === 21 ? READING_ANSWERS_21 : selectedTest.testNumber === 4 ? READING_ANSWERS_4 : selectedTest.testNumber === 3 ? READING_ANSWERS_3 : selectedTest.testNumber === 2 ? READING_ANSWERS_2 : READING_ANSWERS
 
     const readingQuestions = selectedTest.type === 'Reading'
       ? selectedTest.part !== undefined
@@ -2710,7 +2744,7 @@ export default function PracticeTest() {
         )
       }
       if (fullModule === 'Reading') {
-        return <ReadingExam answers={answers} setAnswers={setAnswers} currentQ={currentQ} setCurrentQ={setCurrentQ} timeLeft={timeLeft} selectedTestNumber={selectedTest.testNumber || 1} onFinish={advanceFullTest} />
+        return <ReadingExam answers={answers} setAnswers={setAnswers} currentQ={currentQ} setCurrentQ={setCurrentQ} timeLeft={timeLeft} selectedTestNumber={selectedTest.testNumber || 1} customPassages={activeCustomTest?.passages} onFinish={advanceFullTest} />
       }
       if (fullModule === 'Writing') {
         return <WritingExam answers={answers} setAnswers={setAnswers} currentTask={currentQ} setCurrentTask={setCurrentQ} timeLeft={timeLeft} selectedTestNumber={selectedTest.testNumber || 1} onFinish={advanceFullTest} />
@@ -2789,6 +2823,7 @@ export default function PracticeTest() {
           timeLeft={timeLeft}
           part={selectedTest.part}
           selectedTestNumber={selectedTest.testNumber || 1}
+          customPassages={activeCustomTest?.passages}
           onFinish={() => goToStage('result')}
         />
       )
