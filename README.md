@@ -205,16 +205,16 @@ Vistora/
 
 ---
 
-## 👥 Course Information & Contributors
+## 👥 Course Information & Team Members
 
 This platform was developed as an academic project for **CSE412 (Software Engineering / Systems Project)** at **East West University (EWU)**, Dhaka, Bangladesh.
 
-### Team Members & Contributors
-- **[afrasultana-12 (Afra Sultana)](https://github.com/afrasultana-12)** — *UI Design & Component Development*
-- **[ahmed-mannan (Ahmed Mannan)](https://github.com/ahmed-mannan)** — *IELTS Content & Test Datasets*
-- **[Nusrat60-057 (Nusrat Rahman Aurna)](https://github.com/Nusrat60-057)** — *Quality Assurance & User Testing*
-- **[Pulok-Akibuzzaman (Pulok Akibuzzaman)](https://github.com/Pulok-Akibuzzaman)** — *Project Architecture, Frontend & Backend Integration*
-- **[roxZach (Ibna Jiam)](https://github.com/roxZach)** — *Research & Scoring Models*
+### Team Members
+- **[afrasultana-12 (Afra Sultana)](https://github.com/afrasultana-12)**
+- **[ahmed-mannan (Ahmed Mannan)](https://github.com/ahmed-mannan)**
+- **[Nusrat60-057 (Nusrat Rahman Aurna)](https://github.com/Nusrat60-057)**
+- **[Pulok-Akibuzzaman (Pulok Akibuzzaman)](https://github.com/Pulok-Akibuzzaman)**
+- **[roxZach (Ibna Jiam)](https://github.com/roxZach)**
 
 ---
 
