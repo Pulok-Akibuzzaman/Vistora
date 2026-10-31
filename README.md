@@ -15,69 +15,23 @@
 
 ---
 
-## 📸 Screenshots & Visual Tour
-
-Here is what Vistora looks like in action:
-
-### 1. Home & Hero Landing Page
-*Clean, modern landing page with live platform statistics, Cambridge test shortcuts, and IELTS preparation tools.*
-![Vistora Landing Page](public/screenshots/landing.jpg)
-
----
-
-### 2. Candidate Dashboard & Study Task Tracker
-*Your personal IELTS study room featuring your live study time, active streak, and dynamic to-do task tracker.*
-![Candidate Dashboard](public/screenshots/dashboard.png)
-
----
-
-### 3. Student Profile & Live Band Score Trajectory
-*Real-time diagnostic band scores calculated from your practice tests, target band tracking, and milestones.*
-![Student Profile](public/screenshots/profile.png)
-
----
-
-### 4. IELTS Community Discussion Forum
-*Real-time discussion board where students ask questions, upvote helpful tips, and auto-pin top-voted discussions.*
-![Community Forum](public/screenshots/community-forum.jpg)
-
----
-
-### 5. Community Thread Discussion & Reply View
-*Clean discussion thread view allowing candidates to share preparation tips and teachers to give guidance.*
-![Discussion Thread](public/screenshots/forum-thread.jpg)
-
----
-
-### 6. AI Application Document Generator
-*Generate customized Curriculum Vitae (CV), Statement of Purpose (SOP), Personal Statement, or Cover Letters with clean, print-ready PDF export.*
-![AI Document Generator](public/screenshots/doc-generator.jpg)
-
----
-
-### 7. Official Resource Library & Cambridge Books
-*Official Cambridge IELTS past papers, audio files, grammar guides, and dynamic Supabase-saved bookmarks.*
-![Resource Library](public/screenshots/resources.jpg)
-
----
-
 ## 📖 What is Vistora? (In Simple Words)
 
-Preparing for the official computer-delivered IELTS exam can be stressful and expensive. Many test centers charge high fees just for a single mock test, and standard paper practice does not prepare you for the real computer exam room.
+Preparing for the official computer-delivered IELTS exam can be stressful and expensive. Many test centers charge high fees just for a single mock test, and standard paper practice does not prepare candidates for the real computer exam room.
 
 **Vistora** solves this problem. It is a free, web-based platform designed to give students in Bangladesh and across the world the **exact look, feel, and features** of the real British Council and IDP computer-delivered IELTS test.
 
-With Vistora, you can:
+With Vistora, candidates can:
 1. **Take authentic full-length practice tests** on screen with the official split-screen layout, audio controls, and 40-question navigation bar.
 2. **Get instant band score results** (Band 0 to 9.0) with detailed answers and cited explanations without waiting days for a teacher to grade it.
 3. **Submit essays for AI evaluation** to receive instant feedback on Task Achievement, Coherence, Vocabulary, and Grammar.
 4. **Create professional academic documents** (CV, SOP, Personal Statement, Cover Letter) for university and visa applications abroad.
 5. **Ask questions and share preparation strategies** with fellow students on the real-time community forum.
-6. **Track your daily study tasks and official exam dates** across Dhaka, Chattogram, and Sylhet test centers.
+6. **Track daily study tasks and official exam dates** across Dhaka, Chattogram, and Sylhet test centers.
 
 ---
 
-## 🌟 Key Features Breakdown
+## 🌟 Key Feature Modules
 
 ### 🎧 1. Authentic Computer-Delivered Test Simulator
 - **Exact Official Layout**: Left side displays the passage or audio player; right side displays the questions with smooth independent scrolling.
@@ -128,8 +82,8 @@ Make sure you have Node.js installed on your computer:
 ### Step-by-Step Offline Setup Guide
 
 #### Step 1: Open Your Terminal
-- On Windows: Press `Win + R`, type `powershell` or `cmd`, and press Enter.
-- On Mac/Linux: Open the `Terminal` application.
+- **On Windows**: Press `Win + R`, type `powershell` or `cmd`, and press Enter.
+- **On Mac/Linux**: Open the `Terminal` application.
 
 #### Step 2: Navigate to the Project Folder
 ```bash
@@ -187,8 +141,7 @@ Vistora/
 │   ├── IELTS 21.pdf              # Cambridge 21 complete authentic test book
 │   └── IELTS 18-21 AUDIO/        # Authentic Listening test MP3 audio tracks
 ├── public/                       # Static public assets
-│   ├── favicon.svg               # Vistora logo icon
-│   └── screenshots/              # High-resolution screenshots for GitHub preview
+│   └── favicon.svg               # Vistora logo icon
 ├── src/                          # Application source code
 │   ├── components/               # Reusable interface components
 │   │   ├── FullTestResult.tsx    # Diagnostic test score card & review modal
