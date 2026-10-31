@@ -3,6 +3,7 @@ import { useEffect, useRef, useState, type MouseEvent } from 'react'
 import { CountUp, Reveal, cssVars, prefersReducedMotion, useInView } from '../components/Motion'
 import { themeBg, themeText } from '../lib/theme'
 import { useAuth } from '../lib/authContext'
+import { fetchPlatformPublicStats } from '../lib/api'
 
 const FEATURES = [
   {
@@ -55,7 +56,7 @@ const FEATURES = [
     color: '#BE123C',
     bg: '#FFE4E6',
     title: 'Community Forum',
-    desc: 'Connect with 40,000+ IELTS candidates worldwide. Share strategies, get feedback on essays, and learn from top scorers in a structured academic community.',
+    desc: 'Connect with fellow IELTS candidates and instructors. Share strategies, get feedback on essays, and learn from top scorers in a structured academic community.',
     tag: 'PEER LEARNING',
     to: '/community',
   },
@@ -98,11 +99,11 @@ const TESTIMONIALS = [
   },
 ]
 
-const STATS = [
-  { val: '40,000+', label: 'Active Learners' },
-  { val: '94%', label: 'Achieve Target Band' },
-  { val: '1.4M+', label: 'Essays Evaluated' },
-  { val: '8.1', label: 'Avg. Final Band Score' },
+const DEFAULT_STATS = [
+  { val: '3', label: 'Active Learners' },
+  { val: '49+', label: 'Practice Modules' },
+  { val: '0', label: 'Evaluations Recorded' },
+  { val: '8.0', label: 'Avg. Target Band' },
 ]
 
 // Floating preview cards around the hero headline (wide screens only)
@@ -116,12 +117,24 @@ const STEP_INTERVAL = 3000
 
 export default function Landing() {
   const { user, isAuthenticated } = useAuth()
+  const [platformStats, setPlatformStats] = useState(DEFAULT_STATS)
   const heroRef = useRef<HTMLElement>(null)
   const frame = useRef(0)
   const [activeStep, setActiveStep] = useState(0)
   const [stepsPaused, setStepsPaused] = useState(false)
   const [stepsRef, stepsInView] = useInView<HTMLDivElement>(0.3)
   const autoAdvance = stepsInView && !stepsPaused && !prefersReducedMotion()
+
+  useEffect(() => {
+    fetchPlatformPublicStats().then(data => {
+      setPlatformStats([
+        { val: String(data.activeLearners), label: 'Active Learners' },
+        { val: `${data.practiceModules}+`, label: 'Practice Modules' },
+        { val: String(data.evaluationsCount), label: 'Evaluations Recorded' },
+        { val: data.avgBandScore, label: 'Avg. Target Band' },
+      ])
+    }).catch(() => {})
+  }, [])
 
   useEffect(() => () => cancelAnimationFrame(frame.current), [])
 
@@ -314,8 +327,8 @@ export default function Landing() {
 
           {/* Stats row */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-2xl mx-auto">
-            {STATS.map((s, i) => (
-              <div key={s.val} className="hero-in text-center" style={cssVars({ '--delay': `${680 + i * 90}ms` })}>
+            {platformStats.map((s, i) => (
+              <div key={s.label} className="hero-in text-center" style={cssVars({ '--delay': `${680 + i * 90}ms` })}>
                 <div className="mono text-2xl font-semibold text-white tabular-nums"><CountUp value={s.val} delay={700 + i * 90} /></div>
                 <div className="text-[11px] text-muted mt-0.5" style={{ fontFamily: 'Inter, sans-serif' }}>{s.label}</div>
               </div>
@@ -487,7 +500,7 @@ export default function Landing() {
           <p className="text-muted text-sm mb-8" style={{ fontFamily: 'Inter, sans-serif' }}>
             {isAuthenticated
               ? 'Jump back into your diagnostics, timed mock tests, AI writing evaluations, and official exam dates.'
-              : 'Join 40,000+ students who have achieved their IELTS goals with Vistora AI.'}
+              : 'Join ambitious candidates preparing for their IELTS Academic and General Training goals with Vistora AI.'}
           </p>
           <div className="flex items-center justify-center gap-3 flex-wrap">
             {isAuthenticated ? (

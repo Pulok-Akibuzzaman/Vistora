@@ -8,7 +8,7 @@ import { LISTENING_ANSWERS, LISTENING_PARTS_1 } from '../data/listeningTest1'
 import { LISTENING_ANSWERS_2, LISTENING_PARTS_2 } from '../data/listeningTest2'
 import FullTestResult from '../components/FullTestResult'
 import { saveExamResult } from '../lib/results'
-import { checkBackendHealth, getStreamUrl, getSharepointAudioUrl, saveExamResultApi, evaluateSpeakingApi, type BackendHealth, type SpeakingEvaluationResult } from '../lib/api'
+import { checkBackendHealth, getStreamUrl, getSharepointAudioUrl, saveExamResultApi, fetchResults, evaluateSpeakingApi, type BackendHealth, type SpeakingEvaluationResult } from '../lib/api'
 import { useAuth } from '../lib/authContext'
 import { countCorrect, listeningPairs, markAnswers, readingPairs } from '../lib/scoring'
 import { themeText, ThemeToggle } from '../lib/theme'
@@ -1856,6 +1856,21 @@ export default function PracticeTest() {
     })
   }, [])
 
+  const [completedCount, setCompletedCount] = useState<number>(0)
+  const [bestOverall, setBestOverall] = useState<string>('—')
+
+  useEffect(() => {
+    fetchResults(user?.email, user?.id).then(results => {
+      setCompletedCount(results.length)
+      if (results.length > 0) {
+        const scores = results.map(r => r.overallBand).filter((b): b is number => typeof b === 'number' && b > 0)
+        if (scores.length > 0) {
+          setBestOverall(Math.max(...scores).toFixed(1))
+        }
+      }
+    }).catch(() => {})
+  }, [user?.email, user?.id])
+
   // Synchronize stages with browser history so clicking browser back navigates between stages
   useEffect(() => {
     // Ensure initial entry has stage state
@@ -3083,8 +3098,8 @@ export default function PracticeTest() {
           <p className="mt-2 max-w-2xl text-sm leading-6 text-graphite-mid">Full-length computer-delivered mocks with authentic timing, navigation and question formats.</p>
         </div>
         <div className="grid grid-cols-2 gap-3">
-          <div className="border-l-2 border-electric pl-3"><div className="font-mono text-lg font-bold text-ink">14</div><div className="font-mono text-xs uppercase text-graphite-light">Tests completed</div></div>
-          <div className="border-l-2 border-violet pl-3"><div className="font-mono text-lg font-bold text-ink">7.0</div><div className="font-mono text-xs uppercase text-graphite-light">Best overall</div></div>
+          <div className="border-l-2 border-electric pl-3"><div className="font-mono text-lg font-bold text-ink">{completedCount}</div><div className="font-mono text-xs uppercase text-graphite-light">Tests completed</div></div>
+          <div className="border-l-2 border-violet pl-3"><div className="font-mono text-lg font-bold text-ink">{bestOverall}</div><div className="font-mono text-xs uppercase text-graphite-light">Best overall</div></div>
         </div>
       </div>
 
