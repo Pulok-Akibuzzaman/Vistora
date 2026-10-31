@@ -134,6 +134,7 @@ export interface ForumThread {
   downvotes?: number
   score?: number
   pinned: boolean
+  adminPinned?: boolean
   solved: boolean
   preview: string
   content: string
@@ -1526,7 +1527,7 @@ const SEED_FORUM_THREADS: ForumThread[] = [
     score: 23,
     tags: ['Reading', 'TFNG', 'Cambridge18'],
     solved: true,
-    pinned: true,
+    pinned: false,
     replyList: [
       { id: 'r1', author: 'Ayaan Rahman', avatar: 'AR', time: '1 hour ago', content: 'This cleared up so much confusion on question 6!' },
       { id: 'r2', author: 'Nusrat Jahan', avatar: 'NJ', time: '45 mins ago', content: 'Tip #2 about locating passage evidence first saved my score in Test 3.' }
@@ -1720,12 +1721,8 @@ export async function fetchForumThreads(category?: string, query?: string, userI
     )
   }
 
-  // 7. Sort: pinned first, then by score descending
-  return threads.sort((a, b) => {
-    if (a.pinned && !b.pinned) return -1
-    if (!a.pinned && b.pinned) return 1
-    return (b.score ?? 0) - (a.score ?? 0)
-  })
+  // 7. Sort: pinned posts first (admin pinned or top-voted), then by score descending
+  return sortForumThreads(threads)
 }
 
 export async function voteForumThreadApi(
@@ -2020,4 +2017,64 @@ export function canDeleteForumItem(
   if (item.author && user.name && item.author.trim().toLowerCase() === user.name.trim().toLowerCase()) return true
   if (item.author && user.email && item.author.trim().toLowerCase() === user.email.split('@')[0].toLowerCase()) return true
   return false
+}
+
+export function sortForumThreads(threads: ForumThread[]): ForumThread[] {
+  // Find highest vote score in community (score = upvotes - downvotes)
+  const maxScore = Math.max(...threads.map(t => (t.upvotes || 0) - (t.downvotes || 0)), 0)
+
+  return [...threads].sort((a, b) => {
+    // 1. Pinned status: Admin-pinned threads OR automatically pinned threads with the highest community votes
+    const isPinnedA = Boolean(a.adminPinned || a.pinned) || (maxScore > 0 && ((a.upvotes || 0) - (a.downvotes || 0)) === maxScore)
+    const isPinnedB = Boolean(b.adminPinned || b.pinned) || (maxScore > 0 && ((b.upvotes || 0) - (b.downvotes || 0)) === maxScore)
+
+    if (isPinnedA && !isPinnedB) return -1
+    if (!isPinnedA && isPinnedB) return 1
+
+    // 2. Highest vote score descending
+    const scoreA = (a.upvotes || 0) - (a.downvotes || 0)
+    const scoreB = (b.upvotes || 0) - (b.downvotes || 0)
+    if (scoreB !== scoreA) return scoreB - scoreA
+
+    // 3. Newest first
+    return b.id - a.id
+  })
+}
+
+export async function togglePinForumThreadApi(
+  threadId: number | string,
+  user?: UserProfile | null
+): Promise<boolean> {
+  if (user?.role?.toLowerCase() !== 'admin') {
+    throw new Error('Unauthorized: only the admin can pin community posts.')
+  }
+
+  let newPinnedState = false
+
+  // 1. Update in localStorage
+  try {
+    const raw = window.localStorage.getItem(FORUM_STORAGE_KEY)
+    if (raw) {
+      let threads: ForumThread[] = JSON.parse(raw)
+      threads = threads.map(t => {
+        if (String(t.id) === String(threadId)) {
+          newPinnedState = !(t.adminPinned || t.pinned)
+          return {
+            ...t,
+            adminPinned: newPinnedState,
+            pinned: newPinnedState,
+          }
+        }
+        return t
+      })
+      window.localStorage.setItem(FORUM_STORAGE_KEY, JSON.stringify(threads))
+    }
+  } catch {}
+
+  // 2. Update in Supabase
+  try {
+    await supabase.from('forum_threads').update({ is_pinned: newPinnedState }).eq('id', threadId)
+  } catch {}
+
+  return newPinnedState
 }

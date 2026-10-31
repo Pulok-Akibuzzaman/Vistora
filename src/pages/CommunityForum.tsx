@@ -6,7 +6,9 @@ import {
   voteForumThreadApi,
   deleteForumThreadApi,
   deleteForumReplyApi,
+  togglePinForumThreadApi,
   canDeleteForumItem,
+  sortForumThreads,
   type ForumThread,
 } from '../lib/api'
 import { useAuth } from '../lib/authContext'
@@ -67,7 +69,7 @@ export default function CommunityForum() {
         authorId: user?.id,
         authorEmail: user?.email,
       })
-      setThreads(prev => [thread, ...prev])
+      setThreads(prev => sortForumThreads([thread, ...prev]))
       setNewPostOpen(false)
       setNewTitle('')
       setNewContent('')
@@ -106,6 +108,23 @@ export default function CommunityForum() {
       setReplyText('')
     } finally {
       setSubmittingReply(false)
+    }
+  }
+
+  const handleTogglePin = async (threadId: number, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation()
+    if (user?.role?.toLowerCase() !== 'admin') return
+
+    try {
+      const isNowPinned = await togglePinForumThreadApi(threadId, user)
+      setThreads(prev => {
+        const updated = prev.map(t =>
+          t.id === threadId ? { ...t, adminPinned: isNowPinned, pinned: isNowPinned } : t
+        )
+        return sortForumThreads(updated)
+      })
+    } catch (err) {
+      console.error('Failed to toggle pin:', err)
     }
   }
 
@@ -162,8 +181,8 @@ export default function CommunityForum() {
     e.stopPropagation()
     try {
       const res = await voteForumThreadApi(threadId, direction, userIdentifier)
-      setThreads(prev =>
-        prev.map(t =>
+      setThreads(prev => {
+        const updated = prev.map(t =>
           t.id === threadId
             ? {
                 ...t,
@@ -174,7 +193,8 @@ export default function CommunityForum() {
               }
             : t
         )
-      )
+        return sortForumThreads(updated)
+      })
     } catch {}
   }
 
@@ -193,14 +213,56 @@ export default function CommunityForum() {
 
         <div className="bg-surface border border-divider p-6 mb-4 shadow-xs" style={{ borderRadius: 4 }}>
           <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <span className="mono text-[9px] px-2 py-0.5 bg-electric-dim text-accent-strong font-bold" style={{ borderRadius: 2 }}>
                 {activeThread.category.toUpperCase()}
               </span>
+              {(() => {
+                const maxScore = Math.max(...threads.map(t => (t.upvotes || 0) - (t.downvotes || 0)), 0)
+                const isTopVoted = maxScore > 0 && ((activeThread.upvotes || 0) - (activeThread.downvotes || 0)) === maxScore
+                const isAdminPinned = Boolean(activeThread.adminPinned)
+
+                if (isAdminPinned) {
+                  return (
+                    <span className="mono text-[9px] px-2 py-0.5 bg-amber-50 text-amber-800 border border-amber-200 rounded font-bold">
+                      ADMIN PINNED 📌
+                    </span>
+                  )
+                }
+                if (isTopVoted) {
+                  return (
+                    <span className="mono text-[9px] px-2 py-0.5 bg-rose-50 text-rose-800 border border-rose-200 rounded font-bold">
+                      TOP VOTED 📌
+                    </span>
+                  )
+                }
+                if (activeThread.pinned) {
+                  return (
+                    <span className="mono text-[9px] px-2 py-0.5 bg-amber-50 text-amber-800 border border-amber-200 rounded font-bold">
+                      PINNED 📌
+                    </span>
+                  )
+                }
+                return null
+              })()}
               {activeThread.solved && (
                 <span className="mono text-[9px] px-2 py-0.5 bg-success-soft text-positive-strong font-bold" style={{ borderRadius: 2 }}>
                   SOLVED ✓
                 </span>
+              )}
+              {user?.role?.toLowerCase() === 'admin' && (
+                <button
+                  type="button"
+                  onClick={e => handleTogglePin(activeThread.id, e)}
+                  className={`mono text-[10px] px-2.5 py-0.5 rounded transition-all flex items-center gap-1 font-semibold cursor-pointer border ${
+                    activeThread.adminPinned || activeThread.pinned
+                      ? 'bg-amber-100 text-amber-900 border-amber-300 hover:bg-amber-200'
+                      : 'text-amber-700 bg-amber-50 border-amber-200 hover:bg-amber-100'
+                  }`}
+                  title="Admin action: Pin or unpin this thread"
+                >
+                  📌 {activeThread.adminPinned || activeThread.pinned ? 'Unpin Thread' : 'Pin Thread'}
+                </button>
               )}
               {canDeleteForumItem(activeThread, user) && (
                 <button
@@ -488,11 +550,34 @@ export default function CommunityForum() {
                     <span className="mono text-[9px] px-2 py-0.5 bg-electric-dim text-accent-strong font-bold rounded">
                       {thread.category}
                     </span>
-                    {thread.pinned && (
-                      <span className="mono text-[9px] px-2 py-0.5 bg-amber-50 text-amber-800 border border-amber-200 rounded">
-                        PINNED 📌
-                      </span>
-                    )}
+                    {(() => {
+                      const maxScore = Math.max(...threads.map(t => (t.upvotes || 0) - (t.downvotes || 0)), 0)
+                      const isTopVoted = maxScore > 0 && ((thread.upvotes || 0) - (thread.downvotes || 0)) === maxScore
+                      const isAdminPinned = Boolean(thread.adminPinned)
+
+                      if (isAdminPinned) {
+                        return (
+                          <span className="mono text-[9px] px-2 py-0.5 bg-amber-50 text-amber-800 border border-amber-200 rounded font-bold">
+                            ADMIN PINNED 📌
+                          </span>
+                        )
+                      }
+                      if (isTopVoted) {
+                        return (
+                          <span className="mono text-[9px] px-2 py-0.5 bg-rose-50 text-rose-800 border border-rose-200 rounded font-bold">
+                            TOP VOTED 📌
+                          </span>
+                        )
+                      }
+                      if (thread.pinned) {
+                        return (
+                          <span className="mono text-[9px] px-2 py-0.5 bg-amber-50 text-amber-800 border border-amber-200 rounded font-bold">
+                            PINNED 📌
+                          </span>
+                        )
+                      }
+                      return null
+                    })()}
                     {thread.solved && (
                       <span className="mono text-[9px] px-2 py-0.5 bg-emerald-50 text-emerald-800 rounded">
                         SOLVED ✓
@@ -515,6 +600,20 @@ export default function CommunityForum() {
                         </span>
                       ))}
                     </div>
+                    {user?.role?.toLowerCase() === 'admin' && (
+                      <button
+                        type="button"
+                        onClick={e => handleTogglePin(thread.id, e)}
+                        className={`mono text-[10px] px-2 py-0.5 rounded transition-all flex items-center gap-1 font-semibold cursor-pointer border ml-auto sm:ml-2 shadow-xs ${
+                          thread.adminPinned || thread.pinned
+                            ? 'bg-amber-100 text-amber-900 border-amber-300 hover:bg-amber-200'
+                            : 'text-amber-700 bg-amber-50 border-amber-200 hover:bg-amber-100'
+                        }`}
+                        title="Admin action: Pin or unpin this thread"
+                      >
+                        📌 {thread.adminPinned || thread.pinned ? 'Unpin' : 'Pin'}
+                      </button>
+                    )}
                     {canDeleteForumItem(thread, user) && (
                       <button
                         type="button"
