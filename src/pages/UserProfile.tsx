@@ -108,8 +108,8 @@ export default function UserProfile() {
                 ['TOTAL ATTEMPTS', String(results.length)],
               ].map(([l, v]) => (
                 <div key={l}>
-                  <div className="mono text-[9px] text-subtle tracking-widest">{l}</div>
-                  <div className="mono text-lg font-bold text-ink mt-0.5">{v}</div>
+                  <div className="mono text-[10px] font-semibold text-subtle tracking-wider">{l}</div>
+                  <div className="mono text-xl font-bold text-ink mt-0.5">{v}</div>
                 </div>
               ))}
             </div>
@@ -229,7 +229,7 @@ export default function UserProfile() {
                 </div>
               ))}
               {results.length === 0 && (
-                <div className="p-8 text-center text-sm text-subtle">
+                <div className="p-8 text-center text-sm text-muted font-medium">
                   No attempts recorded yet. <NavLink to="/practice" className="text-accent font-semibold underline">Take a test</NavLink> to see your progress here!
                 </div>
               )}
@@ -246,11 +246,11 @@ export default function UserProfile() {
                 { title: 'Essay Submitter', desc: 'Submitted at least one writing evaluation', earned: essaysSubmitted > 0 },
                 { title: 'Band 8 Target Club', desc: `Targeting Band ${(user?.targetBand || 8.0).toFixed(1)} for international graduate entry`, earned: true },
               ].map(ach => (
-                <div key={ach.title} className={`p-3 border rounded-sm flex items-start gap-3 ${ach.earned ? 'border-emerald-200 bg-emerald-50/50' : 'border-divider bg-surface-2 opacity-60'}`}>
+                <div key={ach.title} className={`p-3 border rounded-sm flex items-start gap-3 ${ach.earned ? 'border-emerald-300/80 bg-emerald-50/70' : 'border-divider bg-surface-2'}`}>
                   <span className="text-lg">{ach.earned ? '🏆' : '🔒'}</span>
                   <div>
-                    <div className="text-xs font-semibold text-ink">{ach.title}</div>
-                    <div className="text-[11px] text-muted mt-0.5">{ach.desc}</div>
+                    <div className={`text-xs font-semibold ${ach.earned ? 'text-ink' : 'text-ink-2'}`}>{ach.title}</div>
+                    <div className={`text-[11px] mt-0.5 ${ach.earned ? 'text-muted' : 'text-ink-4'}`}>{ach.desc}</div>
                   </div>
                 </div>
               ))}
@@ -280,12 +280,12 @@ export default function UserProfile() {
                 ))}
               </div>
             ) : (
-              <div className="py-6 text-center text-xs text-subtle">
+              <div className="py-6 text-center text-xs text-muted font-medium">
                 Take 2 or more tests to plot your live score trajectory chart.
               </div>
             )}
             <div className="mt-4 pt-3 border-t border-divider-soft flex justify-between items-center text-xs">
-              <span className="text-muted">Target Band:</span>
+              <span className="text-ink-3 font-semibold">Target Band:</span>
               <span className="font-mono font-bold text-rose-600">{user?.targetBand?.toFixed(1) || '8.0'}</span>
             </div>
           </div>

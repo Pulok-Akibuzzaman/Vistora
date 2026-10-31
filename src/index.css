@@ -44,17 +44,17 @@
   --color-navy: var(--t-navy, #0F172A);
   --color-navy-mid: var(--t-navy-mid, #1E293B);
   --color-navy-light: var(--t-navy-light, #334155);
-  --color-ink: var(--t-ink, #0F172A);
-  --color-ink-2: var(--t-ink-2, #1E293B);
-  --color-ink-3: var(--t-ink-3, #334155);
-  --color-ink-4: var(--t-ink-4, #475569);
-  --color-graphite: var(--t-graphite, #374151);
-  --color-graphite-mid: var(--t-graphite-mid, #6B7280);
-  --color-graphite-light: var(--t-graphite-light, #9CA3AF);
-  --color-muted: var(--t-muted, #64748B);
-  --color-subtle: var(--t-subtle, #94A3B8);
-  --color-faint: var(--t-faint, #CBD5E1);
-  --color-faint-2: var(--t-faint-2, #E2E8F0);
+  --color-ink: var(--t-ink, #090D16);
+  --color-ink-2: var(--t-ink-2, #0F172A);
+  --color-ink-3: var(--t-ink-3, #1E293B);
+  --color-ink-4: var(--t-ink-4, #2D3748);
+  --color-graphite: var(--t-graphite, #111827);
+  --color-graphite-mid: var(--t-graphite-mid, #2D3748);
+  --color-graphite-light: var(--t-graphite-light, #4A5568);
+  --color-muted: var(--t-muted, #334155);
+  --color-subtle: var(--t-subtle, #334155);
+  --color-faint: var(--t-faint, #4A5568);
+  --color-faint-2: var(--t-faint-2, #718096);
   --color-accent: var(--t-accent, #DC2626);
   --color-accent-2: var(--t-accent-2, #BE123C);
   --color-accent-strong: var(--t-accent-strong, #991B1B);
@@ -159,54 +159,54 @@
   --color-purple-950: #F3E8FF;
 }
 
-/* Always-dark areas (hero, footer, exam chrome) keep their original colors in dark mode */
+/* Always-dark areas (hero, footer, exam chrome) keep their light text colors in both modes */
 .theme-fixed {
-  --t-grid-major: initial;
-  --t-grid-minor: initial;
-  --t-card-shadow: initial;
-  --t-paper-dark: initial;
-  --t-surface: initial;
-  --t-surface-2: initial;
-  --t-surface-3: initial;
-  --t-divider: initial;
-  --t-divider-soft: initial;
-  --t-divider-faint: initial;
-  --t-line-strong: initial;
-  --t-line-ink: initial;
-  --t-rose-line: initial;
-  --t-navy: initial;
-  --t-navy-mid: initial;
-  --t-navy-light: initial;
-  --t-ink: initial;
-  --t-ink-2: initial;
-  --t-ink-3: initial;
-  --t-ink-4: initial;
-  --t-graphite: initial;
-  --t-graphite-mid: initial;
-  --t-graphite-light: initial;
-  --t-muted: initial;
-  --t-subtle: initial;
-  --t-faint: initial;
-  --t-faint-2: initial;
-  --t-accent: initial;
-  --t-accent-2: initial;
-  --t-accent-strong: initial;
-  --t-positive: initial;
-  --t-positive-strong: initial;
-  --t-caution: initial;
-  --t-caution-strong: initial;
-  --t-electric-dim: initial;
-  --t-electric-soft: initial;
-  --t-violet-dim: initial;
-  --t-success-soft: initial;
-  --t-warning-soft: initial;
-  --t-success-muted: initial;
-  --t-yellow-soft: initial;
-  --t-indigo-soft: initial;
-  --t-blue-soft: initial;
-  --t-rose-strong: initial;
-  --t-indigo-strong: initial;
-  --t-blue-strong: initial;
+  --t-grid-major: rgba(148, 163, 184, 0.08);
+  --t-grid-minor: rgba(148, 163, 184, 0.03);
+  --t-card-shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.25);
+  --t-paper-dark: #0A0F1D;
+  --t-surface: #0F172A;
+  --t-surface-2: #1E293B;
+  --t-surface-3: #2A3851;
+  --t-divider: #1E293B;
+  --t-divider-soft: #182338;
+  --t-divider-faint: #141C2E;
+  --t-line-strong: #334155;
+  --t-line-ink: #CBD5E1;
+  --t-rose-line: rgba(251, 113, 133, 0.35);
+  --t-navy: #0A0F1D;
+  --t-navy-mid: #0F172A;
+  --t-navy-light: #1E293B;
+  --t-ink: #FFFFFF;
+  --t-ink-2: #F8FAFC;
+  --t-ink-3: #F1F5F9;
+  --t-ink-4: #E2E8F0;
+  --t-graphite: #FFFFFF;
+  --t-graphite-mid: #F1F5F9;
+  --t-graphite-light: #E2E8F0;
+  --t-muted: #CBD5E1;
+  --t-subtle: #94A3B8;
+  --t-faint: #64748B;
+  --t-faint-2: #475569;
+  --t-accent: #F87171;
+  --t-accent-2: #FB7185;
+  --t-accent-strong: #FCA5A5;
+  --t-positive: #34D399;
+  --t-positive-strong: #6EE7B7;
+  --t-caution: #FBBF24;
+  --t-caution-strong: #FCD34D;
+  --t-electric-dim: rgba(239, 68, 68, 0.16);
+  --t-electric-soft: rgba(239, 68, 68, 0.09);
+  --t-violet-dim: rgba(244, 63, 94, 0.16);
+  --t-success-soft: rgba(16, 185, 129, 0.13);
+  --t-warning-soft: rgba(245, 158, 11, 0.12);
+  --t-success-muted: rgba(16, 185, 129, 0.2);
+  --t-yellow-soft: rgba(234, 179, 8, 0.14);
+  --t-indigo-soft: rgba(99, 102, 241, 0.18);
+  --t-blue-soft: rgba(59, 130, 246, 0.12);
+  --t-rose-strong: #FDA4AF;
+  --t-indigo-strong: #A5B4FC;
+  --t-blue-strong: #93C5FD;
 }
 
 :root {
@@ -215,6 +215,23 @@
   --sab: env(safe-area-inset-bottom, 0px);
   --sal: env(safe-area-inset-left, 0px);
   --sar: env(safe-area-inset-right, 0px);
+
+  /* High-contrast, dark crisp typography for light theme */
+  --t-ink: #090D16;
+  --t-ink-2: #0F172A;
+  --t-ink-3: #1E293B;
+  --t-ink-4: #2D3748;
+  --t-graphite: #111827;
+  --t-graphite-mid: #2D3748;
+  --t-graphite-light: #4A5568;
+  --t-muted: #334155;
+  --t-subtle: #334155;
+  --t-faint: #4A5568;
+  --t-faint-2: #718096;
+  --t-line-ink: #0F172A;
+  --t-navy: #0F172A;
+  --t-navy-mid: #1E293B;
+  --t-navy-light: #2D3748;
 }
 
 html {
@@ -283,6 +300,17 @@ input,
 textarea,
 select {
   font: inherit;
+}
+
+input,
+textarea,
+select {
+  color: var(--t-ink, #090D16);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--t-faint, #4A5568);
 }
 
 :root[data-theme='dark'] input,
@@ -372,9 +400,9 @@ select {
 .label-tag {
   display: inline-flex; align-items: center; gap: 6px;
   font-family: 'IBM Plex Mono', monospace;
-  font-size: 10px; font-weight: 500;
+  font-size: 10px; font-weight: 600;
   letter-spacing: 0.12em; text-transform: uppercase;
-  color: var(--t-subtle, #94A3B8);
+  color: var(--t-subtle, #334155);
 }
 
 /* Progress bar */
@@ -719,7 +747,7 @@ select {
 
   :root:not([data-theme='dark']) .listening-exam .text-slate-400,
   :root:not([data-theme='dark']) .listening-exam .text-slate-500 {
-    color: #64748B;
+    color: #334155;
   }
 
   :root:not([data-theme='dark']) .listening-exam .text-rose-100,
