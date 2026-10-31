@@ -49,10 +49,10 @@ export default function UserProfile() {
   const testsCompleted = results.filter(r => r.testType !== 'Writing').length
   const essaysSubmitted = results.filter(r => r.testType === 'Writing').length
   
-  const scoreAttempts = results.filter(r => typeof r.overallBand === 'number')
+  const scoreAttempts = results.filter(r => typeof r.overallBand === 'number' && r.overallBand > 0)
   const calculatedCurrentBand = scoreAttempts.length > 0
-    ? (scoreAttempts.reduce((acc, r) => acc + (r.overallBand || 0), 0) / scoreAttempts.length).toFixed(2)
-    : (user?.currentBand || 7.0).toFixed(2)
+    ? (scoreAttempts.reduce((acc, r) => acc + (r.overallBand || 0), 0) / scoreAttempts.length).toFixed(1)
+    : '—'
 
   const initials = user?.name
     ? user.name.split(' ').filter(Boolean).map(n => n[0]).join('').toUpperCase().slice(0, 2)

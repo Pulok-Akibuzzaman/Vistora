@@ -156,7 +156,7 @@ export default function Layout() {
                           <span>Profile & Settings</span><span className="mono text-[9px] text-accent uppercase">{user?.role || 'STUDENT'}</span>
                         </NavLink>
                         <NavLink to="/dashboard" className="flex items-center justify-between px-3 py-2.5 text-xs text-graphite hover:bg-surface-2">
-                          <span>Dashboard</span><span className="mono text-[9px] text-positive">BAND {user?.currentBand || 7.0}</span>
+                          <span>Dashboard</span><span className="mono text-[9px] text-positive">{user?.currentBand ? `BAND ${user.currentBand.toFixed(1)}` : `TARGET ${user?.targetBand || 8.0}`}</span>
                         </NavLink>
                         {user?.role === 'Admin' && (
                           <NavLink to="/admin" className="flex items-center justify-between px-3 py-2.5 text-xs text-graphite hover:bg-surface-2">

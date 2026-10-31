@@ -20,7 +20,6 @@ const DEFAULT_USER: UserProfile = {
   role: 'Student',
   status: 'Active',
   targetBand: 8.0,
-  currentBand: 7.0,
   institution: 'East West University',
   bio: 'CSE student preparing for IELTS Academic for Master’s abroad in AI/ML.',
   phone: '+880-1712-345678',

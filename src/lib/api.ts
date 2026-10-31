@@ -56,7 +56,7 @@ export interface UserProfile {
   role: 'Student' | 'Instructor' | 'Admin'
   status: 'Active' | 'Invited' | 'Suspended'
   targetBand: number
-  currentBand: number
+  currentBand?: number
   institution?: string
   bio?: string
   phone?: string

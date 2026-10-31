@@ -14,11 +14,12 @@ import {
 } from '../lib/api'
 import { themeBg, themeText } from '../lib/theme'
 
-function BandArc({ score, target }: { score: number; target: number }) {
+function BandArc({ score, target }: { score: number | null; target: number }) {
   const r = 42, cx = 50, cy = 50
   const startAngle = -210
   const totalArc = 240
-  const scoreAngle = startAngle + (Math.min(9, Math.max(0, score)) / 9) * totalArc
+  const safeScore = score ?? 0
+  const scoreAngle = startAngle + (Math.min(9, Math.max(0, safeScore)) / 9) * totalArc
   const targetAngle = startAngle + (Math.min(9, Math.max(0, target)) / 9) * totalArc
 
   const toRad = (deg: number) => (deg * Math.PI) / 180
@@ -36,11 +37,19 @@ function BandArc({ score, target }: { score: number; target: number }) {
   return (
     <svg viewBox="0 0 100 100" className="w-28 h-28">
       <path d={arcPath(startAngle, startAngle + totalArc, r)} fill="none" className="stroke-divider-soft" strokeWidth="7" strokeLinecap="round" />
-      <path d={arcPath(startAngle, scoreAngle, r)} fill="none" stroke="#DC2626" strokeWidth="7" strokeLinecap="round" />
+      {score !== null && score > 0 && (
+        <path d={arcPath(startAngle, scoreAngle, r)} fill="none" stroke="#DC2626" strokeWidth="7" strokeLinecap="round" />
+      )}
       <path d={arcPath(scoreAngle, targetAngle, r)} fill="none" className="stroke-electric-dim" strokeWidth="3" strokeLinecap="round" strokeDasharray="2 3" />
-      <text x={cx} y={cy - 4} textAnchor="middle" fontSize="18" fontWeight="700" className="fill-ink" fontFamily="IBM Plex Mono">{score.toFixed(1)}</text>
-      <text x={cx} y={cy + 10} textAnchor="middle" fontSize="7" className="fill-subtle" fontFamily="IBM Plex Mono">/ 9.0</text>
-      <text x={cx} y={cy + 22} textAnchor="middle" fontSize="6.5" className="fill-muted" fontFamily="Inter, sans-serif">Overall</text>
+      <text x={cx} y={cy - 4} textAnchor="middle" fontSize={score !== null ? 18 : 16} fontWeight="700" className="fill-ink" fontFamily="IBM Plex Mono">
+        {score !== null ? score.toFixed(1) : '—'}
+      </text>
+      <text x={cx} y={cy + 10} textAnchor="middle" fontSize="7" className="fill-subtle" fontFamily="IBM Plex Mono">
+        {score !== null ? '/ 9.0' : 'No Attempts'}
+      </text>
+      <text x={cx} y={cy + 22} textAnchor="middle" fontSize="6.5" className="fill-muted" fontFamily="Inter, sans-serif">
+        {score !== null ? 'Overall' : 'Diagnostic Pending'}
+      </text>
     </svg>
   )
 }
@@ -117,7 +126,12 @@ export default function Dashboard() {
   const completedTasks = tasks.filter(task => task.complete).length
   const selectedResult = examResults.find(result => result.id === selectedResultId) || examResults[0]
 
-  const overallBand = stats?.overallBand ?? (user?.currentBand || 7.0)
+  const scoredAttempts = examResults.filter(r => typeof r.overallBand === 'number' && r.overallBand > 0)
+  const overallBand: number | null = stats?.overallBand && stats.overallBand > 0
+    ? stats.overallBand
+    : scoredAttempts.length > 0
+      ? scoredAttempts.reduce((s, r) => s + (r.overallBand || 0), 0) / scoredAttempts.length
+      : null
   const targetBand = stats?.targetBand ?? (user?.targetBand || 8.0)
   const skillScores = stats?.skillScores ?? DEFAULT_SKILLS
   const activities = stats?.recentActivities ?? []
@@ -137,8 +151,12 @@ export default function Dashboard() {
           <div className="label-tag mb-1">STUDENT DASHBOARD · ACADEMIC PREPARATION</div>
           <h1 className="text-2xl font-bold text-ink plex tracking-tight">Welcome back, {firstName}</h1>
           <p className="text-sm text-muted mt-0.5" style={{ fontFamily: 'Inter, sans-serif' }}>
-            Current Overall Band: <span className="mono text-accent font-semibold">{overallBand.toFixed(1)}</span> · Target:{' '}
-            <span className="mono text-ink font-medium">{targetBand.toFixed(1)}</span> · Connected to Local Database
+            Current Overall Band:{' '}
+            <span className="mono text-accent font-semibold">
+              {overallBand !== null ? overallBand.toFixed(1) : '— (No attempts yet)'}
+            </span>{' '}
+            · Target:{' '}
+            <span className="mono text-ink font-medium">{targetBand.toFixed(1)}</span>
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -180,7 +198,9 @@ export default function Dashboard() {
               <div className="text-[11px] text-subtle mt-0.5">
                 Gap:{' '}
                 <span className="mono text-accent-2 font-medium">
-                  {targetBand > overallBand ? `+${(targetBand - overallBand).toFixed(1)}` : 'Target Met ✓'}
+                  {overallBand !== null
+                    ? (targetBand > overallBand ? `+${(targetBand - overallBand).toFixed(1)}` : 'Target Met ✓')
+                    : `Goal: ${targetBand.toFixed(1)}`}
                 </span>
               </div>
             </div>
@@ -189,11 +209,11 @@ export default function Dashboard() {
           <div className="mt-3 space-y-2">
             <div className="mono text-[10px] text-subtle tracking-widest">PROGRESS TOWARDS GOAL</div>
             <div className="prog-bar">
-              <div className="prog-bar-fill bg-[#DC2626]" style={{ width: `${Math.min(100, (overallBand / targetBand) * 100)}%` }} />
+              <div className="prog-bar-fill bg-[#DC2626]" style={{ width: overallBand !== null ? `${Math.min(100, (overallBand / targetBand) * 100)}%` : '0%' }} />
             </div>
             <div className="mono text-[11px] text-graphite">
-              {Math.min(100, Math.round((overallBand / targetBand) * 100))}% —{' '}
-              <span className="text-positive font-medium">Active Track</span>
+              {overallBand !== null ? `${Math.min(100, Math.round((overallBand / targetBand) * 100))}% — ` : '0% — '}
+              <span className="text-positive font-medium">{overallBand !== null ? 'Active Track' : 'Start First Practice Test'}</span>
             </div>
           </div>
         </div>
