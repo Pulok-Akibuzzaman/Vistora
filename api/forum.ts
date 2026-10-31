@@ -98,6 +98,13 @@ async function getAdminUserId(): Promise<string> {
 
 async function getDeletedIds(): Promise<string[]> {
   try {
+    const { data } = await supabaseAdmin.from('deleted_forum_threads').select('thread_id')
+    if (data && data.length > 0) {
+      return data.map((d: any) => String(d.thread_id))
+    }
+  } catch {}
+
+  try {
     const { data } = await supabaseAdmin
       .from('profiles')
       .select('bio')
@@ -112,9 +119,15 @@ async function getDeletedIds(): Promise<string[]> {
 }
 
 async function saveDeletedId(id: string | number): Promise<void> {
+  const idStr = String(id)
+  try {
+    await supabaseAdmin
+      .from('deleted_forum_threads')
+      .insert({ thread_id: idStr })
+  } catch {}
+
   try {
     const existing = await getDeletedIds()
-    const idStr = String(id)
     if (!existing.includes(idStr)) {
       existing.push(idStr)
     }
@@ -449,3 +462,4 @@ export default async function handler(req: any, res: any) {
 
   return res.status(405).json({ success: false, error: 'Method not allowed' })
 }
+

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { generateDocumentApi } from '../lib/api'
+import { generateDocumentApi, saveApplicationDocumentApi } from '../lib/api'
 import { useAuth } from '../lib/authContext'
 import { themeText } from '../lib/theme'
 
@@ -538,23 +538,35 @@ export default function DocGenerator() {
           country: payloadDetails.country,
         })
         const cleanContent = stripMarkdown(res.content || '')
-        if (cleanContent && cleanContent.length > 50) {
+                if (cleanContent && cleanContent.length > 50) {
           setGeneratedText(cleanContent)
           setDocSource(res.source || 'AI Engine (puku-ai-2.8)')
           setIsGenerated(true)
           setAiExpanded(true)
+          saveApplicationDocumentApi({
+            docType,
+            title: `${DOC_TYPES.find(d => d.id === docType)?.label} - ${payloadDetails.name || 'Application'}`,
+            content: cleanContent,
+            formData: form,
+          }, user?.id).catch(() => {})
           return
         }
       } catch (aiErr) {
         console.warn('AI expansion unavailable, compiling formatted template:', aiErr)
       }
 
-      // Compile formatted document
+            // Compile formatted document
       const formatted = compileLiveDraft(docType, form)
       setGeneratedText(formatted)
       setDocSource('FORMATTED DRAFT')
       setIsGenerated(true)
       setAiExpanded(false)
+      saveApplicationDocumentApi({
+        docType,
+        title: `${DOC_TYPES.find(d => d.id === docType)?.label} - ${payloadDetails.name || 'Application'}`,
+        content: formatted,
+        formData: form,
+      }, user?.id).catch(() => {})
     } catch (err: any) {
       setError(err?.message || 'Failed to generate document.')
     } finally {

@@ -1354,6 +1354,94 @@ export async function generateDocumentApi(
   return { content, source: 'Vistora Academic Template Engine' }
 }
 
+export async function saveApplicationDocumentApi(
+  doc: {
+    docType: 'cv' | 'sop' | 'ps' | 'cl'
+    title: string
+    content: string
+    formData?: any
+  },
+  userId?: string
+): Promise<boolean> {
+  const targetUserId = userId && isValidUUID(userId) ? userId : null
+
+  // 1. Save to Supabase public.application_documents
+  try {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession()
+    const effUserId =
+      session?.user?.id && isValidUUID(session.user.id)
+        ? session.user.id
+        : targetUserId
+    if (effUserId) {
+      await supabase.from('application_documents').insert({
+        user_id: effUserId,
+        doc_type: doc.docType,
+        title: doc.title,
+        content: doc.content,
+        form_data: doc.formData || {},
+        updated_at: new Date().toISOString(),
+      })
+    }
+  } catch (err) {
+    console.warn('Supabase application_documents save deferred:', err)
+  }
+
+  // 2. Save to local storage
+  if (typeof window !== 'undefined') {
+    try {
+      const key = `vistora_saved_docs_${targetUserId || 'guest'}`
+      const raw = window.localStorage.getItem(key)
+      const existing = raw ? JSON.parse(raw) : []
+      existing.unshift({
+        ...doc,
+        id: Date.now(),
+        createdAt: new Date().toISOString(),
+      })
+      window.localStorage.setItem(key, JSON.stringify(existing.slice(0, 20)))
+    } catch {}
+  }
+
+  return true
+}
+
+export async function fetchUserApplicationDocumentsApi(
+  userId?: string
+): Promise<any[]> {
+  const targetUserId = userId && isValidUUID(userId) ? userId : null
+
+  try {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession()
+    const effUserId =
+      session?.user?.id && isValidUUID(session.user.id)
+        ? session.user.id
+        : targetUserId
+    if (effUserId) {
+      const { data, error } = await supabase
+        .from('application_documents')
+        .select('*')
+        .eq('user_id', effUserId)
+        .order('updated_at', { ascending: false })
+      if (!error && data && data.length > 0) {
+        return data
+      }
+    }
+  } catch {}
+
+  if (typeof window !== 'undefined') {
+    try {
+      const key = `vistora_saved_docs_${targetUserId || 'guest'}`
+      const raw = window.localStorage.getItem(key)
+      if (raw) return JSON.parse(raw)
+    } catch {}
+  }
+
+  return []
+}
+
 export interface SpeakingCriterionFeedback {
   band: number
   feedback: string
