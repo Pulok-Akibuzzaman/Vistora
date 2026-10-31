@@ -240,5 +240,14 @@ The compiled, minified bundle will be output to the `dist/` directory.
 
 - **Course:** CSE412 — Software Engineering / Systems Project
 - **Institution:** East West University (EWU), Dhaka, Bangladesh
-- **Team Lead / Maintainer:** Pulok Akibuzzaman ([@Pulok-Akibuzzaman](https://github.com/Pulok-Akibuzzaman))
 - **Official Repository:** [https://github.com/Pulok-Akibuzzaman/Vistora](https://github.com/Pulok-Akibuzzaman/Vistora)
+
+---
+
+## 🤝 Credits
+
+- [Pulok-Akibuzzaman (Pulok Akibuzzaman)](https://github.com/Pulok-Akibuzzaman)
+- [afrasultana-12 (Afra Sultana)](https://github.com/afrasultana-12)
+- [ahmed-mannan (Ahmed Mannan)](https://github.com/ahmed-mannan)
+- [Nusrat60-057 (Nusrat Rahman Aurna)](https://github.com/Nusrat60-057)
+- [roxZach (Ibna Jiam)](https://github.com/roxZach)
