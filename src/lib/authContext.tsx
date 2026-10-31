@@ -65,6 +65,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const profile: UserProfile = {
           ...DEFAULT_USER,
           ...parsed,
+          currentBand: undefined,
           id: session.user.id,
           email,
           name: profileData?.full_name || parsed.name || session.user.user_metadata?.full_name || email.split('@')[0],
