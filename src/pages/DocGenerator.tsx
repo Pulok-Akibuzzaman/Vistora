@@ -207,11 +207,12 @@ export default function DocGenerator() {
     ps: {},
     cl: {},
   })
+  const [isGenerated, setIsGenerated] = useState(false)
   const [aiExpanded, setAiExpanded] = useState(false)
   const [loading, setLoading] = useState(false)
   const [generatedText, setGeneratedText] = useState('')
   const [copied, setCopied] = useState(false)
-  const [docSource, setDocSource] = useState('LIVE DRAFT')
+  const [docSource, setDocSource] = useState('DOCUMENT PREVIEW')
   const [error, setError] = useState('')
 
   const form = forms[docType] || {}
@@ -220,9 +221,8 @@ export default function DocGenerator() {
   // A form is properly filled only when all required fields have non-empty values
   const isFormProperlyFilled = fields.every(f => Boolean((form[f.key] || '').trim()))
 
-  // Live dynamic draft that compiles only when user provides their information properly
-  const liveDraft = isFormProperlyFilled ? compileLiveDraft(docType, form) : ''
-  const displayedDocument = aiExpanded ? (generatedText || liveDraft) : liveDraft
+  // Document only displays once the user explicitly clicks the Generate button
+  const displayedDocument = isGenerated ? generatedText : ''
 
   const handleFieldChange = (key: string, value: string) => {
     setForms(prev => ({
@@ -252,14 +252,30 @@ export default function DocGenerator() {
         ...form,
       }
 
-      const res = await generateDocumentApi(docType, payloadDetails, {
-        name: payloadDetails.name,
-        country: payloadDetails.country,
-      })
-      const cleanContent = stripMarkdown(res.content || '')
-      setGeneratedText(cleanContent)
-      setDocSource(res.source || 'AI Engine (puku-ai-2.8)')
-      setAiExpanded(true)
+      // Try AI engine first
+      try {
+        const res = await generateDocumentApi(docType, payloadDetails, {
+          name: payloadDetails.name,
+          country: payloadDetails.country,
+        })
+        const cleanContent = stripMarkdown(res.content || '')
+        if (cleanContent && cleanContent.length > 50) {
+          setGeneratedText(cleanContent)
+          setDocSource(res.source || 'AI Engine (puku-ai-2.8)')
+          setIsGenerated(true)
+          setAiExpanded(true)
+          return
+        }
+      } catch (aiErr) {
+        console.warn('AI expansion unavailable, compiling formatted template:', aiErr)
+      }
+
+      // Compile formatted document
+      const formatted = compileLiveDraft(docType, form)
+      setGeneratedText(formatted)
+      setDocSource('FORMATTED DRAFT')
+      setIsGenerated(true)
+      setAiExpanded(false)
     } catch (err: any) {
       setError(err?.message || 'Failed to generate document.')
     } finally {
@@ -286,14 +302,9 @@ export default function DocGenerator() {
   }
 
   const cleanSymbolsNow = () => {
-    if (aiExpanded) {
+    if (generatedText) {
       setGeneratedText(prev => stripMarkdown(prev))
     }
-  }
-
-  const switchToLiveDraft = () => {
-    setAiExpanded(false)
-    setDocSource('LIVE DRAFT')
   }
 
   return (
@@ -311,8 +322,10 @@ export default function DocGenerator() {
             key={d.id}
             onClick={() => {
               setDocType(d.id)
+              setIsGenerated(false)
+              setGeneratedText('')
               setAiExpanded(false)
-              setDocSource('LIVE DRAFT')
+              setDocSource('DOCUMENT PREVIEW')
               setError('')
             }}
             className={`text-left p-4 border-2 transition-all ${
@@ -339,7 +352,7 @@ export default function DocGenerator() {
               <span className="w-1 h-4 bg-[#DC2626]" style={{ borderRadius: 1 }} />
               <span className="text-sm font-semibold text-ink plex">Input Your Details</span>
             </div>
-            <span className="mono text-[9px] text-accent bg-rose-50 px-2 py-0.5 rounded">REAL-TIME SYNC</span>
+            <span className="mono text-[9px] text-muted border border-divider px-2 py-0.5 rounded">CUSTOMIZE</span>
           </div>
           <div className="p-5 space-y-4">
             {fields.map(f => (
@@ -381,9 +394,10 @@ export default function DocGenerator() {
             ))}
 
             <button
+              type="button"
               onClick={handleGenerate}
               disabled={loading || !isFormProperlyFilled}
-              className={`w-full py-3 text-sm font-semibold text-white transition-colors ${
+              className={`w-full py-3 text-sm font-semibold text-white transition-colors cursor-pointer ${
                 loading || !isFormProperlyFilled ? 'bg-[#FCA5A5] cursor-not-allowed' : 'bg-[#DC2626] hover:bg-[#B91C1C]'
               }`}
               style={{ borderRadius: 4, fontFamily: 'IBM Plex Sans, sans-serif' }}
@@ -391,14 +405,14 @@ export default function DocGenerator() {
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
                   <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-                  Expanding with AI (puku-ai-2.8)...
+                  Generating Document...
                 </span>
               ) : (
-                `⚡ Generate AI Polish & Expansion`
+                `⚡ Generate Document`
               )}
             </button>
             <p className="text-[10px] leading-relaxed text-subtle">
-              Your preview updates dynamically in real-time as you fill in your details. Click above for full AI expansion & multi-page polish.
+              Complete your details above, then click Generate to create your customized {DOC_TYPES.find(d => d.id === docType)?.label}.
             </p>
           </div>
         </div>
@@ -408,63 +422,57 @@ export default function DocGenerator() {
           <div className="px-5 py-4 border-b border-divider-soft flex flex-wrap items-center justify-between gap-2 flex-shrink-0">
             <div className="flex items-center gap-2.5">
               <span className="w-1 h-4 bg-[#BE123C]" style={{ borderRadius: 1 }} />
-              <span className="text-sm font-semibold text-ink plex">Live Document Preview</span>
-              {aiExpanded ? (
-                <div className="flex items-center gap-1 bg-surface-2 p-0.5 rounded border border-divider-soft text-[10px]">
-                  <button
-                    onClick={switchToLiveDraft}
-                    className="px-2 py-0.5 rounded text-muted hover:text-ink transition-colors"
-                  >
-                    Live Draft
-                  </button>
-                  <button
-                    className="px-2 py-0.5 rounded bg-white shadow-xs font-semibold text-[#DC2626]"
-                  >
-                    AI Polish
-                  </button>
-                </div>
+              <span className="text-sm font-semibold text-ink plex">Document Preview</span>
+              {isGenerated ? (
+                <span className="mono text-[9px] px-2 py-0.5 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded font-bold">
+                  ● GENERATED
+                </span>
               ) : isFormProperlyFilled ? (
-                <span className="mono text-[9px] px-2 py-0.5 bg-blue-50 text-blue-700 border border-blue-200 rounded">
-                  ● REAL-TIME SYNC
+                <span className="mono text-[9px] px-2 py-0.5 bg-blue-50 text-blue-700 border border-blue-200 rounded font-semibold">
+                  READY TO GENERATE
                 </span>
               ) : (
-                <span className="mono text-[9px] px-2 py-0.5 bg-gray-100 text-gray-600 border border-gray-200 rounded">
-                  ○ AWAITING INPUT
+                <span className="mono text-[9px] px-2 py-0.5 bg-surface-2 text-muted border border-divider rounded">
+                  AWAITING INPUT
                 </span>
               )}
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="mono text-[9px] px-2 py-1 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded">
-                ⚡ {displayedDocument ? docSource : 'AWAITING DETAILS'}
+              <span className="mono text-[9px] px-2 py-1 bg-surface-2 text-ink border border-divider rounded">
+                ⚡ {isGenerated ? docSource : 'AWAITING GENERATION'}
               </span>
-              {aiExpanded && (
+              {isGenerated && (
                 <button
+                  type="button"
                   onClick={cleanSymbolsNow}
                   title="Strip asterisks, hashes, and markdown artifacts"
-                  className="mono text-[10px] text-muted border border-divider px-2.5 py-1.5 hover:border-line-strong hover:text-ink transition-colors rounded"
+                  className="mono text-[10px] text-muted border border-divider px-2.5 py-1.5 hover:border-line-strong hover:text-ink transition-colors rounded cursor-pointer"
                 >
                   Clean Symbols
                 </button>
               )}
               <button
+                type="button"
                 onClick={copyDocument}
-                disabled={!displayedDocument}
-                className="mono text-[10px] text-muted border border-divider px-3 py-1.5 hover:border-line-strong transition-colors rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={!isGenerated || !generatedText}
+                className="mono text-[10px] text-muted border border-divider px-3 py-1.5 hover:border-line-strong transition-colors rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
                 {copied ? '✓ Copied!' : 'Copy Text'}
               </button>
               <button
+                type="button"
                 onClick={downloadTxt}
-                disabled={!displayedDocument}
-                className="mono text-[10px] text-white bg-[#DC2626] px-3 py-1.5 hover:bg-[#B91C1C] transition-colors rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={!isGenerated || !generatedText}
+                className="mono text-[10px] text-white bg-[#DC2626] px-3 py-1.5 hover:bg-[#B91C1C] transition-colors rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
                 Download .txt
               </button>
               <button
-                onClick={() => displayedDocument && window.print()}
-                disabled={!displayedDocument}
-                className="mono text-[10px] text-white bg-navy px-3 py-1.5 hover:bg-navy-mid transition-colors rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                type="button"
+                onClick={() => generatedText && window.print()}
+                disabled={!isGenerated || !generatedText}
+                className="mono text-[10px] text-white bg-navy px-3 py-1.5 hover:bg-navy-mid transition-colors rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
                 Print / PDF
               </button>
@@ -478,27 +486,27 @@ export default function DocGenerator() {
               </div>
             )}
             <div className="bg-surface border border-divider-soft shadow-sm rounded-md p-6 sm:p-8 max-w-3xl mx-auto min-h-[520px] flex flex-col">
-              {!displayedDocument ? (
+              {!isGenerated || !generatedText ? (
                 <div className="flex-1 flex flex-col items-center justify-center text-center py-16 px-4">
-                  <div className="w-12 h-12 rounded-full bg-surface-2 border border-divider flex items-center justify-center text-xl mb-3 text-subtle">
+                  <div className="w-14 h-14 rounded-full bg-surface-2 border border-divider flex items-center justify-center text-2xl mb-3 text-subtle">
                     📄
                   </div>
-                  <div className="text-sm font-semibold text-ink plex mb-1">No Document Preview Available</div>
-                  <p className="text-xs text-subtle max-w-md" style={{ fontFamily: 'Inter, sans-serif' }}>
-                    Please enter your information in the fields on the left. Your live document preview will be generated automatically once your details are provided.
+                  <div className="text-base font-semibold text-ink plex mb-1">
+                    {isFormProperlyFilled ? 'Ready to Generate' : 'Input Details to Begin'}
+                  </div>
+                  <p className="text-xs text-subtle max-w-md leading-relaxed" style={{ fontFamily: 'Inter, sans-serif' }}>
+                    {isFormProperlyFilled
+                      ? `Your details are ready. Click the "⚡ Generate Document" button on the left to generate your custom ${DOC_TYPES.find(d => d.id === docType)?.label}.`
+                      : `Enter your details in the form on the left. The document will only be generated once you click the Generate button.`}
                   </p>
                 </div>
               ) : (
                 <textarea
-                  value={displayedDocument}
-                  onChange={e => {
-                    if (aiExpanded) {
-                      setGeneratedText(e.target.value)
-                    }
-                  }}
+                  value={generatedText}
+                  onChange={e => setGeneratedText(e.target.value)}
                   className="w-full text-[13px] text-graphite leading-[1.85] outline-none border-none resize-y bg-transparent flex-1"
                   style={{ fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', minHeight: 520 }}
-                  placeholder="Your document updates dynamically here..."
+                  placeholder="Your generated document will appear here..."
                 />
               )}
             </div>
