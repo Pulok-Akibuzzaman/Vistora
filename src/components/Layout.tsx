@@ -190,8 +190,8 @@ export default function Layout() {
           </div>
         </div>
         {mobileOpen && (
-          <div className={`lg:hidden border-t px-4 py-3 ${isDarkHeader ? 'border-[#1E293B] bg-[#0F172A]' : 'border-divider bg-surface'}`}>
-            <nav className="grid gap-1">
+          <div className={`lg:hidden border-t px-4 py-3 max-h-[calc(100dvh-60px)] overflow-y-auto overscroll-contain shadow-2xl ${isDarkHeader ? 'border-[#1E293B] bg-[#0F172A]' : 'border-divider bg-surface'}`}>
+            <nav className="grid gap-1 pb-4">
               {!isAuthenticated ? (
                 <>
                   {isLanding && [['Features', '#features'], ['How It Works', '#how-it-works'], ['Testimonials', '#testimonials']].map(([label, href]) => (

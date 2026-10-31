@@ -773,6 +773,7 @@ type ReadingExamProps = {
 }
 
 function ReadingExam({ answers, setAnswers, currentQ, setCurrentQ, timeLeft, part, selectedTestNumber = 1, customPassages, onFinish }: ReadingExamProps) {
+  const [mobileView, setMobileView] = useState<'passage' | 'questions'>('passage')
   const activePassages = customPassages && customPassages.length > 0 ? customPassages : selectedTestNumber === 21 ? READING_PASSAGES_21 : selectedTestNumber === 4 ? READING_PASSAGES_4 : selectedTestNumber === 3 ? READING_PASSAGES_3 : selectedTestNumber === 2 ? READING_PASSAGES_2 : READING_PASSAGES
   const passageIndex = part !== undefined ? part - 1 : currentQ <= 13 ? 0 : currentQ <= 26 ? 1 : 2
   const passage = activePassages[passageIndex] || activePassages[0]
@@ -844,8 +845,30 @@ function ReadingExam({ answers, setAnswers, currentQ, setCurrentQ, timeLeft, par
         <p className="mt-1 font-plex text-sm text-ink">Read the text and answer questions {passage.range[0]}–{passage.range[1]}.</p>
       </div>
 
-      <div className="grid min-h-0 flex-1 md:grid-cols-2">
-        <article className="overflow-y-auto border-b border-divider p-5 md:border-b-0 md:border-r md:p-7">
+      {/* Mobile / Phone Viewport Switcher */}
+      <div className="flex md:hidden border-b border-divider bg-surface px-4 py-2 gap-2 shrink-0">
+        <button
+          type="button"
+          onClick={() => setMobileView('passage')}
+          className={`flex-1 py-1.5 px-3 rounded text-xs font-mono font-semibold transition-colors ${
+            mobileView === 'passage' ? 'bg-electric text-white' : 'bg-surface-2 text-graphite hover:text-ink'
+          }`}
+        >
+          📖 Reading Passage
+        </button>
+        <button
+          type="button"
+          onClick={() => setMobileView('questions')}
+          className={`flex-1 py-1.5 px-3 rounded text-xs font-mono font-semibold transition-colors ${
+            mobileView === 'questions' ? 'bg-electric text-white' : 'bg-surface-2 text-graphite hover:text-ink'
+          }`}
+        >
+          ✍️ Questions ({answered}/{totalQuestions})
+        </button>
+      </div>
+
+      <div className="grid min-h-0 flex-1 md:grid-cols-2 overflow-hidden">
+        <article className={`overflow-y-auto border-b border-divider p-4 sm:p-5 md:border-b-0 md:border-r md:p-7 ${mobileView === 'questions' ? 'hidden md:block' : 'block'}`}>
           <div className="mx-auto max-w-3xl">
             <h2 className="font-plex text-xl font-bold text-ink">{passage.title}</h2>
             {passage.subtitle && <p className="mt-2 font-plex text-sm font-semibold italic leading-6 text-graphite">{passage.subtitle}</p>}
@@ -878,7 +901,7 @@ function ReadingExam({ answers, setAnswers, currentQ, setCurrentQ, timeLeft, par
           </div>
         </article>
 
-        <section className="overflow-y-auto p-5 md:p-7">
+        <section className={`overflow-y-auto p-4 sm:p-5 md:p-7 ${mobileView === 'passage' ? 'hidden md:block' : 'block'}`}>
           <div className="mx-auto max-w-3xl space-y-7">
             {passage.questions.map((question, index) => {
               const previous = passage.questions[index - 1]
@@ -1007,6 +1030,7 @@ function ReadingExam({ answers, setAnswers, currentQ, setCurrentQ, timeLeft, par
               {Array.from({ length: passage.range[1] - passage.range[0] + 1 }, (_, index) => passage.range[0] + index).map(id => (
                 <button key={id} onClick={() => {
                   setCurrentQ(id)
+                  setMobileView('questions')
                   window.setTimeout(() => document.getElementById(`reading-question-${id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 0)
                 }} className={`h-7 w-7 rounded-sm border font-mono text-xs ${currentQ === id ? 'border-electric bg-surface text-accent' : answers[id] ? 'border-success bg-success-soft text-positive' : 'border-transparent text-ink'}`}>{id}</button>
               ))}
@@ -1132,6 +1156,7 @@ function WritingChart2() {
 }
 
 function WritingExam({ answers, setAnswers, currentTask, setCurrentTask, timeLeft, part, selectedTestNumber = 1, onFinish }: WritingExamProps) {
+  const [mobileWritingView, setMobileWritingView] = useState<'prompt' | 'editor'>('editor')
   const task = part ?? currentTask
   const response = answers[task] || ''
   const wordCount = response.trim() ? response.trim().split(/\s+/).length : 0
@@ -1158,8 +1183,30 @@ function WritingExam({ answers, setAnswers, currentTask, setCurrentTask, timeLef
         <p className="mt-1 font-plex text-sm text-ink">You should spend about {task === 1 ? '20' : '40'} minutes on this task. Write at least {minimumWords} words.</p>
       </div>
 
-      <div className="grid min-h-0 flex-1 md:grid-cols-2">
-        <article className="overflow-y-auto border-b border-divider p-5 md:border-b-0 md:border-r md:p-7">
+      {/* Mobile Viewport Switcher */}
+      <div className="flex md:hidden border-b border-divider bg-surface px-4 py-2 gap-2 shrink-0">
+        <button
+          type="button"
+          onClick={() => setMobileWritingView('prompt')}
+          className={`flex-1 py-1.5 px-3 rounded text-xs font-mono font-semibold transition-colors ${
+            mobileWritingView === 'prompt' ? 'bg-electric text-white' : 'bg-surface-2 text-graphite hover:text-ink'
+          }`}
+        >
+          📋 Task Instructions
+        </button>
+        <button
+          type="button"
+          onClick={() => setMobileWritingView('editor')}
+          className={`flex-1 py-1.5 px-3 rounded text-xs font-mono font-semibold transition-colors ${
+            mobileWritingView === 'editor' ? 'bg-electric text-white' : 'bg-surface-2 text-graphite hover:text-ink'
+          }`}
+        >
+          ✍️ Your Essay ({wordCount} words)
+        </button>
+      </div>
+
+      <div className="grid min-h-0 flex-1 md:grid-cols-2 overflow-hidden">
+        <article className={`overflow-y-auto border-b border-divider p-4 sm:p-5 md:border-b-0 md:border-r md:p-7 ${mobileWritingView === 'editor' ? 'hidden md:block' : 'block'}`}>
           <div className="mx-auto max-w-3xl font-plex text-sm leading-7 text-ink">
             {task === 1 ? (
               selectedTestNumber === 2 ? (
@@ -1199,7 +1246,7 @@ function WritingExam({ answers, setAnswers, currentTask, setCurrentTask, timeLef
           </div>
         </article>
 
-        <section className="min-h-0 overflow-y-auto bg-surface p-4 md:p-6">
+        <section className={`min-h-0 overflow-y-auto bg-surface p-4 md:p-6 ${mobileWritingView === 'prompt' ? 'hidden md:block' : 'block'}`}>
           <label htmlFor={`writing-response-${task}`} className="font-mono text-xs uppercase tracking-wider text-graphite-mid">Your answer</label>
           <textarea
             id={`writing-response-${task}`}

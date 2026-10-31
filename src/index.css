@@ -87,22 +87,22 @@
   --t-divider-soft: #1C283D;
   --t-divider-faint: #182338;
   --t-line-strong: #3A4862;
-  --t-line-ink: #94A3B8;
+  --t-line-ink: #CBD5E1;
   --t-rose-line: rgba(251, 113, 133, 0.35);
   --t-navy: #2A3851;
   --t-navy-mid: #34445F;
   --t-navy-light: #475872;
-  --t-ink: #E8EDF5;
-  --t-ink-2: #DCE3ED;
-  --t-ink-3: #C3CDDA;
-  --t-ink-4: #A9B5C5;
-  --t-graphite: #C3CBD6;
-  --t-graphite-mid: #9AA3B1;
-  --t-graphite-light: #7F8898;
-  --t-muted: #94A2B6;
-  --t-subtle: #7C8AA0;
-  --t-faint: #56647B;
-  --t-faint-2: #334157;
+  --t-ink: #FFFFFF;
+  --t-ink-2: #F8FAFC;
+  --t-ink-3: #F1F5F9;
+  --t-ink-4: #E2E8F0;
+  --t-graphite: #FFFFFF;
+  --t-graphite-mid: #F1F5F9;
+  --t-graphite-light: #E2E8F0;
+  --t-muted: #F1F5F9;
+  --t-subtle: #E2E8F0;
+  --t-faint: #CBD5E1;
+  --t-faint-2: #94A3B8;
   --t-accent: #F87171;
   --t-accent-2: #FB7185;
   --t-accent-strong: #FCA5A5;
@@ -209,15 +209,34 @@
   --t-blue-strong: initial;
 }
 
-:root { color-scheme: light; }
+:root {
+  color-scheme: light;
+  --sat: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+}
 
-html { scroll-behavior: smooth; }
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+html,
+body {
+  overflow-x: hidden;
+  max-width: 100vw;
+  min-height: 100%;
+  -webkit-overflow-scrolling: touch;
+}
 
 body {
   font-family: 'Inter', 'IBM Plex Sans', system-ui, sans-serif;
   background-color: var(--t-paper, #FAFAF7);
   color: var(--t-ink, #0F172A);
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
 }
 
@@ -229,6 +248,7 @@ body {
 button,
 [role='button'] {
   cursor: pointer;
+  touch-action: manipulation;
 }
 
 button:disabled,
@@ -242,6 +262,16 @@ input,
 textarea,
 select {
   -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+/* Prevent auto-zoom on iOS Safari when focusing form inputs */
+@media (max-width: 768px) {
+  input:not([type='checkbox']):not([type='radio']):not([type='range']),
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
 }
 
 :focus-visible {
@@ -253,6 +283,26 @@ input,
 textarea,
 select {
   font: inherit;
+}
+
+:root[data-theme='dark'] input,
+:root[data-theme='dark'] textarea,
+:root[data-theme='dark'] select {
+  color: #FFFFFF;
+}
+
+:root[data-theme='dark'] input::placeholder,
+:root[data-theme='dark'] textarea::placeholder {
+  color: #94A3B8;
+}
+
+:root[data-theme='dark'] select option {
+  background-color: #152036;
+  color: #FFFFFF;
+}
+
+:root[data-theme='dark'] .label-tag {
+  color: #E2E8F0;
 }
 
 /* Paper grid background */

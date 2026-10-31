@@ -796,29 +796,31 @@ export default function AdminDashboard() {
                 <label className="block font-mono text-xs uppercase text-graphite-light">
                   Direct SharePoint / OneDrive Audio Download URL
                 </label>
-                <div className="mt-1 flex gap-2">
+                <div className="mt-1 flex flex-col sm:flex-row gap-2">
                   <input
                     type="url"
                     value={sharepointUrl}
                     onChange={e => setSharepointUrl(e.target.value)}
                     placeholder="https://ewubd-my.sharepoint.com/:u:/g/personal/.../?download=1"
-                    className="flex-1 rounded border border-divider bg-surface-2 p-2.5 text-xs text-ink outline-none focus:border-electric font-mono"
+                    className="flex-1 rounded border border-divider bg-surface-2 p-2.5 text-xs text-ink outline-none focus:border-electric font-mono min-w-0"
                     required
                   />
-                  <button
-                    type="button"
-                    onClick={() => handleTestAudioPlayback(sharepointUrl)}
-                    disabled={!sharepointUrl.trim()}
-                    className="rounded border border-divider bg-surface px-4 py-2 text-xs font-mono text-ink hover:bg-surface-2 disabled:opacity-50"
-                  >
-                    ▶ Test Audio
-                  </button>
-                  <button
-                    type="submit"
-                    className="rounded bg-electric px-5 py-2 text-xs font-semibold text-white hover:bg-electric-light transition-colors"
-                  >
-                    Save Audio Link
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleTestAudioPlayback(sharepointUrl)}
+                      disabled={!sharepointUrl.trim()}
+                      className="flex-1 sm:flex-none rounded border border-divider bg-surface px-4 py-2 text-xs font-mono text-ink hover:bg-surface-2 disabled:opacity-50"
+                    >
+                      ▶ Test Audio
+                    </button>
+                    <button
+                      type="submit"
+                      className="flex-1 sm:flex-none rounded bg-electric px-5 py-2 text-xs font-semibold text-white hover:bg-electric-light transition-colors"
+                    >
+                      Save Audio Link
+                    </button>
+                  </div>
                 </div>
                 <div className="mt-1 text-[11px] text-graphite-light font-mono">
                   Tip: SharePoint sharing links should include <code>?download=1</code> at the end for direct audio streaming.
