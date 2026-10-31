@@ -832,10 +832,6 @@ function getTaskKey(userId?: string) {
   return `vistora-study-tasks_${userId || 'current'}`
 }
 
-function getTaskInitKey(userId?: string) {
-  return `vistora-tasks-init_${userId || 'current'}`
-}
-
 export async function fetchTasks(userId?: string): Promise<StudyTask[]> {
   let targetUserId = userId && isValidUUID(userId) ? userId : null
   try {
@@ -851,60 +847,18 @@ export async function fetchTasks(userId?: string): Promise<StudyTask[]> {
         .eq('user_id', targetUserId)
         .order('id', { ascending: true })
 
-      if (!error && data) {
-        const initKey = getTaskInitKey(targetUserId)
-        const isInitialized = typeof window !== 'undefined' ? window.localStorage.getItem(initKey) === 'true' : false
-
-        if (data.length > 0) {
-          if (typeof window !== 'undefined') window.localStorage.setItem(initKey, 'true')
-          const mapped = data.map((t: any) => ({
-            id: t.id,
-            userId: t.user_id,
-            title: t.title,
-            due: t.due || 'TODAY',
-            complete: Boolean(t.complete)
-          }))
-          if (typeof window !== 'undefined') {
-            window.localStorage.setItem(getTaskKey(targetUserId), JSON.stringify(mapped))
-          }
-          return mapped
+      if (!error && Array.isArray(data)) {
+        const mapped: StudyTask[] = data.map((t: any) => ({
+          id: Number(t.id),
+          userId: t.user_id,
+          title: t.title,
+          due: t.due || 'TODAY',
+          complete: Boolean(t.complete)
+        }))
+        if (typeof window !== 'undefined') {
+          window.localStorage.setItem(getTaskKey(targetUserId), JSON.stringify(mapped))
         }
-
-        // If user already initialized tasks and explicitly deleted/cleared them, keep it empty
-        if (isInitialized) {
-          if (typeof window !== 'undefined') {
-            window.localStorage.setItem(getTaskKey(targetUserId), JSON.stringify([]))
-          }
-          return []
-        }
-
-        // First-time user onboarding: seed initial starter tasks directly into Supabase database
-        const starter = [
-          { user_id: targetUserId, title: 'Complete Cambridge 18 Reading Test 1 Passage 2', due: 'TODAY', complete: false },
-          { user_id: targetUserId, title: 'Review Academic Vocabulary for Education and Technology', due: 'Tomorrow', complete: false },
-          { user_id: targetUserId, title: 'Practice Speaking Part 2 Cue Card on Famous Personalities', due: 'Nov 3', complete: false },
-        ]
-        const { data: seeded, error: seedErr } = await supabase
-          .from('study_tasks')
-          .insert(starter)
-          .select()
-
-        if (typeof window !== 'undefined') window.localStorage.setItem(initKey, 'true')
-
-        if (!seedErr && seeded && seeded.length > 0) {
-          const mapped = seeded.map((t: any) => ({
-            id: t.id,
-            userId: t.user_id,
-            title: t.title,
-            due: t.due || 'TODAY',
-            complete: Boolean(t.complete)
-          }))
-          if (typeof window !== 'undefined') {
-            window.localStorage.setItem(getTaskKey(targetUserId), JSON.stringify(mapped))
-          }
-          return mapped
-        }
-        return []
+        return mapped
       }
     }
   } catch (err) {
@@ -914,37 +868,29 @@ export async function fetchTasks(userId?: string): Promise<StudyTask[]> {
   // Fallback to user-scoped localStorage cached tasks
   try {
     const key = getTaskKey(userId)
-    const initKey = getTaskInitKey(userId)
     const stored = window.localStorage.getItem(key)
-    const isInit = window.localStorage.getItem(initKey) === 'true'
-
-    if (isInit) {
-      return stored ? JSON.parse(stored) : []
+    if (stored !== null) {
+      const parsed = JSON.parse(stored)
+      if (Array.isArray(parsed)) return parsed
     }
-
-    const defaultTasks: StudyTask[] = [
-      { id: 101, title: 'Complete Cambridge 18 Reading Test 1 Passage 2', due: 'TODAY', complete: false },
-      { id: 102, title: 'Review Academic Vocabulary for Education and Technology', due: 'Tomorrow', complete: false },
-      { id: 103, title: 'Practice Speaking Part 2 Cue Card on Famous Personalities', due: 'Nov 3', complete: false },
-    ]
-    window.localStorage.setItem(key, JSON.stringify(defaultTasks))
-    window.localStorage.setItem(initKey, 'true')
-    return defaultTasks
   } catch {}
 
   return []
 }
 
-export async function createTask(title: string, due = 'TODAY'): Promise<StudyTask> {
-  let sessionUserId: string | undefined
+export async function createTask(title: string, due = 'TODAY', userId?: string): Promise<StudyTask> {
+  let sessionUserId: string | null = userId && isValidUUID(userId) ? userId : null
   try {
-    const { data: { session } } = await supabase.auth.getSession()
-    if (session?.user?.id && isValidUUID(session.user.id)) {
-      sessionUserId = session.user.id
+    if (!sessionUserId) {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session?.user?.id && isValidUUID(session.user.id)) sessionUserId = session.user.id
+    }
+
+    if (sessionUserId) {
       const { data, error } = await supabase
         .from('study_tasks')
         .insert({
-          user_id: session.user.id,
+          user_id: sessionUserId,
           title,
           due,
           complete: false,
@@ -952,13 +898,9 @@ export async function createTask(title: string, due = 'TODAY'): Promise<StudyTas
         .select()
         .single()
 
-      if (typeof window !== 'undefined') {
-        window.localStorage.setItem(getTaskInitKey(sessionUserId), 'true')
-      }
-
       if (!error && data) {
         const newTask: StudyTask = {
-          id: data.id,
+          id: Number(data.id),
           userId: data.user_id,
           title: data.title,
           due: data.due || due,
@@ -980,34 +922,40 @@ export async function createTask(title: string, due = 'TODAY'): Promise<StudyTas
   // User-scoped Local storage fallback
   const fallbackTask: StudyTask = { id: Date.now(), title, due, complete: false }
   try {
-    const key = getTaskKey(sessionUserId)
+    const key = getTaskKey(userId || sessionUserId || undefined)
     const stored = window.localStorage.getItem(key)
     const list: StudyTask[] = stored ? JSON.parse(stored) : []
     window.localStorage.setItem(key, JSON.stringify([fallbackTask, ...list]))
-    if (typeof window !== 'undefined') {
-      window.localStorage.setItem(getTaskInitKey(sessionUserId), 'true')
-    }
   } catch {}
   return fallbackTask
 }
 
-export async function toggleTaskComplete(id: number, complete: boolean): Promise<StudyTask> {
+export async function toggleTaskComplete(id: number, complete: boolean, userId?: string): Promise<StudyTask> {
   try {
     await supabase.from('study_tasks').update({ complete }).eq('id', id)
   } catch {}
 
   try {
+    const targetKey = getTaskKey(userId)
+    const allKeys: string[] = []
     for (let i = 0; i < window.localStorage.length; i++) {
       const k = window.localStorage.key(i)
       if (k && k.startsWith('vistora-study-tasks')) {
-        const stored = window.localStorage.getItem(k)
-        if (stored) {
+        allKeys.push(k)
+      }
+    }
+    if (!allKeys.includes(targetKey)) allKeys.push(targetKey)
+
+    for (const k of allKeys) {
+      const stored = window.localStorage.getItem(k)
+      if (stored) {
+        try {
           const list: StudyTask[] = JSON.parse(stored)
-          if (list.some(t => t.id === id)) {
+          if (Array.isArray(list) && list.some(t => t.id === id)) {
             const updated = list.map(t => t.id === id ? { ...t, complete } : t)
             window.localStorage.setItem(k, JSON.stringify(updated))
           }
-        }
+        } catch {}
       }
     }
   } catch {}
@@ -1015,28 +963,33 @@ export async function toggleTaskComplete(id: number, complete: boolean): Promise
   return { id, title: '', due: '', complete }
 }
 
-export async function deleteTaskApi(id: number): Promise<boolean> {
+export async function deleteTaskApi(id: number, userId?: string): Promise<boolean> {
   try {
     const { error } = await supabase.from('study_tasks').delete().eq('id', id)
     if (error) console.warn('[Supabase study_tasks] Delete note:', error)
   } catch {}
 
   try {
-    const { data: { session } } = await supabase.auth.getSession()
-    if (session?.user?.id && typeof window !== 'undefined') {
-      window.localStorage.setItem(getTaskInitKey(session.user.id), 'true')
-    }
-
+    const targetKey = getTaskKey(userId)
+    const allKeys: string[] = []
     for (let i = 0; i < window.localStorage.length; i++) {
       const k = window.localStorage.key(i)
       if (k && k.startsWith('vistora-study-tasks')) {
-        const stored = window.localStorage.getItem(k)
-        if (stored) {
+        allKeys.push(k)
+      }
+    }
+    if (!allKeys.includes(targetKey)) allKeys.push(targetKey)
+
+    for (const k of allKeys) {
+      const stored = window.localStorage.getItem(k)
+      if (stored) {
+        try {
           const list: StudyTask[] = JSON.parse(stored)
-          if (list.some(t => t.id === id)) {
-            window.localStorage.setItem(k, JSON.stringify(list.filter(t => t.id !== id)))
+          if (Array.isArray(list)) {
+            const filtered = list.filter(t => t.id !== id)
+            window.localStorage.setItem(k, JSON.stringify(filtered))
           }
-        }
+        } catch {}
       }
     }
   } catch {}

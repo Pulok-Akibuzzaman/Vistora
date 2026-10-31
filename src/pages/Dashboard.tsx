@@ -91,7 +91,7 @@ export default function Dashboard() {
     const title = newTask.trim()
     if (!title) return
     try {
-      const task = await createTask(title, 'Today')
+      const task = await createTask(title, 'Today', user?.id)
       setTasks(current => [task, ...current])
     } catch {
       const localTask: StudyTask = { id: Date.now(), title, due: 'Today', complete: false }
@@ -103,14 +103,14 @@ export default function Dashboard() {
   const toggleTask = async (id: number, currentComplete: boolean) => {
     setTasks(current => current.map(t => t.id === id ? { ...t, complete: !currentComplete } : t))
     try {
-      await toggleTaskComplete(id, !currentComplete)
+      await toggleTaskComplete(id, !currentComplete, user?.id)
     } catch {}
   }
 
   const deleteTask = async (id: number) => {
     setTasks(current => current.filter(t => t.id !== id))
     try {
-      await deleteTaskApi(id)
+      await deleteTaskApi(id, user?.id)
     } catch {}
   }
 
