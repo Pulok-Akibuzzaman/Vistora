@@ -4,6 +4,7 @@ import { READING_ANSWERS_2, READING_PASSAGES_2 } from '../data/readingTest2'
 import { READING_ANSWERS_3, READING_PASSAGES_3 } from '../data/readingTest3'
 import { READING_ANSWERS_4, READING_PASSAGES_4 } from '../data/readingTest4'
 import { READING_ANSWERS_21, READING_PASSAGES_21 } from '../data/readingTest21'
+import { READING_ANSWERS_21_T2, READING_PASSAGES_21_T2 } from '../data/readingTest21_2'
 import { LISTENING_ANSWERS, LISTENING_PARTS_1 } from '../data/listeningTest1'
 import { LISTENING_ANSWERS_2, LISTENING_PARTS_2 } from '../data/listeningTest2'
 import FullTestResult from '../components/FullTestResult'
@@ -46,6 +47,10 @@ const TESTS: Test[] = [
   { id: 'r21-p1', type: 'Reading', module: 'Academic', title: 'IELTS 21 — Reading Test 1 · Part 1 (The Davies Sisters)', questions: 13, duration: 20, difficulty: 'Passage practice', status: 'New', part: 1, book: '21', testNumber: 21 },
   { id: 'r21-p2', type: 'Reading', module: 'Academic', title: 'IELTS 21 — Reading Test 1 · Part 2 (Why We Need Silence)', questions: 13, duration: 20, difficulty: 'Passage practice', status: 'New', part: 2, book: '21', testNumber: 21 },
   { id: 'r21-p3', type: 'Reading', module: 'Academic', title: 'IELTS 21 — Reading Test 1 · Part 3 (The World of Sugar)', questions: 14, duration: 20, difficulty: 'Passage practice', status: 'New', part: 3, book: '21', testNumber: 21 },
+  { id: 'r21-2', type: 'Reading', module: 'Academic', title: 'IELTS 21 — Academic Reading Test 2 (From Cambridge PDF)', questions: 40, duration: 60, difficulty: 'Official format', status: 'New', book: '21', testNumber: 22 },
+  { id: 'r21-2-p1', type: 'Reading', module: 'Academic', title: 'IELTS 21 — Reading Test 2 · Part 1 (Do animals dream?)', questions: 13, duration: 20, difficulty: 'Passage practice', status: 'New', part: 1, book: '21', testNumber: 22 },
+  { id: 'r21-2-p2', type: 'Reading', module: 'Academic', title: 'IELTS 21 — Reading Test 2 · Part 2 (Mapungubwe)', questions: 13, duration: 20, difficulty: 'Passage practice', status: 'New', part: 2, book: '21', testNumber: 22 },
+  { id: 'r21-2-p3', type: 'Reading', module: 'Academic', title: 'IELTS 21 — Reading Test 2 · Part 3 (Artificial Intelligence)', questions: 14, duration: 20, difficulty: 'Passage practice', status: 'New', part: 3, book: '21', testNumber: 22 },
   { id: 'r3', type: 'Reading', module: 'Academic', title: 'IELTS 18 — Academic Reading Test 3', questions: 40, duration: 60, difficulty: 'Official format', status: 'New', book: '18', testNumber: 3 },
   { id: 'r3-p1', type: 'Reading', module: 'Academic', title: 'IELTS 18 — Reading Test 3 · Part 1', questions: 13, duration: 20, difficulty: 'Passage practice', status: 'New', part: 1, book: '18', testNumber: 3 },
   { id: 'r3-p2', type: 'Reading', module: 'Academic', title: 'IELTS 18 — Reading Test 3 · Part 2', questions: 13, duration: 20, difficulty: 'Passage practice', status: 'New', part: 2, book: '18', testNumber: 3 },
@@ -84,6 +89,7 @@ const TESTS: Test[] = [
 ]
 
 const FILTERS = ['All', 'Full Test', 'Reading', 'Listening', 'Writing', 'Speaking'] as const
+const BOOK_FILTERS = ['All', 'IELTS 18', 'IELTS 19', 'IELTS 20', 'IELTS 21'] as const
 type FullTestModule = 'Listening' | 'Reading' | 'Writing' | 'Speaking'
 const FULL_TEST_ORDER: FullTestModule[] = ['Listening', 'Reading', 'Writing', 'Speaking']
 const FULL_TEST_DURATIONS: Record<FullTestModule, number> = { Listening: 40, Reading: 60, Writing: 60, Speaking: 14 }
@@ -1016,7 +1022,7 @@ type ReadingExamProps = {
 
 function ReadingExam({ answers, setAnswers, currentQ, setCurrentQ, timeLeft, part, selectedTestNumber = 1, customPassages, onFinish }: ReadingExamProps) {
   const [mobileView, setMobileView] = useState<'passage' | 'questions'>('passage')
-  const activePassages = customPassages && customPassages.length > 0 ? customPassages : selectedTestNumber === 21 ? READING_PASSAGES_21 : selectedTestNumber === 4 ? READING_PASSAGES_4 : selectedTestNumber === 3 ? READING_PASSAGES_3 : selectedTestNumber === 2 ? READING_PASSAGES_2 : READING_PASSAGES
+  const activePassages = customPassages && customPassages.length > 0 ? customPassages : selectedTestNumber === 22 ? READING_PASSAGES_21_T2 : selectedTestNumber === 21 ? READING_PASSAGES_21 : selectedTestNumber === 4 ? READING_PASSAGES_4 : selectedTestNumber === 3 ? READING_PASSAGES_3 : selectedTestNumber === 2 ? READING_PASSAGES_2 : READING_PASSAGES
   const passageIndex = part !== undefined ? part - 1 : currentQ <= 13 ? 0 : currentQ <= 26 ? 1 : 2
   const passage = activePassages[passageIndex] || activePassages[0]
   const answered = Object.keys(answers).filter(key => {
@@ -2062,6 +2068,7 @@ export default function PracticeTest() {
   const { user } = useAuth()
   const [stage, setStage] = useState<'select' | 'instructions' | 'test' | 'result'>('select')
   const [filter, setFilter] = useState<(typeof FILTERS)[number]>('All')
+  const [bookFilter, setBookFilter] = useState<(typeof BOOK_FILTERS)[number]>('All')
   const [selectedTest, setSelectedTest] = useState(TESTS[0])
   const [answers, setAnswers] = useState<Record<number, string>>({})
   const [currentQ, setCurrentQ] = useState(1)
@@ -2190,7 +2197,11 @@ export default function PracticeTest() {
     return customTests.find(ct => ct.id === selectedTest.id) || null
   }, [customTests, selectedTest.id])
 
-  const visibleTests = filter === 'All' ? allTests : allTests.filter(test => test.type === filter)
+  const visibleTests = allTests.filter(test => {
+    const matchesType = filter === 'All' || test.type === filter
+    const matchesBook = bookFilter === 'All' || (test.book ? `IELTS ${test.book}` === bookFilter : bookFilter === 'IELTS 18')
+    return matchesType && matchesBook
+  })
   const answered = Object.keys(answers).filter(key => answers[Number(key)]?.trim()).length
   const listeningScore = useMemo(() => {
     // Score against the test whose questions were shown, which follows the audio source selection
@@ -2199,7 +2210,7 @@ export default function PracticeTest() {
   }, [answers, selectedTestNum])
 
   const readingMarks = useMemo(() => {
-    const activeAnswers = activeCustomTest ? activeCustomTest.answers : selectedTest.testNumber === 21 ? READING_ANSWERS_21 : selectedTest.testNumber === 4 ? READING_ANSWERS_4 : selectedTest.testNumber === 3 ? READING_ANSWERS_3 : selectedTest.testNumber === 2 ? READING_ANSWERS_2 : READING_ANSWERS
+    const activeAnswers = activeCustomTest ? activeCustomTest.answers : selectedTest.testNumber === 22 ? READING_ANSWERS_21_T2 : selectedTest.testNumber === 21 ? READING_ANSWERS_21 : selectedTest.testNumber === 4 ? READING_ANSWERS_4 : selectedTest.testNumber === 3 ? READING_ANSWERS_3 : selectedTest.testNumber === 2 ? READING_ANSWERS_2 : READING_ANSWERS
     return markAnswers(activeAnswers, answers, readingPairs(selectedTest.testNumber))
   }, [answers, selectedTest.testNumber, activeCustomTest])
   const readingScore = countCorrect(readingMarks)
@@ -2776,8 +2787,8 @@ export default function PracticeTest() {
     const displayedBand = isListening ? listeningBand(projectedListeningScore) : readingBand(projectedReadingScore)
     const correctAnswers = isListening ? listeningScore : readingScore
 
-    const activePassages = activeCustomTest ? activeCustomTest.passages : selectedTest.testNumber === 21 ? READING_PASSAGES_21 : selectedTest.testNumber === 4 ? READING_PASSAGES_4 : selectedTest.testNumber === 3 ? READING_PASSAGES_3 : selectedTest.testNumber === 2 ? READING_PASSAGES_2 : READING_PASSAGES
-    const activeAnswers = activeCustomTest ? activeCustomTest.answers : selectedTest.testNumber === 21 ? READING_ANSWERS_21 : selectedTest.testNumber === 4 ? READING_ANSWERS_4 : selectedTest.testNumber === 3 ? READING_ANSWERS_3 : selectedTest.testNumber === 2 ? READING_ANSWERS_2 : READING_ANSWERS
+    const activePassages = activeCustomTest ? activeCustomTest.passages : selectedTest.testNumber === 22 ? READING_PASSAGES_21_T2 : selectedTest.testNumber === 21 ? READING_PASSAGES_21 : selectedTest.testNumber === 4 ? READING_PASSAGES_4 : selectedTest.testNumber === 3 ? READING_PASSAGES_3 : selectedTest.testNumber === 2 ? READING_PASSAGES_2 : READING_PASSAGES
+    const activeAnswers = activeCustomTest ? activeCustomTest.answers : selectedTest.testNumber === 22 ? READING_ANSWERS_21_T2 : selectedTest.testNumber === 21 ? READING_ANSWERS_21 : selectedTest.testNumber === 4 ? READING_ANSWERS_4 : selectedTest.testNumber === 3 ? READING_ANSWERS_3 : selectedTest.testNumber === 2 ? READING_ANSWERS_2 : READING_ANSWERS
 
     const readingQuestions = selectedTest.type === 'Reading'
       ? selectedTest.part !== undefined
