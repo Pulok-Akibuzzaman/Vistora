@@ -146,37 +146,90 @@ const PART_2_MATCHING = [
   { id: 20, text: 'First aid' },
 ]
 
-const PART_3_GROUPS = [
+const PART_3_MULTIPLE_CHOICE = [
   {
-    ids: [21, 22],
-    text: 'Which TWO features of the lecture on ocean biodiversity had the greatest impact on the students?',
-    options: ['the references to local problems', 'the broad focus of the examples', 'the practical suggestions for solutions', 'the type of issues discussed', 'the implications for government policy'],
+    id: 21,
+    text: 'What problem did Chantal have at the start of the talk?',
+    options: [
+      'Her view of the speaker was blocked.',
+      'She was unable to find an empty seat.',
+      'The students next to her were talking.',
+    ],
   },
   {
-    ids: [23, 24],
-    text: 'Which TWO details about the research project particularly impressed the students?',
-    options: ["the team's previous successes", 'its wide geographical scale', 'the use of new technology', 'the extensive statistical evidence', 'the large range of specialists involved'],
+    id: 22,
+    text: 'What were Hugo and Chantal surprised to hear about the job market?',
+    options: [
+      'It has become more competitive than it used to be.',
+      'There is more variety in it than they had realised.',
+      'Some areas of it are more exciting than others.',
+    ],
+  },
+  {
+    id: 23,
+    text: "Hugo and Chantal agree that the speaker's message was",
+    options: [
+      'unfair to them at times.',
+      'hard for them to follow.',
+      'critical of the industry.',
+    ],
+  },
+  {
+    id: 24,
+    text: 'What do Hugo and Chantal criticise about their school careers advice?',
+    options: [
+      'when they received the advice',
+      'how much advice was given',
+      'who gave the advice',
+    ],
+  },
+  {
+    id: 25,
+    text: 'When discussing their future, Hugo and Chantal disagree on',
+    options: [
+      'which is the best career in fashion.',
+      'when to choose a career in fashion.',
+      'why they would like a career in fashion.',
+    ],
+  },
+  {
+    id: 26,
+    text: 'How does Hugo feel about being an unpaid assistant?',
+    options: [
+      'He is realistic about the practice.',
+      'He feels the practice is dishonest.',
+      'He thinks others want to change the practice.',
+    ],
   },
 ]
 
-const PART_3_MATCHING = [
-  { id: 25, text: 'Article on invasive lionfish' },
-  { id: 26, text: 'Documentary on microplastics' },
-  { id: 27, text: 'Podcast on ocean pollution' },
-  { id: 28, text: 'Book on coastal ecosystems' },
-  { id: 29, text: 'Article on metal toxicity' },
-  { id: 30, text: 'Podcast on floating marine cities' },
-]
-
-const PART_3_OPINIONS = [
-  'This is aimed at a very specialist audience.',
-  'This is now rather outdated.',
-  'This was an effective description of a new danger.',
-  'This suggests possible ways to improve the situation.',
-  'This does not give a balanced account.',
-  'This is too predictable to be useful.',
-  'This gives insufficient evidence for its claims.',
-  'This gives a clear explanation of the problems.',
+const PART_3_PAIRS = [
+  {
+    ids: [27, 28] as [number, number],
+    title: 'Questions 27 and 28',
+    text: 'Which TWO mistakes did the speaker admit she made in her first job?',
+    instruction: 'Choose TWO letters, A–E. Answers may be in either order.',
+    options: [
+      'being dishonest to her employer',
+      'paying too much attention to how she looked',
+      'expecting to become well known',
+      'trying to earn a lot of money',
+      'openly disliking her client',
+    ],
+  },
+  {
+    ids: [29, 30] as [number, number],
+    title: 'Questions 29 and 30',
+    text: 'Which TWO pieces of retail information do Hugo and Chantal agree would be useful?',
+    instruction: 'Choose TWO letters, A–E. Answers may be in either order.',
+    options: [
+      'the reasons people return fashion items',
+      'how much time people have to shop for clothes',
+      'fashion designs people want but cannot find',
+      'the best time of year for fashion buying',
+      'the most popular fashion sizes',
+    ],
+  },
 ]
 
 const PART_4_PROMPTS = [
@@ -352,7 +405,7 @@ function ListeningExam({
 
   const partTitle = selectedTestNumber === 2 
     ? LISTENING_PARTS_2[currentPart - 1]?.title || `Part ${currentPart}`
-    : ['Transport survey', 'Becoming a volunteer for ACE', 'Ocean biodiversity research', 'Sources of rubber'][currentPart - 1]
+    : ['Transport survey', 'Becoming a volunteer for ACE', 'Talk on jobs in fashion design', 'Sources of rubber'][currentPart - 1]
   const partInstruction = selectedTestNumber === 2
     ? 'Follow the specific instructions for each question below.'
     : currentPart === 1
@@ -818,36 +871,75 @@ function ListeningExam({
 
             {currentPart === 3 && (
               <>
-                {PART_3_GROUPS.map(group => (
-                  <section key={group.ids[0]} className="space-y-4 rounded-2xl border border-slate-800/90 bg-[#0F172A] p-4 shadow-xl sm:p-6">
-                    <div className="border-b border-slate-800/80 pb-3"><h2 className="text-[11px] font-extrabold uppercase tracking-wider text-rose-400">Questions {group.ids[0]} and {group.ids[1]}</h2><p className="mt-1 text-xs text-slate-400">Choose TWO letters, A–E. Answers may be in either order.</p><h3 className="mt-3 text-sm font-semibold text-slate-100">{group.text}</h3></div>
+                <section className="space-y-4 rounded-2xl border border-slate-800/90 bg-[#0F172A] p-4 shadow-xl sm:p-6">
+                  <div className="flex items-center gap-2.5 border-b border-slate-800/80 pb-3">
+                    <span className="h-2.5 w-2.5 rounded-full bg-rose-500" />
+                    <div>
+                      <h2 className="text-[11px] font-extrabold uppercase tracking-wider text-rose-400">Talk on jobs in fashion design</h2>
+                      <p className="mt-0.5 text-xs text-slate-400">Questions 21–26 · Choose the correct letter, A, B or C.</p>
+                    </div>
+                  </div>
+                  <div className="space-y-4">
+                    {PART_3_MULTIPLE_CHOICE.map(question => (
+                      <fieldset
+                        key={question.id}
+                        id={`listening-question-${question.id}`}
+                        className={`rounded-xl border p-3.5 transition ${currentQ === question.id ? 'border-rose-500/80 bg-[#111C30] shadow-[0_0_15px_rgba(225,29,72,0.12)]' : 'border-slate-800/70 bg-[#090E17]/80'}`}
+                      >
+                        <legend className="px-1 text-sm font-semibold text-slate-100">{question.id}. {question.text}</legend>
+                        <div className="mt-2.5 grid gap-2">
+                          {question.options.map((option, index) => {
+                            const letter = String.fromCharCode(65 + index)
+                            return (
+                              <button
+                                key={option}
+                                type="button"
+                                onClick={() => setAnswer(question.id, letter)}
+                                className={`rounded-lg border px-3 py-2 text-left text-xs transition ${answers[question.id] === letter ? 'border-rose-500/70 bg-rose-500/15 text-rose-200' : 'border-slate-800 bg-[#111A2E] text-slate-300 hover:border-slate-600'}`}
+                              >
+                                <span className="mr-2.5 font-mono font-bold text-rose-400">{letter}</span>
+                                {option}
+                              </button>
+                            )
+                          })}
+                        </div>
+                      </fieldset>
+                    ))}
+                  </div>
+                </section>
+
+                {PART_3_PAIRS.map(pair => (
+                  <section key={pair.ids[0]} className="space-y-4 rounded-2xl border border-slate-800/90 bg-[#0F172A] p-4 shadow-xl sm:p-6">
+                    <div className="border-b border-slate-800/80 pb-3">
+                      <h2 className="text-[11px] font-extrabold uppercase tracking-wider text-rose-400">{pair.title}</h2>
+                      <p className="mt-1 text-xs text-slate-400">{pair.instruction}</p>
+                      <h3 className="mt-3 text-sm font-semibold text-slate-100">{pair.text}</h3>
+                    </div>
                     <div className="grid gap-2">
-                      {group.options.map((option, index) => {
+                      {pair.options.map((option, index) => {
                         const letter = String.fromCharCode(65 + index)
-                        const selectedId = group.ids.find(id => answers[id] === letter)
-                        return <button key={option} type="button" onClick={() => {
-                          if (selectedId) setAnswer(selectedId, '')
-                          else {
-                            const target = group.ids.find(id => !answers[id]) ?? group.ids[1]
-                            setAnswer(target, letter)
-                          }
-                        }} className={`rounded-lg border px-3 py-2.5 text-left text-sm transition ${selectedId ? 'border-rose-500/70 bg-rose-500/15 text-rose-100' : 'border-slate-800 bg-[#090E17]/80 text-slate-300 hover:border-slate-600'}`}><span className="mr-3 font-mono font-bold text-rose-400">{letter}</span>{option}</button>
+                        const selectedId = pair.ids.find(id => answers[id] === letter)
+                        return (
+                          <button
+                            key={option}
+                            type="button"
+                            onClick={() => {
+                              if (selectedId) setAnswer(selectedId, '')
+                              else {
+                                const target = pair.ids.find(id => !answers[id]) ?? pair.ids[1]
+                                setAnswer(target, letter)
+                              }
+                            }}
+                            className={`rounded-lg border px-3 py-2.5 text-left text-sm transition ${selectedId ? 'border-rose-500/70 bg-rose-500/15 text-rose-100' : 'border-slate-800 bg-[#090E17]/80 text-slate-300 hover:border-slate-600'}`}
+                          >
+                            <span className="mr-3 font-mono font-bold text-rose-400">{letter}</span>
+                            {option}
+                          </button>
+                        )
                       })}
                     </div>
                   </section>
                 ))}
-                <section className="space-y-4 rounded-2xl border border-slate-800/90 bg-[#0F172A] p-4 shadow-xl sm:p-6">
-                  <div className="border-b border-slate-800/80 pb-3"><h2 className="text-[11px] font-extrabold uppercase tracking-wider text-cyan-400">Questions 25–30 · Resource Matching</h2><p className="mt-1 text-xs text-slate-400">Choose the correct opinion, A–H, for each resource.</p></div>
-                  <div className="grid gap-1 rounded-lg border border-slate-800 bg-[#090E17]/80 p-3 text-xs leading-5 text-slate-300 sm:grid-cols-2">{PART_3_OPINIONS.map((opinion, index) => <div key={opinion}><strong className="text-white">{String.fromCharCode(65 + index)}</strong> — {opinion}</div>)}</div>
-                  <div className="space-y-3">
-                    {PART_3_MATCHING.map(question => (
-                      <div key={question.id} id={`listening-question-${question.id}`} className={`flex flex-wrap items-center gap-3 rounded-xl border p-3 transition ${currentQ === question.id ? 'border-rose-500/80 bg-[#111C30]' : 'border-slate-800/70 bg-[#090E17]/80'}`}>
-                        <span className={`flex h-6 w-6 items-center justify-center rounded-md border font-mono text-xs font-bold ${answers[question.id] ? 'border-emerald-500/30 bg-emerald-500/20 text-emerald-300' : 'border-slate-700 bg-[#162238] text-slate-400'}`}>{question.id}</span><span className="min-w-40 flex-1 text-sm text-slate-200">{question.text}</span>
-                        <select aria-label={`Answer ${question.id}`} value={answers[question.id] || ''} onFocus={() => setCurrentQ(question.id)} onChange={event => setAnswer(question.id, event.target.value)} className="min-w-24 rounded-lg border border-slate-700 bg-[#152033] px-3 py-2 text-sm text-white focus:border-rose-500 focus:outline-none"><option value="">Select</option>{PART_3_OPINIONS.map((_, index) => <option key={index}>{String.fromCharCode(65 + index)}</option>)}</select>
-                      </div>
-                    ))}
-                  </div>
-                </section>
               </>
             )}
 
