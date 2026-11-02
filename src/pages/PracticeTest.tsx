@@ -1485,7 +1485,7 @@ function WritingExam({ answers, setAnswers, currentTask, setCurrentTask, timeLef
       <header className="flex min-h-14 items-center justify-between border-b border-divider bg-surface px-4">
         <div className="flex items-center gap-5">
           <div className="border-r border-divider pr-5 font-plex text-2xl font-bold tracking-tight text-accent">IELTS</div>
-          <div><div className="font-plex text-xs font-semibold text-ink">Test taker ID</div><div className="font-plex text-xs text-graphite-mid">Academic Writing · Test 1{part ? ` · Task ${part}` : ''}</div></div>
+          <div><div className="font-plex text-xs font-semibold text-ink">Test taker ID</div><div className="font-plex text-xs text-graphite-mid">Academic Writing · Test {selectedTestNumber}{part ? ` · Task ${part}` : ''}</div></div>
         </div>
         <div className="flex items-center gap-3 sm:gap-5">
           <div className="text-right"><div className={`font-mono text-sm font-semibold ${timeLeft < 300 ? 'text-accent' : 'text-ink'}`}>{formatTime(timeLeft)}</div><div className="font-mono text-xs uppercase text-graphite-light">Time left</div></div>
@@ -2066,7 +2066,7 @@ function SpeakingExam({ currentPart, setCurrentPart, timeLeft, part, onRecording
       <header className="flex min-h-14 items-center justify-between border-b border-divider bg-surface px-4">
         <div className="flex items-center gap-5">
           <div className="border-r border-divider pr-5 font-plex text-2xl font-bold tracking-tight text-accent">IELTS</div>
-          <div><div className="font-plex text-xs font-semibold text-ink">Test taker ID</div><div className="font-plex text-xs text-graphite-mid">Speaking · Test 1{part ? ` · Part ${part}` : ''}</div></div>
+          <div><div className="font-plex text-xs font-semibold text-ink">Test taker ID</div><div className="font-plex text-xs text-graphite-mid">Speaking · Test {selectedTestNumber}{part ? ` · Part ${part}` : ''}</div></div>
         </div>
         <div className="flex items-center gap-3 sm:gap-5">
           <div className="text-right"><div className={`font-mono text-sm font-semibold ${timeLeft < 60 ? 'text-accent' : 'text-ink'}`}>{formatTime(timeLeft)}</div><div className="font-mono text-xs uppercase text-graphite-light">Time left</div></div>
