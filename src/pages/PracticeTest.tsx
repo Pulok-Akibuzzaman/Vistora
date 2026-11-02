@@ -95,6 +95,14 @@ const TESTS: Test[] = [
   { id: 's2-p1', type: 'Speaking', module: 'Academic', title: 'IELTS 18 — Speaking Test 2 · Part 1', questions: 1, duration: 5, difficulty: 'Interview', status: 'New', part: 1, book: '18', testNumber: 2 },
   { id: 's2-p2', type: 'Speaking', module: 'Academic', title: 'IELTS 18 — Speaking Test 2 · Part 2', questions: 1, duration: 4, difficulty: 'Long turn', status: 'New', part: 2, book: '18', testNumber: 2 },
   { id: 's2-p3', type: 'Speaking', module: 'Academic', title: 'IELTS 18 — Speaking Test 2 · Part 3', questions: 1, duration: 5, difficulty: 'Discussion', status: 'New', part: 3, book: '18', testNumber: 2 },
+  { id: 's3', type: 'Speaking', module: 'Academic', title: 'IELTS 18 — Speaking Test 3', questions: 3, duration: 14, difficulty: 'Official format', status: 'New', book: '18', testNumber: 3 },
+  { id: 's3-p1', type: 'Speaking', module: 'Academic', title: 'IELTS 18 — Speaking Test 3 · Part 1', questions: 1, duration: 5, difficulty: 'Interview', status: 'New', part: 1, book: '18', testNumber: 3 },
+  { id: 's3-p2', type: 'Speaking', module: 'Academic', title: 'IELTS 18 — Speaking Test 3 · Part 2', questions: 1, duration: 4, difficulty: 'Long turn', status: 'New', part: 2, book: '18', testNumber: 3 },
+  { id: 's3-p3', type: 'Speaking', module: 'Academic', title: 'IELTS 18 — Speaking Test 3 · Part 3', questions: 1, duration: 5, difficulty: 'Discussion', status: 'New', part: 3, book: '18', testNumber: 3 },
+  { id: 's4', type: 'Speaking', module: 'Academic', title: 'IELTS 18 — Speaking Test 4', questions: 3, duration: 14, difficulty: 'Official format', status: 'New', book: '18', testNumber: 4 },
+  { id: 's4-p1', type: 'Speaking', module: 'Academic', title: 'IELTS 18 — Speaking Test 4 · Part 1', questions: 1, duration: 5, difficulty: 'Interview', status: 'New', part: 1, book: '18', testNumber: 4 },
+  { id: 's4-p2', type: 'Speaking', module: 'Academic', title: 'IELTS 18 — Speaking Test 4 · Part 2', questions: 1, duration: 4, difficulty: 'Long turn', status: 'New', part: 2, book: '18', testNumber: 4 },
+  { id: 's4-p3', type: 'Speaking', module: 'Academic', title: 'IELTS 18 — Speaking Test 4 · Part 3', questions: 1, duration: 5, difficulty: 'Discussion', status: 'New', part: 3, book: '18', testNumber: 4 },
   { id: 's21', type: 'Speaking', module: 'Academic', title: 'IELTS 21 — Speaking Test 1', questions: 3, duration: 14, difficulty: 'Official format', status: 'New', book: '21', testNumber: 21 },
   { id: 's21-p1', type: 'Speaking', module: 'Academic', title: 'IELTS 21 — Speaking Test 1 · Part 1 (Hairstyles)', questions: 1, duration: 5, difficulty: 'Interview', status: 'New', part: 1, book: '21', testNumber: 21 },
   { id: 's21-p2', type: 'Speaking', module: 'Academic', title: 'IELTS 21 — Speaking Test 1 · Part 2 (Tourist Info)', questions: 1, duration: 4, difficulty: 'Long turn', status: 'New', part: 2, book: '21', testNumber: 21 },
@@ -1783,6 +1791,106 @@ const SPEAKING_CONTENT_20: Record<number, SpeakingContentItem> = {
   },
 }
 
+const SPEAKING_CONTENT_3: Record<number, SpeakingContentItem> = {
+  1: {
+    label: 'Introduction and interview',
+    title: 'Online shopping',
+    intro: 'The examiner asks you about yourself, your home, work or studies and other familiar topics.',
+    questions: [
+      'How often do you buy things online? [Why?]',
+      'What was the last thing you bought online?',
+      'Do you ever see things in shops and then buy them online? [Why/Why not?]',
+      'Do you think the popularity of online shopping is changing your town or city centre? [Why/Why not?]',
+    ],
+  },
+  2: {
+    label: 'Individual long turn',
+    title: 'Describe a time when you enjoyed visiting a member of your family in their home.',
+    intro: 'You will have to talk about the topic for one to two minutes. You have one minute to think about what you are going to say. You can make some notes to help you if you wish.',
+    subheading: 'You should say:',
+    questions: [
+      'who you visited and where they lived',
+      'why you made this visit',
+      'what happened during this visit',
+      'and explain what you enjoyed about this visit.',
+    ],
+  },
+  3: {
+    label: 'Two-way discussion',
+    title: 'Family life and occasions',
+    intro: 'Discussion topics:',
+    questions: [],
+    topics: [
+      {
+        title: 'Family occasions',
+        questions: [
+          'When do families celebrate together in your country?',
+          'How often do all the generations in a family come together in your country?',
+          'Why is it that some people might not enjoy attending family occasions?',
+        ],
+      },
+      {
+        title: 'Everyday life in families',
+        questions: [
+          'Do you think it is a good thing for parents to help their children with schoolwork?',
+          'How important do you think it is for families to eat together at least once a day?',
+          'Do you believe that everyone in a family should share household tasks?',
+        ],
+      },
+    ],
+  },
+}
+
+const SPEAKING_CONTENT_4: Record<number, SpeakingContentItem> = {
+  1: {
+    label: 'Introduction and interview',
+    title: 'Sleep',
+    intro: 'The examiner asks you about yourself, your home, work or studies and other familiar topics.',
+    questions: [
+      'How many hours do you usually sleep at night?',
+      'Do you sometimes sleep during the day? [Why/Why not?]',
+      'What do you do if you can\'t get to sleep at night? [Why?]',
+      'Do you ever remember the dreams you\'ve had while you were asleep?',
+    ],
+  },
+  2: {
+    label: 'Individual long turn',
+    title: 'Describe a time when you met someone who you became good friends with.',
+    intro: 'You will have to talk about the topic for one to two minutes. You have one minute to think about what you are going to say. You can make some notes to help you if you wish.',
+    subheading: 'You should say:',
+    questions: [
+      'who you met',
+      'when and where you met this person',
+      'what you thought about this person when you first met',
+      'and explain why you think you became good friends with this person.',
+    ],
+  },
+  3: {
+    label: 'Two-way discussion',
+    title: 'Friendship',
+    intro: 'Discussion topics:',
+    questions: [],
+    topics: [
+      {
+        title: 'Friends at school',
+        questions: [
+          'How important is it for children to have lots of friends at school?',
+          'Do you think it is wrong for parents to influence which friends their children have?',
+          'Why do you think children often choose different friends as they get older?',
+        ],
+      },
+      {
+        title: 'Making new friends',
+        questions: [
+          'If a person is moving to a new town, what is a good way for them to make friends?',
+          'Can you think of any disadvantages of making new friends online?',
+          'Would you say it is harder for people to make new friends as they get older?',
+        ],
+      },
+    ],
+  },
+}
+
 const SPEAKING_CONTENT_2: Record<number, SpeakingContentItem> = {
   1: {
     label: 'Introduction and interview',
@@ -1906,7 +2014,7 @@ const SPEAKING_CONTENT: Record<number, SpeakingContentItem> = {
 
 function SpeakingExam({ currentPart, setCurrentPart, timeLeft, part, onRecording, onFinishSpeaking, onFinish, selectedTestNumber = 1 }: SpeakingExamProps) {
   const activePart = part ?? currentPart
-  const activeContent = selectedTestNumber === 21 ? SPEAKING_CONTENT_21 : selectedTestNumber === 20 ? SPEAKING_CONTENT_20 : selectedTestNumber === 2 ? SPEAKING_CONTENT_2 : SPEAKING_CONTENT
+  const activeContent = selectedTestNumber === 21 ? SPEAKING_CONTENT_21 : selectedTestNumber === 20 ? SPEAKING_CONTENT_20 : selectedTestNumber === 4 ? SPEAKING_CONTENT_4 : selectedTestNumber === 3 ? SPEAKING_CONTENT_3 : selectedTestNumber === 2 ? SPEAKING_CONTENT_2 : SPEAKING_CONTENT
   const content = activeContent[activePart] ?? activeContent[1]
   const recorderRef = useRef<MediaRecorder | null>(null)
   const streamRef = useRef<MediaStream | null>(null)
