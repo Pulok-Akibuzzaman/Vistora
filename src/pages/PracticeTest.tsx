@@ -233,16 +233,16 @@ const PART_3_PAIRS = [
 ]
 
 const PART_4_PROMPTS = [
-  { id: 31, prefix: 'Three essential resources: ', suffix: ', fossil fuels and rubber' },
-  { id: 32, prefix: 'The growth of the rubber tree is', suffix: '' },
-  { id: 33, prefix: 'Production cannot easily be adjusted to changing', suffix: '' },
-  { id: 34, prefix: 'The tree only grows near the', suffix: '' },
-  { id: 35, prefix: 'It is very difficult to', suffix: 'rubber after production' },
-  { id: 36, prefix: 'Disease may be caused by a', suffix: '' },
-  { id: 37, prefix: 'Another threat is extreme', suffix: 'events' },
-  { id: 38, prefix: 'Synthetic rubber is less', suffix: 'than natural rubber' },
-  { id: 39, prefix: 'A type of dandelion has rubber in its', suffix: '' },
-  { id: 40, prefix: 'It can grow without good', suffix: '' },
+  { id: 31, prefix: 'Problems caused by elephant overpopulation: - damage to', suffix: 'in the park' },
+  { id: 32, prefix: 'The translocation process: - a suitable group of elephants from the same', suffix: 'was selected' },
+  { id: 33, prefix: 'The translocation process: - vets and park staff made use of', suffix: 'to help guide the elephants into an open plain' },
+  { id: 34, prefix: 'The translocation process: - this process had to be completed quickly to reduce', suffix: '' },
+  { id: 35, prefix: 'The translocation process: - elephants had to be turned on their', suffix: 'to avoid damage to their lungs' },
+  { id: 36, prefix: "The translocation process: - elephants'", suffix: 'had to be monitored constantly' },
+  { id: 37, prefix: 'The translocation process: - data including the size of their tusks and', suffix: 'was taken' },
+  { id: 38, prefix: 'Advantages of translocation at Nkhotakota Wildlife Park: -', suffix: 'opportunities' },
+  { id: 39, prefix: 'Advantages of translocation at Nkhotakota Wildlife Park: - a reduction in the number of poachers and', suffix: '' },
+  { id: 40, prefix: 'Advantages of translocation at Nkhotakota Wildlife Park: - an increase in', suffix: 'as a contributor to GDP' },
 ]
 
 type ListeningExamProps = {
@@ -405,7 +405,7 @@ function ListeningExam({
 
   const partTitle = selectedTestNumber === 2 
     ? LISTENING_PARTS_2[currentPart - 1]?.title || `Part ${currentPart}`
-    : ['Transport survey', 'Becoming a volunteer for ACE', 'Talk on jobs in fashion design', 'Sources of rubber'][currentPart - 1]
+    : ['Transport survey', 'Becoming a volunteer for ACE', 'Talk on jobs in fashion design', 'Elephant translocation'][currentPart - 1]
   const partInstruction = selectedTestNumber === 2
     ? 'Follow the specific instructions for each question below.'
     : currentPart === 1
@@ -944,10 +944,45 @@ function ListeningExam({
             )}
 
             {currentPart === 4 && (
-              <section className="space-y-4 rounded-2xl border border-slate-800/90 bg-[#0F172A] p-4 shadow-xl sm:p-6">
-                <div className="flex items-center gap-2.5 border-b border-slate-800/80 pb-3"><span className="h-2.5 w-2.5 rounded-full bg-emerald-400" /><h2 className="text-[11px] font-extrabold uppercase tracking-wider text-emerald-400">Sources of Rubber</h2></div>
-                <p className="text-xs text-slate-400">Complete the notes. Write ONE WORD ONLY for each answer.</p>
-                <ul className="space-y-3">{PART_4_PROMPTS.map(completionRow)}</ul>
+              <section className="space-y-5 rounded-2xl border border-slate-800/90 bg-[#0F172A] p-4 shadow-xl sm:p-6">
+                <div className="border-b border-slate-800/80 pb-3">
+                  <div className="flex items-center gap-2.5">
+                    <span className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
+                    <h2 className="text-sm font-extrabold uppercase tracking-wider text-emerald-400">Elephant translocation</h2>
+                  </div>
+                  <p className="mt-1 text-xs text-slate-400">Complete the notes below. Write <strong className="text-slate-200">ONE WORD ONLY</strong> for each answer.</p>
+                </div>
+
+                <div className="rounded-xl border border-slate-800 bg-[#090E17]/60 p-4 space-y-4">
+                  <div className="border-b border-slate-800/80 pb-3">
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-rose-400 mb-2">Reasons for overpopulation at Majete National Park</h3>
+                    <ul className="list-disc list-inside space-y-1 text-xs text-slate-300">
+                      <li>strict enforcement of anti-poaching laws</li>
+                      <li>successful breeding</li>
+                    </ul>
+                  </div>
+
+                  <div className="border-b border-slate-800/80 pb-3">
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-amber-400 mb-2">Problems caused by elephant overpopulation</h3>
+                    <p className="text-xs text-slate-300 mb-2">• greater competition, causing hunger for elephants</p>
+                    <ul className="space-y-3">{PART_4_PROMPTS.slice(0, 1).map(completionRow)}</ul>
+                  </div>
+
+                  <div className="border-b border-slate-800/80 pb-3">
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-cyan-400 mb-2">The translocation process</h3>
+                    <ul className="space-y-3">{PART_4_PROMPTS.slice(1, 3).map(completionRow)}</ul>
+                    <p className="text-xs text-slate-300 my-2">• elephants were immobilised with tranquilisers</p>
+                    <ul className="space-y-3">{PART_4_PROMPTS.slice(3, 7).map(completionRow)}</ul>
+                    <p className="text-xs text-slate-300 mt-2">• tracking devices were fitted to the matriarchs</p>
+                    <p className="text-xs text-slate-300 mt-1">• elephants were taken by truck to their new reserve</p>
+                  </div>
+
+                  <div>
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-emerald-400 mb-2">Advantages of translocation at Nkhotakota Wildlife Park</h3>
+                    <ul className="space-y-3">{PART_4_PROMPTS.slice(7, 10).map(completionRow)}</ul>
+                    <p className="text-xs text-slate-300 mt-2">• an example of conservation that other parks can follow</p>
+                  </div>
+                </div>
               </section>
             )}
             </>
