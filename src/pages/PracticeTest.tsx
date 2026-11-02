@@ -263,7 +263,7 @@ function ListeningExam({
     setAudioError(false)
     audioRef.current.src = effectiveAudioUrl
     audioRef.current.load()
-    audioRef.current.play().then(() => setAudioPlaying(true)).catch(() => setAudioPlaying(false))
+    setAudioPlaying(false)
   }, [effectiveAudioUrl])
 
   const togglePlayPause = () => {
@@ -388,73 +388,7 @@ function ListeningExam({
 
       <div className="listening-exam-workspace flex min-h-0 flex-1 flex-col overflow-hidden md:flex-row">
         <aside className="flex max-h-[42vh] w-full shrink-0 flex-col gap-3 overflow-y-auto border-b border-slate-800 bg-[#0B1220] p-3 md:max-h-none md:w-72 md:border-b-0 md:border-r md:p-4 xl:w-80">
-          <div className="rounded-xl border border-slate-800 bg-[#111A2E] p-3 shadow-sm">
-            <div className="mb-2 flex items-center justify-between">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-rose-400">Current Section</span>
-              <span className="rounded border border-rose-500/20 bg-rose-500/10 px-2 py-0.5 font-mono text-[10px] font-semibold text-rose-300">Part {currentPart}</span>
-            </div>
-            <h2 className="text-sm font-bold text-white">Questions {partStart}–{partEnd}</h2>
-            <p className="mt-1 text-[11px] leading-relaxed text-slate-400">{partTitle}</p>
-          </div>
-
-          <div className="space-y-2 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3">
-            <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wide text-amber-400">
-              <span aria-hidden="true">!</span><span>Instructions</span>
-            </div>
-            <p className="text-xs font-medium leading-relaxed text-slate-200">{partInstruction}</p>
-            <p className="rounded border border-amber-500/20 bg-amber-500/5 px-2 py-1.5 text-[10px] leading-relaxed text-amber-300/90">Listen carefully and review your answers before ending the test.</p>
-          </div>
-
-          <section className="space-y-3 rounded-xl border border-slate-800 bg-[#111A2E] p-3.5" aria-label="Question matrix">
-            <div className="flex items-center justify-between gap-2">
-              <h3 className="text-[11px] font-bold uppercase tracking-wider text-slate-300">Question Matrix</h3>
-              <span className="font-mono text-[10px] font-semibold text-emerald-400">{partAnswered} of 10 done</span>
-            </div>
-            <div className="grid grid-cols-5 gap-2">
-              {Array.from({ length: 10 }, (_, index) => partStart + index).map(id => {
-                const isAnswered = !!answers[id]?.trim()
-                const isActive = currentQ === id
-                const isFlagged = reviewFlags.includes(id)
-                return (
-                  <button
-                    key={id}
-                    type="button"
-                    onClick={() => jumpToQuestion(id)}
-                    aria-label={`Go to question ${id}${isAnswered ? ', answered' : ''}${isFlagged ? ', flagged for review' : ''}`}
-                    aria-current={isActive ? 'step' : undefined}
-                    className={`relative flex h-9 flex-col items-center justify-center rounded-lg border font-mono text-xs transition ${isActive ? 'border-rose-400 bg-rose-500 font-bold text-white shadow-md shadow-rose-900/40 ring-2 ring-rose-400/50' : isAnswered ? 'border-emerald-500/40 bg-emerald-500/15 font-bold text-emerald-300 hover:bg-emerald-500/25' : 'border-slate-800 bg-[#0A101C] text-slate-400 hover:border-slate-600 hover:text-white'}`}
-                  >
-                    <span>{id}</span>
-                    {isAnswered && !isActive && <span className="-mt-1 text-[8px] text-emerald-400">✓</span>}
-                    {isFlagged && <span className="absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full border-2 border-[#111A2E] bg-amber-400" title="Flagged for review" />}
-                  </button>
-                )
-              })}
-            </div>
-            <div className="flex items-center justify-between border-t border-slate-800/80 pt-2 text-[9px] text-slate-400">
-              <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-sm bg-emerald-500" />Answered</span>
-              <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-sm bg-rose-500" />Current</span>
-              <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-sm bg-amber-400" />Flagged</span>
-            </div>
-          </section>
-
-          <section className="rounded-xl border border-slate-800/80 bg-[#111A2E]/70 p-3" aria-label="Part navigation">
-            <h3 className="mb-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">Listening Parts</h3>
-            <div className="grid grid-cols-4 gap-1.5 md:grid-cols-2 xl:grid-cols-4">
-              {(part ? [part] : [1, 2, 3, 4]).map(partNumber => {
-                const start = (partNumber - 1) * 10 + 1
-                const count = Array.from({ length: 10 }, (_, index) => answers[start + index]?.trim()).filter(Boolean).length
-                return (
-                  <button key={partNumber} type="button" onClick={() => jumpToPart(partNumber)} className={`rounded-md border px-2 py-2 text-left transition ${currentPart === partNumber ? 'border-rose-500/40 bg-rose-500/10 text-rose-300' : 'border-slate-800 text-slate-400 hover:border-slate-600 hover:text-slate-200'}`}>
-                    <span className="block text-[10px] font-semibold">Part {partNumber}</span>
-                    <span className="mt-0.5 block font-mono text-[9px]">{count}/10</span>
-                  </button>
-                )
-              })}
-            </div>
-          </section>
-
-          <section className="mt-auto space-y-3 rounded-xl border border-slate-800 bg-[#111A2E] p-3.5" aria-label="Audio playback">
+          <section className="space-y-3 rounded-xl border border-slate-800 bg-[#111A2E] p-3.5" aria-label="Audio playback">
             <div className="flex items-center justify-between gap-2">
               <span className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">
                 <span className={`h-2 w-2 rounded-full ${audioPlaying ? 'animate-pulse bg-rose-400' : 'bg-slate-500'}`} />Audio Playback
@@ -545,6 +479,71 @@ function ListeningExam({
                 </div>
               </div>
             )}
+          </section>
+          <div className="rounded-xl border border-slate-800 bg-[#111A2E] p-3 shadow-sm">
+            <div className="mb-2 flex items-center justify-between">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-rose-400">Current Section</span>
+              <span className="rounded border border-rose-500/20 bg-rose-500/10 px-2 py-0.5 font-mono text-[10px] font-semibold text-rose-300">Part {currentPart}</span>
+            </div>
+            <h2 className="text-sm font-bold text-white">Questions {partStart}–{partEnd}</h2>
+            <p className="mt-1 text-[11px] leading-relaxed text-slate-400">{partTitle}</p>
+          </div>
+
+          <div className="space-y-2 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3">
+            <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wide text-amber-400">
+              <span aria-hidden="true">!</span><span>Instructions</span>
+            </div>
+            <p className="text-xs font-medium leading-relaxed text-slate-200">{partInstruction}</p>
+            <p className="rounded border border-amber-500/20 bg-amber-500/5 px-2 py-1.5 text-[10px] leading-relaxed text-amber-300/90">Listen carefully and review your answers before ending the test.</p>
+          </div>
+
+          <section className="space-y-3 rounded-xl border border-slate-800 bg-[#111A2E] p-3.5" aria-label="Question matrix">
+            <div className="flex items-center justify-between gap-2">
+              <h3 className="text-[11px] font-bold uppercase tracking-wider text-slate-300">Question Matrix</h3>
+              <span className="font-mono text-[10px] font-semibold text-emerald-400">{partAnswered} of 10 done</span>
+            </div>
+            <div className="grid grid-cols-5 gap-2">
+              {Array.from({ length: 10 }, (_, index) => partStart + index).map(id => {
+                const isAnswered = !!answers[id]?.trim()
+                const isActive = currentQ === id
+                const isFlagged = reviewFlags.includes(id)
+                return (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => jumpToQuestion(id)}
+                    aria-label={`Go to question ${id}${isAnswered ? ', answered' : ''}${isFlagged ? ', flagged for review' : ''}`}
+                    aria-current={isActive ? 'step' : undefined}
+                    className={`relative flex h-9 flex-col items-center justify-center rounded-lg border font-mono text-xs transition ${isActive ? 'border-rose-400 bg-rose-500 font-bold text-white shadow-md shadow-rose-900/40 ring-2 ring-rose-400/50' : isAnswered ? 'border-emerald-500/40 bg-emerald-500/15 font-bold text-emerald-300 hover:bg-emerald-500/25' : 'border-slate-800 bg-[#0A101C] text-slate-400 hover:border-slate-600 hover:text-white'}`}
+                  >
+                    <span>{id}</span>
+                    {isAnswered && !isActive && <span className="-mt-1 text-[8px] text-emerald-400">✓</span>}
+                    {isFlagged && <span className="absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full border-2 border-[#111A2E] bg-amber-400" title="Flagged for review" />}
+                  </button>
+                )
+              })}
+            </div>
+            <div className="flex items-center justify-between border-t border-slate-800/80 pt-2 text-[9px] text-slate-400">
+              <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-sm bg-emerald-500" />Answered</span>
+              <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-sm bg-rose-500" />Current</span>
+              <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-sm bg-amber-400" />Flagged</span>
+            </div>
+          </section>
+
+          <section className="rounded-xl border border-slate-800/80 bg-[#111A2E]/70 p-3" aria-label="Part navigation">
+            <h3 className="mb-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">Listening Parts</h3>
+            <div className="grid grid-cols-4 gap-1.5 md:grid-cols-2 xl:grid-cols-4">
+              {(part ? [part] : [1, 2, 3, 4]).map(partNumber => {
+                const start = (partNumber - 1) * 10 + 1
+                const count = Array.from({ length: 10 }, (_, index) => answers[start + index]?.trim()).filter(Boolean).length
+                return (
+                  <button key={partNumber} type="button" onClick={() => jumpToPart(partNumber)} className={`rounded-md border px-2 py-2 text-left transition ${currentPart === partNumber ? 'border-rose-500/40 bg-rose-500/10 text-rose-300' : 'border-slate-800 text-slate-400 hover:border-slate-600 hover:text-slate-200'}`}>
+                    <span className="block text-[10px] font-semibold">Part {partNumber}</span>
+                    <span className="mt-0.5 block font-mono text-[9px]">{count}/10</span>
+                  </button>
+                )
+              })}
+            </div>
           </section>
 
           <button type="button" onClick={() => setReviewFlags(flags => flags.includes(currentQ) ? flags.filter(id => id !== currentQ) : [...flags, currentQ])} aria-pressed={reviewFlags.includes(currentQ)} className={`flex w-full items-center justify-center gap-2 rounded-lg border px-3 py-2 text-xs font-semibold transition ${reviewFlags.includes(currentQ) ? 'border-amber-400/60 bg-amber-500/20 text-amber-200' : 'border-amber-500/30 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20'}`}>
