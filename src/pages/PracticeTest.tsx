@@ -3110,29 +3110,42 @@ export default function PracticeTest() {
       </div>
 
       <section className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {visibleTests.map(test => (
-          <button key={test.id} onClick={() => setSelectedTest(test)} className={`group rounded-card border-2 bg-surface p-5 text-left transition-all hover:-translate-y-0.5 hover:shadow-lg ${selectedTest.id === test.id ? 'border-electric' : 'border-divider'}`}>
-            <div className="flex items-start justify-between gap-4">
-              <span className={`rounded-sm px-2 py-1 font-mono text-xs uppercase tracking-wide ${test.type === 'Writing' ? 'bg-violet-dim text-accent-2' : test.type === 'Full Test' ? 'bg-navy text-white' : 'bg-electric-dim text-accent'}`}>{test.type}</span>
-              <span className="font-mono text-xs text-graphite-light">{test.status}</span>
+        {visibleTests.map(test => {
+          const isSelected = selectedTest.id === test.id
+          return (
+            <div
+              key={test.id}
+              onClick={() => setSelectedTest(test)}
+              className={`group flex flex-col justify-between rounded-card border-2 bg-surface p-5 text-left transition-all hover:-translate-y-0.5 hover:shadow-lg cursor-pointer ${isSelected ? 'border-electric' : 'border-divider'}`}
+            >
+              <div>
+                <div className="flex items-start justify-between gap-4">
+                  <span className={`rounded-sm px-2 py-1 font-mono text-xs uppercase tracking-wide ${test.type === 'Writing' ? 'bg-violet-dim text-accent-2' : test.type === 'Full Test' ? 'bg-navy text-white' : 'bg-electric-dim text-accent'}`}>{test.type}</span>
+                  <span className="font-mono text-xs text-graphite-light">{test.status}</span>
+                </div>
+                <h2 className="mt-5 font-plex text-base font-semibold text-ink">{test.title}</h2>
+                <div className="mt-5 grid grid-cols-3 border-t border-divider pt-4">
+                  <div><div className="font-mono text-sm font-semibold text-ink">{test.questions}</div><div className="font-mono text-xs uppercase text-graphite-light">Questions</div></div>
+                  <div><div className="font-mono text-sm font-semibold text-ink">{test.duration}</div><div className="font-mono text-xs uppercase text-graphite-light">Minutes</div></div>
+                  <div><div className="font-mono text-sm font-semibold text-ink">{test.difficulty}</div><div className="font-mono text-xs uppercase text-graphite-light">Level</div></div>
+                </div>
+              </div>
+              {isSelected && (
+                <div className="mt-5 border-t border-divider pt-4">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      goToStage('instructions')
+                    }}
+                    className="w-full rounded-card bg-electric px-5 py-2.5 text-center font-plex text-sm font-semibold text-white transition-colors hover:bg-electric-light"
+                  >
+                    View instructions and begin →
+                  </button>
+                </div>
+              )}
             </div>
-            <h2 className="mt-5 font-plex text-base font-semibold text-ink">{test.title}</h2>
-            <div className="mt-5 grid grid-cols-3 border-t border-divider pt-4">
-              <div><div className="font-mono text-sm font-semibold text-ink">{test.questions}</div><div className="font-mono text-xs uppercase text-graphite-light">Questions</div></div>
-              <div><div className="font-mono text-sm font-semibold text-ink">{test.duration}</div><div className="font-mono text-xs uppercase text-graphite-light">Minutes</div></div>
-              <div><div className="font-mono text-sm font-semibold text-ink">{test.difficulty}</div><div className="font-mono text-xs uppercase text-graphite-light">Level</div></div>
-            </div>
-          </button>
-        ))}
-      </section>
-
-      <section className="sticky bottom-4 mt-7 flex flex-col justify-between gap-4 rounded-card border border-divider bg-surface/95 p-5 shadow-xl backdrop-blur md:flex-row md:items-center">
-        <div>
-          <div className="font-mono text-xs uppercase tracking-widest text-accent">Selected test</div>
-          <div className="mt-1 font-plex text-sm font-semibold text-ink">{selectedTest.title}</div>
-          <div className="mt-1 font-mono text-xs text-graphite-light">{selectedTest.module} · {selectedTest.questions} questions · {selectedTest.duration} minutes</div>
-        </div>
-        <button onClick={() => goToStage('instructions')} className="rounded-card bg-electric px-7 py-3 font-plex text-sm font-semibold text-white transition-colors hover:bg-electric-light">View instructions and begin →</button>
+          )
+        })}
       </section>
     </main>
   )
