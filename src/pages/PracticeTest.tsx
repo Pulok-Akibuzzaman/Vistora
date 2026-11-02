@@ -89,6 +89,14 @@ const TESTS: Test[] = [
   { id: 's2-p1', type: 'Speaking', module: 'Academic', title: 'IELTS 18 — Speaking Test 2 · Part 1', questions: 1, duration: 5, difficulty: 'Interview', status: 'New', part: 1, book: '18', testNumber: 2 },
   { id: 's2-p2', type: 'Speaking', module: 'Academic', title: 'IELTS 18 — Speaking Test 2 · Part 2', questions: 1, duration: 4, difficulty: 'Long turn', status: 'New', part: 2, book: '18', testNumber: 2 },
   { id: 's2-p3', type: 'Speaking', module: 'Academic', title: 'IELTS 18 — Speaking Test 2 · Part 3', questions: 1, duration: 5, difficulty: 'Discussion', status: 'New', part: 3, book: '18', testNumber: 2 },
+  { id: 's21', type: 'Speaking', module: 'Academic', title: 'IELTS 21 — Speaking Test 1', questions: 3, duration: 14, difficulty: 'Official format', status: 'New', book: '21', testNumber: 21 },
+  { id: 's21-p1', type: 'Speaking', module: 'Academic', title: 'IELTS 21 — Speaking Test 1 · Part 1 (Hairstyles)', questions: 1, duration: 5, difficulty: 'Interview', status: 'New', part: 1, book: '21', testNumber: 21 },
+  { id: 's21-p2', type: 'Speaking', module: 'Academic', title: 'IELTS 21 — Speaking Test 1 · Part 2 (Tourist Info)', questions: 1, duration: 4, difficulty: 'Long turn', status: 'New', part: 2, book: '21', testNumber: 21 },
+  { id: 's21-p3', type: 'Speaking', module: 'Academic', title: 'IELTS 21 — Speaking Test 1 · Part 3 (Holidays)', questions: 1, duration: 5, difficulty: 'Discussion', status: 'New', part: 3, book: '21', testNumber: 21 },
+  { id: 's20', type: 'Speaking', module: 'Academic', title: 'IELTS 20 — Speaking Test 1', questions: 3, duration: 14, difficulty: 'Official format', status: 'New', book: '20', testNumber: 20 },
+  { id: 's20-p1', type: 'Speaking', module: 'Academic', title: 'IELTS 20 — Speaking Test 1 · Part 1 (Walking)', questions: 1, duration: 5, difficulty: 'Interview', status: 'New', part: 1, book: '20', testNumber: 20 },
+  { id: 's20-p2', type: 'Speaking', module: 'Academic', title: 'IELTS 20 — Speaking Test 1 · Part 2 (Play/Film)', questions: 1, duration: 4, difficulty: 'Long turn', status: 'New', part: 2, book: '20', testNumber: 20 },
+  { id: 's20-p3', type: 'Speaking', module: 'Academic', title: 'IELTS 20 — Speaking Test 1 · Part 3 (Theatre & Acting)', questions: 1, duration: 5, difficulty: 'Discussion', status: 'New', part: 3, book: '20', testNumber: 20 },
 ]
 
 const FILTERS = ['All', 'Full Test', 'Reading', 'Listening', 'Writing', 'Speaking'] as const
@@ -1604,6 +1612,106 @@ type SpeakingExamProps = {
   onFinish: () => void
 }
 
+const SPEAKING_CONTENT_21: Record<number, SpeakingContentItem> = {
+  1: {
+    label: 'Introduction and interview',
+    title: 'Hairstyles',
+    intro: 'The examiner asks you about yourself, your home, work or studies and other familiar topics.',
+    questions: [
+      'Where do you go to get a haircut?',
+      'Have you changed your hairstyle recently?',
+      'Would you ever change the colour of your hair?',
+      'Do you enjoy going to the hairdresser/barber?',
+    ],
+  },
+  2: {
+    label: 'Individual long turn',
+    title: 'Describe a time when you used information for tourists, for example from a guidebook or online.',
+    intro: 'You will have to talk about the topic for 1 to 2 minutes. You have 1 minute to think about what you are going to say. You can make some notes to help you if you wish.',
+    subheading: 'You should say:',
+    questions: [
+      'where you got this information',
+      'what place this information was about',
+      'what information you got',
+      'and explain whether this information was very helpful for you.',
+    ],
+  },
+  3: {
+    label: 'Two-way discussion',
+    title: 'Holidays & Tourist attractions',
+    intro: 'Discussion topics:',
+    questions: [],
+    topics: [
+      {
+        title: 'Different types of holidays',
+        questions: [
+          'What are the most popular kinds of holidays for people from your country to go on?',
+          'Do you think most people prefer to have a holiday abroad rather than in their own country?',
+          'Why do some people want to do absolutely nothing when they go away on holiday?',
+        ],
+      },
+      {
+        title: 'Tourist attractions',
+        questions: [
+          'What are the kinds of tourist attraction that visitors to your country like to see?',
+          'Do you think tourist attractions such as museums should be free for local people to visit?',
+          'What can make a tourist attraction disappointing for visitors?',
+        ],
+      },
+    ],
+  },
+}
+
+const SPEAKING_CONTENT_20: Record<number, SpeakingContentItem> = {
+  1: {
+    label: 'Introduction and interview',
+    title: 'Walking',
+    intro: 'The examiner asks you about yourself, your home, work or studies and other familiar topics.',
+    questions: [
+      'How much walking do you do in your daily life?',
+      'Did you walk more when you were at school than now?',
+      'What places are there to go for a walk near where you live?',
+      'Would you ever like to go on a walking holiday?',
+    ],
+  },
+  2: {
+    label: 'Individual long turn',
+    title: 'Describe a play or a film you have seen that you would like to see again with friends.',
+    intro: 'You will have to talk about the topic for 1 to 2 minutes. You have 1 minute to think about what you are going to say. You can make some notes to help you if you wish.',
+    subheading: 'You should say:',
+    questions: [
+      "what play or film you'd like to go to see again",
+      'who you would go with',
+      'what other people have said about this play or film',
+      'and explain why you would like to see this play or film again with friends.',
+    ],
+  },
+  3: {
+    label: 'Two-way discussion',
+    title: 'Theatre and Acting',
+    intro: 'Discussion topics:',
+    questions: [],
+    topics: [
+      {
+        title: 'The theatre',
+        questions: [
+          'What are the most popular kinds of plays or shows at theatres in your country?',
+          'How easy is it to get tickets to the theatre?',
+          'Do you think theatres need to do more to attract younger audiences?',
+        ],
+      },
+      {
+        title: 'Working as an actor',
+        questions: [
+          'What do you think attracts people to working as an actor?',
+          'What are some of the qualities that a person needs to have if they want to become an actor?',
+          'Can you think of any disadvantages of working as an actor?',
+        ],
+      },
+    ],
+  },
+}
+
 const SPEAKING_CONTENT_2: Record<number, SpeakingContentItem> = {
   1: {
     label: 'Introduction and interview',
@@ -1727,7 +1835,7 @@ const SPEAKING_CONTENT: Record<number, SpeakingContentItem> = {
 
 function SpeakingExam({ currentPart, setCurrentPart, timeLeft, part, onRecording, onFinishSpeaking, onFinish, selectedTestNumber = 1 }: SpeakingExamProps) {
   const activePart = part ?? currentPart
-  const activeContent = selectedTestNumber === 2 ? SPEAKING_CONTENT_2 : SPEAKING_CONTENT
+  const activeContent = selectedTestNumber === 21 ? SPEAKING_CONTENT_21 : selectedTestNumber === 20 ? SPEAKING_CONTENT_20 : selectedTestNumber === 2 ? SPEAKING_CONTENT_2 : SPEAKING_CONTENT
   const content = activeContent[activePart] ?? activeContent[1]
   const recorderRef = useRef<MediaRecorder | null>(null)
   const streamRef = useRef<MediaStream | null>(null)
