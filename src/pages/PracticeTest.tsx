@@ -97,16 +97,16 @@ type FullTestAttempt = {
 const emptyFullAttempt = (): FullTestAttempt => ({ listening: {}, reading: {}, writing: {}, speaking: {} })
 
 const PART_1_PROMPTS = [
-  { id: 1, prefix: 'Taster day: small groups (maximum', suffix: 'people)' },
-  { id: 2, prefix: 'Level 1 theory: understanding the', suffix: 'and tides' },
-  { id: 3, prefix: 'Basic sailing skills including', suffix: 'information' },
-  { id: 4, prefix: '', suffix: 'available for club members' },
-  { id: 5, prefix: 'All inclusive, plus a useful', suffix: '' },
-  { id: 6, prefix: 'A', suffix: 'at the end of the course' },
-  { id: 7, prefix: 'Bring suitable clothing, a', suffix: 'and toiletries' },
-  { id: 8, prefix: 'There is a', suffix: 'at the club' },
-  { id: 9, prefix: 'Online training', suffix: 'are recommended' },
-  { id: 10, prefix: '', suffix: 'are available for course participants' },
+  { id: 1, prefix: 'Postcode:', suffix: '' },
+  { id: 2, prefix: 'Date of bus journey:', suffix: '' },
+  { id: 3, prefix: 'Reason for trip: shopping and visit to the', suffix: '' },
+  { id: 4, prefix: 'Travelled by bus because cost of', suffix: 'too high' },
+  { id: 5, prefix: 'Got on bus at', suffix: 'Street' },
+  { id: 6, prefix: 'Complaints about bus service: - bus today was', suffix: '' },
+  { id: 7, prefix: 'Complaints about bus service: - frequency of buses in the', suffix: '' },
+  { id: 8, prefix: 'Travelling by car: Goes to the', suffix: 'by car' },
+  { id: 9, prefix: 'Travelling by bicycle: Dislikes travelling by bike in the city centre because of the', suffix: '' },
+  { id: 10, prefix: "Travelling by bicycle: Doesn't own a bike because of a lack of", suffix: '' },
 ]
 
 const PART_2_MULTIPLE_CHOICE = [
@@ -331,7 +331,7 @@ function ListeningExam({
 
   const partTitle = selectedTestNumber === 2 
     ? LISTENING_PARTS_2[currentPart - 1]?.title || `Part ${currentPart}`
-    : ['Oyster Bay Sailing Club Courses', 'Working as a makeup trainee', 'Ocean biodiversity research', 'Sources of rubber'][currentPart - 1]
+    : ['Transport survey', 'Working as a makeup trainee', 'Ocean biodiversity research', 'Sources of rubber'][currentPart - 1]
   const partInstruction = selectedTestNumber === 2
     ? 'Follow the specific instructions for each question below.'
     : currentPart === 1
@@ -651,20 +651,39 @@ function ListeningExam({
             ) : (
               <>
             {currentPart === 1 && (
-              <>
-                <section className="space-y-4 rounded-2xl border border-slate-800/90 bg-[#0F172A] p-4 shadow-xl sm:p-6">
-                  <div className="flex items-center gap-2.5 border-b border-slate-800/80 pb-3"><span className="h-2.5 w-2.5 rounded-full bg-rose-500" /><h2 className="text-[11px] font-extrabold uppercase tracking-wider text-rose-400">Beginner Programs &amp; Scheduling</h2></div>
-                  <ul className="space-y-3">{PART_1_PROMPTS.slice(0, 3).map(completionRow)}</ul>
-                </section>
-                <section className="space-y-4 rounded-2xl border border-slate-800/90 bg-[#0F172A] p-4 shadow-xl sm:p-6">
-                  <div className="flex items-center gap-2.5 border-b border-slate-800/80 pb-3"><span className="h-2.5 w-2.5 rounded-full bg-cyan-400" /><h2 className="text-[11px] font-extrabold uppercase tracking-wider text-cyan-400">Level 1 Certificate Course Details</h2></div>
-                  <ul className="space-y-3">{PART_1_PROMPTS.slice(3, 7).map(completionRow)}</ul>
-                </section>
-                <section className="space-y-4 rounded-2xl border border-slate-800/90 bg-[#0F172A] p-4 shadow-xl sm:p-6">
-                  <div className="flex items-center gap-2.5 border-b border-slate-800/80 pb-3"><span className="h-2.5 w-2.5 rounded-full bg-emerald-400" /><h2 className="text-[11px] font-extrabold uppercase tracking-wider text-emerald-400">Booking &amp; Administration Requirements</h2></div>
-                  <ul className="space-y-3">{PART_1_PROMPTS.slice(7).map(completionRow)}</ul>
-                </section>
-              </>
+              <section className="space-y-5 rounded-2xl border border-slate-800/90 bg-[#0F172A] p-4 shadow-xl sm:p-6">
+                <div className="border-b border-slate-800/80 pb-3">
+                  <div className="flex items-center gap-2.5">
+                    <span className="h-2.5 w-2.5 rounded-full bg-rose-500" />
+                    <h2 className="text-sm font-extrabold uppercase tracking-wider text-rose-400">Transport survey</h2>
+                  </div>
+                  <p className="mt-1 text-xs text-slate-400">Complete the notes below. Write <strong className="text-slate-200">ONE WORD AND/OR A NUMBER</strong> for each answer.</p>
+                </div>
+
+                <div className="rounded-xl border border-slate-800 bg-[#090E17]/60 p-4 space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs border-b border-slate-800/80 pb-3 text-slate-300">
+                    <div><span className="text-slate-500 font-medium">Name:</span> <strong className="text-white ml-2">Sadie Jones</strong></div>
+                    <div><span className="text-slate-500 font-medium">Year of birth:</span> <strong className="text-white ml-2">1991</strong></div>
+                  </div>
+
+                  <ul className="space-y-3">{PART_1_PROMPTS.slice(0, 1).map(completionRow)}</ul>
+
+                  <div className="pt-2">
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-cyan-400 mb-2">Travelling by bus</h3>
+                    <ul className="space-y-3">{PART_1_PROMPTS.slice(1, 7).map(completionRow)}</ul>
+                  </div>
+
+                  <div className="pt-2">
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-amber-400 mb-2">Travelling by car</h3>
+                    <ul className="space-y-3">{PART_1_PROMPTS.slice(7, 8).map(completionRow)}</ul>
+                  </div>
+
+                  <div className="pt-2">
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-emerald-400 mb-2">Travelling by bicycle</h3>
+                    <ul className="space-y-3">{PART_1_PROMPTS.slice(8, 10).map(completionRow)}</ul>
+                  </div>
+                </div>
+              </section>
             )}
 
             {currentPart === 2 && (
