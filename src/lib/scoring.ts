@@ -1,7 +1,7 @@
 // "Choose TWO letters" questions: both answers in a pair may be given in either order,
 // but each correct letter only counts once.
 const LISTENING_PAIRS: Record<number, [number, number][]> = {
-  1: [[21, 22], [23, 24]],
+  1: [[14, 15], [21, 22], [23, 24]],
   2: [[11, 12], [13, 14], [25, 26]],
 }
 

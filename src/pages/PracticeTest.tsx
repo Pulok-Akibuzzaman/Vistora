@@ -110,19 +110,40 @@ const PART_1_PROMPTS = [
 ]
 
 const PART_2_MULTIPLE_CHOICE = [
-  { id: 11, text: 'What should trainees always expect to get when working on low budget short films?', options: ['travel expenses', 'a minimum wage', 'meals'] },
-  { id: 12, text: 'On big budget films, trainees may get experience of:', options: ['makeup for special effects', 'working with different ethnicities', 'creating a variety of hair styles'] },
-  { id: 13, text: 'The speaker says a problem for makeup artists is:', options: ['dealing with difficult directors', 'being shouted at by their supervisor', 'waiting around for hours doing nothing'] },
-  { id: 14, text: 'How did the speaker feel when she met famous actors for the first time?', options: ['very shy', 'very proud', 'very disappointed'] },
-  { id: 15, text: 'What advice does the speaker give about makeup kits?', options: ['Always carry a basic kit', 'Only buy the best products', 'Ask other artists to check your kit'] },
-  { id: 16, text: 'What advice does the speaker give about creating a portfolio?', options: ['Keep print and digital photos', 'Include only a small selection', 'Get permission to use photos'] },
+  { id: 11, text: 'Why does the speaker apologise about the seats?', options: ['They are too small.', 'There are not enough of them.', 'Some of them are very close together.'] },
+  { id: 12, text: 'What does the speaker say about the age of volunteers?', options: ['The age of volunteers is less important than other factors.', 'Young volunteers are less reliable than older ones.', 'Most volunteers are about 60 years old.'] },
+  { id: 13, text: 'What does the speaker say about training?', options: ['It is continuous.', 'It is conducted by a manager.', 'It takes place online.'] },
+]
+
+const PART_2_PAIRED = {
+  ids: [14, 15] as [number, number],
+  text: 'Which TWO issues does the speaker ask the audience to consider before they apply to be volunteers?',
+  instruction: 'Choose TWO letters, A–E. Answers may be in either order.',
+  options: [
+    'their financial situation',
+    'their level of commitment',
+    'their work experience',
+    'their ambition',
+    'their availability',
+  ],
+}
+
+const PART_2_MATCHING_BOX = [
+  'experience on stage',
+  'original, new ideas',
+  'parenting skills',
+  'an understanding of food and diet',
+  'retail experience',
+  'a good memory',
+  'a good level of fitness',
 ]
 
 const PART_2_MATCHING = [
-  { id: 17, text: 'Prepping an actor' },
-  { id: 18, text: 'Continuity' },
-  { id: 19, text: 'General' },
-  { id: 20, text: 'Applying makeup' },
+  { id: 16, text: 'Fundraising' },
+  { id: 17, text: 'Litter collection' },
+  { id: 18, text: '‘Playmates’' },
+  { id: 19, text: 'Story club' },
+  { id: 20, text: 'First aid' },
 ]
 
 const PART_3_GROUPS = [
@@ -331,7 +352,7 @@ function ListeningExam({
 
   const partTitle = selectedTestNumber === 2 
     ? LISTENING_PARTS_2[currentPart - 1]?.title || `Part ${currentPart}`
-    : ['Transport survey', 'Working as a makeup trainee', 'Ocean biodiversity research', 'Sources of rubber'][currentPart - 1]
+    : ['Transport survey', 'Becoming a volunteer for ACE', 'Ocean biodiversity research', 'Sources of rubber'][currentPart - 1]
   const partInstruction = selectedTestNumber === 2
     ? 'Follow the specific instructions for each question below.'
     : currentPart === 1
@@ -689,29 +710,105 @@ function ListeningExam({
             {currentPart === 2 && (
               <>
                 <section className="space-y-4 rounded-2xl border border-slate-800/90 bg-[#0F172A] p-4 shadow-xl sm:p-6">
-                  <div className="flex items-center gap-2.5 border-b border-slate-800/80 pb-3"><span className="h-2.5 w-2.5 rounded-full bg-rose-500" /><h2 className="text-[11px] font-extrabold uppercase tracking-wider text-rose-400">Working as a Makeup Trainee</h2></div>
+                  <div className="flex items-center gap-2.5 border-b border-slate-800/80 pb-3">
+                    <span className="h-2.5 w-2.5 rounded-full bg-rose-500" />
+                    <div>
+                      <h2 className="text-[11px] font-extrabold uppercase tracking-wider text-rose-400">Becoming a volunteer for ACE</h2>
+                      <p className="mt-0.5 text-xs text-slate-400">Questions 11–13 · Choose the correct letter, A, B or C.</p>
+                    </div>
+                  </div>
                   <div className="space-y-4">
                     {PART_2_MULTIPLE_CHOICE.map(question => (
-                      <fieldset key={question.id} id={`listening-question-${question.id}`} className={`rounded-xl border p-3 transition ${currentQ === question.id ? 'border-rose-500/80 bg-[#111C30] shadow-[0_0_15px_rgba(225,29,72,0.12)]' : 'border-slate-800/70 bg-[#090E17]/80'}`}>
+                      <fieldset key={question.id} id={`listening-question-${question.id}`} className={`rounded-xl border p-3.5 transition ${currentQ === question.id ? 'border-rose-500/80 bg-[#111C30] shadow-[0_0_15px_rgba(225,29,72,0.12)]' : 'border-slate-800/70 bg-[#090E17]/80'}`}>
                         <legend className="px-1 text-sm font-semibold text-slate-100">{question.id}. {question.text}</legend>
-                        <div className="mt-2 grid gap-2 sm:grid-cols-3">
+                        <div className="mt-2.5 grid gap-2 sm:grid-cols-3">
                           {question.options.map((option, index) => {
                             const letter = String.fromCharCode(65 + index)
-                            return <button key={option} type="button" onClick={() => setAnswer(question.id, letter)} className={`rounded-lg border px-3 py-2 text-left text-xs transition ${answers[question.id] === letter ? 'border-rose-500/70 bg-rose-500/15 text-rose-200' : 'border-slate-800 bg-[#111A2E] text-slate-300 hover:border-slate-600'}`}><span className="mr-2 font-mono font-bold text-rose-400">{letter}</span>{option}</button>
+                            return (
+                              <button
+                                key={option}
+                                type="button"
+                                onClick={() => setAnswer(question.id, letter)}
+                                className={`rounded-lg border px-3 py-2 text-left text-xs transition ${answers[question.id] === letter ? 'border-rose-500/70 bg-rose-500/15 text-rose-200' : 'border-slate-800 bg-[#111A2E] text-slate-300 hover:border-slate-600'}`}
+                              >
+                                <span className="mr-2 font-mono font-bold text-rose-400">{letter}</span>
+                                {option}
+                              </button>
+                            )
                           })}
                         </div>
                       </fieldset>
                     ))}
                   </div>
                 </section>
+
                 <section className="space-y-4 rounded-2xl border border-slate-800/90 bg-[#0F172A] p-4 shadow-xl sm:p-6">
-                  <div className="border-b border-slate-800/80 pb-3"><h2 className="text-[11px] font-extrabold uppercase tracking-wider text-cyan-400">Questions 17–20 · Matching</h2><p className="mt-1 text-xs text-slate-400">Match each duty to the ability required.</p></div>
-                  <div className="rounded-lg border border-slate-800 bg-[#090E17]/80 p-3 text-xs leading-6 text-slate-300"><div><strong className="text-white">A</strong> — being well-organised</div><div><strong className="text-white">B</strong> — being flexible</div><div><strong className="text-white">C</strong> — working quickly</div></div>
+                  <div className="border-b border-slate-800/80 pb-3">
+                    <h2 className="text-[11px] font-extrabold uppercase tracking-wider text-rose-400">Questions 14 and 15</h2>
+                    <p className="mt-1 text-xs text-slate-400">{PART_2_PAIRED.instruction}</p>
+                    <h3 className="mt-3 text-sm font-semibold text-slate-100">{PART_2_PAIRED.text}</h3>
+                  </div>
+                  <div className="grid gap-2">
+                    {PART_2_PAIRED.options.map((option, index) => {
+                      const letter = String.fromCharCode(65 + index)
+                      const selectedId = PART_2_PAIRED.ids.find(id => answers[id] === letter)
+                      return (
+                        <button
+                          key={option}
+                          type="button"
+                          onClick={() => {
+                            if (selectedId) setAnswer(selectedId, '')
+                            else {
+                              const target = PART_2_PAIRED.ids.find(id => !answers[id]) ?? PART_2_PAIRED.ids[1]
+                              setAnswer(target, letter)
+                            }
+                          }}
+                          className={`rounded-lg border px-3 py-2.5 text-left text-sm transition ${selectedId ? 'border-rose-500/70 bg-rose-500/15 text-rose-100' : 'border-slate-800 bg-[#090E17]/80 text-slate-300 hover:border-slate-600'}`}
+                        >
+                          <span className="mr-3 font-mono font-bold text-rose-400">{letter}</span>
+                          {option}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </section>
+
+                <section className="space-y-4 rounded-2xl border border-slate-800/90 bg-[#0F172A] p-4 shadow-xl sm:p-6">
+                  <div className="border-b border-slate-800/80 pb-3">
+                    <h2 className="text-[11px] font-extrabold uppercase tracking-wider text-cyan-400">Questions 16–20 · Matching</h2>
+                    <p className="mt-1 text-xs text-slate-400">What does the speaker suggest would be helpful for each of the following areas of voluntary work?</p>
+                    <p className="mt-1 text-xs text-slate-400">Choose <strong className="text-slate-200">FIVE</strong> answers from the box and write the correct letter, <strong className="text-slate-200">A–G</strong>, next to Questions 16–20.</p>
+                  </div>
+                  <div className="rounded-xl border border-slate-800 bg-[#090E17]/80 p-3.5">
+                    <div className="text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-2">Helpful things volunteers might offer</div>
+                    <div className="grid gap-1.5 text-xs text-slate-300 sm:grid-cols-2">
+                      {PART_2_MATCHING_BOX.map((item, index) => (
+                        <div key={item}><strong className="text-rose-400 font-mono mr-1.5">{String.fromCharCode(65 + index)}</strong> {item}</div>
+                      ))}
+                    </div>
+                  </div>
                   <div className="space-y-3">
                     {PART_2_MATCHING.map(question => (
-                      <div key={question.id} id={`listening-question-${question.id}`} className={`flex flex-wrap items-center gap-3 rounded-xl border p-3 transition ${currentQ === question.id ? 'border-rose-500/80 bg-[#111C30]' : 'border-slate-800/70 bg-[#090E17]/80'}`}>
-                        <span className={`flex h-6 w-6 items-center justify-center rounded-md border font-mono text-xs font-bold ${answers[question.id] ? 'border-emerald-500/30 bg-emerald-500/20 text-emerald-300' : 'border-slate-700 bg-[#162238] text-slate-400'}`}>{question.id}</span><span className="min-w-40 flex-1 text-sm text-slate-200">{question.text}</span>
-                        <select aria-label={`Answer ${question.id}`} value={answers[question.id] || ''} onFocus={() => setCurrentQ(question.id)} onChange={event => setAnswer(question.id, event.target.value)} className="min-w-24 rounded-lg border border-slate-700 bg-[#152033] px-3 py-2 text-sm text-white focus:border-rose-500 focus:outline-none"><option value="">Select</option>{['A', 'B', 'C'].map(letter => <option key={letter}>{letter}</option>)}</select>
+                      <div
+                        key={question.id}
+                        id={`listening-question-${question.id}`}
+                        className={`flex flex-wrap items-center gap-3 rounded-xl border p-3 transition ${currentQ === question.id ? 'border-rose-500/80 bg-[#111C30]' : 'border-slate-800/70 bg-[#090E17]/80'}`}
+                      >
+                        <span className={`flex h-6 w-6 items-center justify-center rounded-md border font-mono text-xs font-bold ${answers[question.id] ? 'border-emerald-500/30 bg-emerald-500/20 text-emerald-300' : 'border-slate-700 bg-[#162238] text-slate-400'}`}>{question.id}</span>
+                        <span className="min-w-40 flex-1 text-sm text-slate-200">{question.text}</span>
+                        <select
+                          aria-label={`Answer ${question.id}`}
+                          value={answers[question.id] || ''}
+                          onFocus={() => setCurrentQ(question.id)}
+                          onChange={event => setAnswer(question.id, event.target.value)}
+                          className="min-w-24 rounded-lg border border-slate-700 bg-[#152033] px-3 py-2 text-sm text-white focus:border-rose-500 focus:outline-none"
+                        >
+                          <option value="">Select</option>
+                          {PART_2_MATCHING_BOX.map((_, index) => {
+                            const letter = String.fromCharCode(65 + index)
+                            return <option key={letter} value={letter}>{letter}</option>
+                          })}
+                        </select>
                       </div>
                     ))}
                   </div>
