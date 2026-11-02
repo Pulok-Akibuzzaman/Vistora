@@ -78,6 +78,12 @@ const TESTS: Test[] = [
   { id: 'w2', type: 'Writing', module: 'Academic', title: 'IELTS 18 — Academic Writing Test 2', questions: 2, duration: 60, difficulty: 'Official format', status: 'New', book: '18', testNumber: 2 },
   { id: 'w2-p1', type: 'Writing', module: 'Academic', title: 'IELTS 18 — Writing Test 2 · Task 1', questions: 1, duration: 20, difficulty: '150+ words', status: 'New', part: 1, book: '18', testNumber: 2 },
   { id: 'w2-p2', type: 'Writing', module: 'Academic', title: 'IELTS 18 — Writing Test 2 · Task 2', questions: 1, duration: 40, difficulty: '250+ words', status: 'New', part: 2, book: '18', testNumber: 2 },
+  { id: 'w3', type: 'Writing', module: 'Academic', title: 'IELTS 18 — Academic Writing Test 3', questions: 2, duration: 60, difficulty: 'Official format', status: 'New', book: '18', testNumber: 3 },
+  { id: 'w3-p1', type: 'Writing', module: 'Academic', title: 'IELTS 18 — Writing Test 3 · Task 1', questions: 1, duration: 20, difficulty: '150+ words', status: 'New', part: 1, book: '18', testNumber: 3 },
+  { id: 'w3-p2', type: 'Writing', module: 'Academic', title: 'IELTS 18 — Writing Test 3 · Task 2', questions: 1, duration: 40, difficulty: '250+ words', status: 'New', part: 2, book: '18', testNumber: 3 },
+  { id: 'w4', type: 'Writing', module: 'Academic', title: 'IELTS 18 — Academic Writing Test 4', questions: 2, duration: 60, difficulty: 'Official format', status: 'New', book: '18', testNumber: 4 },
+  { id: 'w4-p1', type: 'Writing', module: 'Academic', title: 'IELTS 18 — Writing Test 4 · Task 1', questions: 1, duration: 20, difficulty: '150+ words', status: 'New', part: 1, book: '18', testNumber: 4 },
+  { id: 'w4-p2', type: 'Writing', module: 'Academic', title: 'IELTS 18 — Writing Test 4 · Task 2', questions: 1, duration: 40, difficulty: '250+ words', status: 'New', part: 2, book: '18', testNumber: 4 },
   { id: 'w20', type: 'Writing', module: 'Academic', title: 'IELTS 20 — Academic Writing Test 1', questions: 2, duration: 60, difficulty: 'Official format', status: 'New', book: '20', testNumber: 20 },
   { id: 'w20-p1', type: 'Writing', module: 'Academic', title: 'IELTS 20 — Writing Test 1 · Task 1', questions: 1, duration: 20, difficulty: '150+ words', status: 'New', part: 1, book: '20', testNumber: 20 },
   { id: 'w20-p2', type: 'Writing', module: 'Academic', title: 'IELTS 20 — Writing Test 1 · Task 2', questions: 1, duration: 40, difficulty: '250+ words', status: 'New', part: 2, book: '20', testNumber: 20 },
@@ -1464,6 +1470,71 @@ function WritingTableNY20() {
             <tr><td className="border border-divider p-1.5">1800</td><td className="border border-divider p-1.5">18,701</td><td className="border border-divider p-1.5">24%</td></tr>
             <tr><td className="border border-divider p-1.5">1900</td><td className="border border-divider p-1.5">1,587,109</td><td className="border border-divider p-1.5">46%</td></tr>
             <tr><td className="border border-divider p-1.5">2000</td><td className="border border-divider p-1.5">6,471,089</td><td className="border border-divider p-1.5">81%</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
+function WritingFloorPlan3() {
+  return (
+    <div className="mt-4 space-y-4 rounded-sm border border-divider bg-surface-2 p-4 text-xs font-plex">
+      <div className="border border-divider bg-surface p-3">
+        <h4 className="font-bold text-ink mb-2">Central Library 20 years ago</h4>
+        <div className="grid grid-cols-2 gap-2 text-graphite-mid text-[11px]">
+          <div className="border border-divider p-2 bg-paper-light">CDs, videos, computer games</div>
+          <div className="border border-divider p-2 bg-paper-light">Children's books</div>
+          <div className="border border-divider p-2 bg-paper-light">Adult fiction books</div>
+          <div className="border border-divider p-2 bg-paper-light">Adult non-fiction books</div>
+          <div className="border border-divider p-2 bg-paper-light">Tables & chairs</div>
+          <div className="border border-divider p-2 bg-paper-light">Reading room (newspapers & magazines)</div>
+          <div className="col-span-2 border border-divider p-2 bg-paper-dark text-center font-semibold">Enquiry desk (tickets, book returns, etc.) · Entrance</div>
+        </div>
+      </div>
+      <div className="border border-divider bg-surface p-3">
+        <h4 className="font-bold text-ink mb-2">Central Library today</h4>
+        <div className="grid grid-cols-2 gap-2 text-graphite-mid text-[11px]">
+          <div className="border border-divider p-2 bg-paper-light">Lecture room</div>
+          <div className="border border-divider p-2 bg-paper-light">Children's fiction books (Storytelling events, Sofa)</div>
+          <div className="border border-divider p-2 bg-paper-light">Adult fiction books (Sofa)</div>
+          <div className="border border-divider p-2 bg-paper-light">All reference books</div>
+          <div className="border border-divider p-2 bg-paper-light">Computer room</div>
+          <div className="border border-divider p-2 bg-paper-light">Café</div>
+          <div className="col-span-2 border border-divider p-2 bg-paper-dark text-center font-semibold">Information desk · Self-service machines · Entrance</div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function WritingMetalsChart4() {
+  return (
+    <div className="mt-4 rounded-sm border border-divider bg-surface-2 p-4 text-xs font-plex">
+      <h4 className="font-bold text-ink mb-2">Average monthly change in prices of copper, nickel and zinc (2014)</h4>
+      <div className="overflow-x-auto">
+        <table className="w-full border-collapse border border-divider text-left text-[11px]">
+          <thead>
+            <tr className="bg-paper-dark">
+              <th className="border border-divider p-1.5 font-semibold text-ink">Month</th>
+              <th className="border border-divider p-1.5 font-semibold text-ink">Copper (%)</th>
+              <th className="border border-divider p-1.5 font-semibold text-ink">Nickel (%)</th>
+              <th className="border border-divider p-1.5 font-semibold text-ink">Zinc (%)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td className="border border-divider p-1">Jan</td><td className="border border-divider p-1">+2.0%</td><td className="border border-divider p-1">+6.0%</td><td className="border border-divider p-1">+1.0%</td></tr>
+            <tr><td className="border border-divider p-1">Feb</td><td className="border border-divider p-1">+1.5%</td><td className="border border-divider p-1">-1.0%</td><td className="border border-divider p-1">+0.0%</td></tr>
+            <tr><td className="border border-divider p-1">Mar</td><td className="border border-divider p-1">-0.5%</td><td className="border border-divider p-1">-3.0%</td><td className="border border-divider p-1">+0.5%</td></tr>
+            <tr><td className="border border-divider p-1">Apr</td><td className="border border-divider p-1">-1.0%</td><td className="border border-divider p-1">-3.0%</td><td className="border border-divider p-1">-0.5%</td></tr>
+            <tr><td className="border border-divider p-1">May</td><td className="border border-divider p-1">+0.0%</td><td className="border border-divider p-1">-2.0%</td><td className="border border-divider p-1">-1.0%</td></tr>
+            <tr><td className="border border-divider p-1">Jun</td><td className="border border-divider p-1">-1.0%</td><td className="border border-divider p-1">-1.0%</td><td className="border border-divider p-1">-2.0%</td></tr>
+            <tr><td className="border border-divider p-1">Jul</td><td className="border border-divider p-1">+1.0%</td><td className="border border-divider p-1">+2.0%</td><td className="border border-divider p-1">-1.0%</td></tr>
+            <tr><td className="border border-divider p-1">Aug</td><td className="border border-divider p-1">+1.5%</td><td className="border border-divider p-1">-1.5%</td><td className="border border-divider p-1">+0.5%</td></tr>
+            <tr><td className="border border-divider p-1">Sep</td><td className="border border-divider p-1">+2.0%</td><td className="border border-divider p-1">+1.0%</td><td className="border border-divider p-1">+1.5%</td></tr>
+            <tr><td className="border border-divider p-1">Oct</td><td className="border border-divider p-1">+2.5%</td><td className="border border-divider p-1">-0.5%</td><td className="border border-divider p-1">+2.0%</td></tr>
+            <tr><td className="border border-divider p-1">Nov</td><td className="border border-divider p-1">+1.5%</td><td className="border border-divider p-1">+1.0%</td><td className="border border-divider p-1">+1.0%</td></tr>
+            <tr><td className="border border-divider p-1">Dec</td><td className="border border-divider p-1">+1.0%</td><td className="border border-divider p-1">+1.0%</td><td className="border border-divider p-1">+0.5%</td></tr>
           </tbody>
         </table>
       </div>
