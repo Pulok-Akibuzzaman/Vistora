@@ -78,6 +78,9 @@ const TESTS: Test[] = [
   { id: 'w2', type: 'Writing', module: 'Academic', title: 'IELTS 18 — Academic Writing Test 2', questions: 2, duration: 60, difficulty: 'Official format', status: 'New', book: '18', testNumber: 2 },
   { id: 'w2-p1', type: 'Writing', module: 'Academic', title: 'IELTS 18 — Writing Test 2 · Task 1', questions: 1, duration: 20, difficulty: '150+ words', status: 'New', part: 1, book: '18', testNumber: 2 },
   { id: 'w2-p2', type: 'Writing', module: 'Academic', title: 'IELTS 18 — Writing Test 2 · Task 2', questions: 1, duration: 40, difficulty: '250+ words', status: 'New', part: 2, book: '18', testNumber: 2 },
+  { id: 'w20', type: 'Writing', module: 'Academic', title: 'IELTS 20 — Academic Writing Test 1', questions: 2, duration: 60, difficulty: 'Official format', status: 'New', book: '20', testNumber: 20 },
+  { id: 'w20-p1', type: 'Writing', module: 'Academic', title: 'IELTS 20 — Writing Test 1 · Task 1', questions: 1, duration: 20, difficulty: '150+ words', status: 'New', part: 1, book: '20', testNumber: 20 },
+  { id: 'w20-p2', type: 'Writing', module: 'Academic', title: 'IELTS 20 — Writing Test 1 · Task 2', questions: 1, duration: 40, difficulty: '250+ words', status: 'New', part: 2, book: '20', testNumber: 20 },
   { id: 's1', type: 'Speaking', module: 'Academic', title: 'IELTS 18 — Speaking Test 1', questions: 3, duration: 14, difficulty: 'Official format', status: 'New', book: '18', testNumber: 1 },
   { id: 's1-p1', type: 'Speaking', module: 'Academic', title: 'IELTS 18 — Speaking Test 1 · Part 1', questions: 1, duration: 5, difficulty: 'Interview', status: 'New', part: 1, book: '18', testNumber: 1 },
   { id: 's1-p2', type: 'Speaking', module: 'Academic', title: 'IELTS 18 — Speaking Test 1 · Part 2', questions: 1, duration: 4, difficulty: 'Long turn', status: 'New', part: 2, book: '18', testNumber: 1 },
@@ -1400,6 +1403,63 @@ function WritingChart2() {
         ))}
       </g>
     </svg>
+  )
+}
+
+function WritingTableNY20() {
+  return (
+    <div className="mt-4 space-y-4 rounded-sm border border-divider bg-surface-2 p-4 text-xs font-plex">
+      <div>
+        <h4 className="font-bold text-ink mb-1">New York City (all five districts)</h4>
+        <table className="w-full border-collapse border border-divider text-left">
+          <thead>
+            <tr className="bg-paper-dark">
+              <th className="border border-divider p-1.5 font-semibold text-ink">Year</th>
+              <th className="border border-divider p-1.5 font-semibold text-ink">Population</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td className="border border-divider p-1.5">1800</td><td className="border border-divider p-1.5">79,216</td></tr>
+            <tr><td className="border border-divider p-1.5">1900</td><td className="border border-divider p-1.5">3,437,202</td></tr>
+            <tr><td className="border border-divider p-1.5">2000</td><td className="border border-divider p-1.5">8,009,185</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <h4 className="font-bold text-ink mb-1">Manhattan</h4>
+        <table className="w-full border-collapse border border-divider text-left">
+          <thead>
+            <tr className="bg-paper-dark">
+              <th className="border border-divider p-1.5 font-semibold text-ink">Year</th>
+              <th className="border border-divider p-1.5 font-semibold text-ink">Population</th>
+              <th className="border border-divider p-1.5 font-semibold text-ink">% of total population</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td className="border border-divider p-1.5">1800</td><td className="border border-divider p-1.5">60,515</td><td className="border border-divider p-1.5">76%</td></tr>
+            <tr><td className="border border-divider p-1.5">1900</td><td className="border border-divider p-1.5">1,850,093</td><td className="border border-divider p-1.5">54%</td></tr>
+            <tr><td className="border border-divider p-1.5">2000</td><td className="border border-divider p-1.5">1,538,096</td><td className="border border-divider p-1.5">19%</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <h4 className="font-bold text-ink mb-1">Other districts (Brooklyn, Bronx, Queens, Staten Island)</h4>
+        <table className="w-full border-collapse border border-divider text-left">
+          <thead>
+            <tr className="bg-paper-dark">
+              <th className="border border-divider p-1.5 font-semibold text-ink">Year</th>
+              <th className="border border-divider p-1.5 font-semibold text-ink">Population</th>
+              <th className="border border-divider p-1.5 font-semibold text-ink">% of total population</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td className="border border-divider p-1.5">1800</td><td className="border border-divider p-1.5">18,701</td><td className="border border-divider p-1.5">24%</td></tr>
+            <tr><td className="border border-divider p-1.5">1900</td><td className="border border-divider p-1.5">1,587,109</td><td className="border border-divider p-1.5">46%</td></tr>
+            <tr><td className="border border-divider p-1.5">2000</td><td className="border border-divider p-1.5">6,471,089</td><td className="border border-divider p-1.5">81%</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
   )
 }
 
