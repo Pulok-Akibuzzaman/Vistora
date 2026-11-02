@@ -1,11 +1,12 @@
 # 🎓 Vistora — Computer-Delivered IELTS Preparation & AI Platform
 
+[![Live Platform](https://img.shields.io/badge/Live%20Demo-vistora--delta.vercel.app-2563eb?style=flat&logo=vercel)](https://vistora-delta.vercel.app)
 [![GitHub Repository](https://img.shields.io/badge/GitHub-Pulok--Akibuzzaman%2FVistora-181717?style=flat&logo=github)](https://github.com/Pulok-Akibuzzaman/Vistora)
 [![Course](https://img.shields.io/badge/Course-CSE412-dc2626)](https://github.com/Pulok-Akibuzzaman/Vistora)
 [![Frontend](https://img.shields.io/badge/Frontend-React%2019%20%2B%20TypeScript-61dafb?logo=react)](https://react.dev)
-[![Build Tool](https://img.shields.io/badge/Bundler-Vite%208-646cff?logo=vite)](https://vitejs.dev)
+[![Bundler](https://img.shields.io/badge/Bundler-Vite%208-646cff?logo=vite)](https://vitejs.dev)
 [![Backend](https://img.shields.io/badge/Backend-Supabase%20Cloud-3ecf8e?logo=supabase)](https://supabase.com)
-[![Hosting](https://img.shields.io/badge/Hosting-Vercel%20Edge-black?logo=vercel)](https://vercel.com)
+[![Styling](https://img.shields.io/badge/Styling-Tailwind%20CSS-38bdf8?logo=tailwindcss)](https://tailwindcss.com)
 
 > **Live Platform:** [https://vistora-delta.vercel.app](https://vistora-delta.vercel.app)  
 > **Official Repository:** [https://github.com/Pulok-Akibuzzaman/Vistora](https://github.com/Pulok-Akibuzzaman/Vistora)  
@@ -15,223 +16,142 @@
 
 ---
 
-## 📖 What is Vistora? (In Simple Words)
+## 📖 Project Overview
 
-Preparing for the official computer-delivered IELTS exam can be stressful and expensive. Many test centers charge high fees just for a single mock test, and standard paper practice does not prepare candidates for the real computer exam room.
+Preparing for the official computer-delivered IELTS exam can be stressful and expensive. Many test centers charge high fees for a single mock test, while conventional paper-based preparation fails to prepare candidates for the actual computer-delivered interface.
 
-**Vistora** solves this problem. It is a free, web-based platform designed to give students in Bangladesh and across the world the **exact look, feel, and features** of the real British Council and IDP computer-delivered IELTS test.
+**Vistora** is a comprehensive, web-based preparation platform designed to reproduce the authentic look, feel, and functionality of the official British Council and IDP computer-delivered IELTS exam environment.
 
-With Vistora, candidates can:
-1. **Take authentic full-length practice tests** on screen with the official split-screen layout, audio controls, and 40-question navigation bar.
-2. **Get instant band score results** (Band 0 to 9.0) with detailed answers and cited explanations without waiting days for a teacher to grade it.
-3. **Submit essays for AI evaluation** to receive instant feedback on Task Achievement, Coherence, Vocabulary, and Grammar.
-4. **Create professional academic documents** (CV, SOP, Personal Statement, Cover Letter) for university and visa applications abroad.
-5. **Ask questions and share preparation strategies** with fellow students on the real-time community forum.
-6. **Track daily study tasks and official exam dates** across Dhaka, Chattogram, and Sylhet test centers.
+### Core Capabilities:
+1. **Full-Length Exam Simulation**: Authentic test room covering **Reading, Listening, Writing, and Speaking** with split-screen views, synchronized timers, and 40-question navigation palettes.
+2. **Deterministic Auto-Grading**: Instant Band 0–9.0 computation with passage citations and question-by-question diagnostic review.
+3. **AI Writing & Speaking Evaluation**: Immediate rubric-aligned assessment across Task Response, Coherence & Cohesion, Lexical Resource, and Grammatical Range & Accuracy.
+4. **Admissions Document Generator**: Automated drafting of tailored CVs, Statements of Purpose (SOP), Personal Statements, and Cover Letters with a print-ready PDF engine.
+5. **Community Knowledge Base**: Real-time peer discussion forum with upvoting, automated thread pinning, and administrative moderation.
+6. **Student Progress Analytics**: Visual band score trajectories, daily study streaks, and scheduled milestones synced across devices.
+7. **Exam Schedule Tracking**: Searchable and filterable official British Council test dates across Dhaka, Chattogram, and Sylhet.
 
 ---
 
 ## 🌟 Key Feature Modules
 
 ### 🎧 1. Authentic Computer-Delivered Test Simulator
-- **Exact Official Layout**: Left side displays the passage or audio player; right side displays the questions with smooth independent scrolling.
-- **Full 40-Question Palette**: Jump directly to any question, mark tricky questions for review with a yellow flag, and view completion status at a glance.
-- **Official Cambridge Materials**: Complete reading tests from **Cambridge IELTS 21** and **Cambridge IELTS 18–20**, plus listening tests with audio player speed controls (1.0x, 1.25x, 1.5x).
-- **Instant Automatic Grading**: Zero waiting time. The system calculates your overall band score immediately using official IELTS conversion formulas.
+- **Dual-Panel Responsive Interface**: Passage/audio player on the left panel; interactive questions on the right with independent scrolling.
+- **40-Question Palette**: Jump directly to any question, toggle yellow review flags, and view real-time answered/unanswered badges.
+- **Multi-Skill Coverage**: Supports complete Reading, Listening, Academic Writing (Task 1 & Task 2), and Speaking interview modules.
+- **Cambridge IELTS Integration**: Authentic practice datasets from **Cambridge IELTS 18–21** with audio speed controls (1.0x, 1.25x, 1.5x).
+- **Instant Diagnostic Scoring**: Automatic evaluation matching official IELTS conversion tables with cited answer justifications.
 
-### ✍️ 2. AI Writing Essay Examiner
-- Supports both **Task 1** (Charts, Graphs, Processes) and **Task 2** (Discursive Essays).
-- Grades your writing across the 4 official IELTS criteria:
-  - *Task Achievement / Task Response*
-  - *Coherence and Cohesion*
-  - *Lexical Resource (Vocabulary)*
-  - *Grammatical Range and Accuracy*
-- Highlights strengths, points out mistakes, and offers improved vocabulary alternatives.
+### ✍️ 2. AI Writing & Speaking Assessment
+- **Writing Assessment**: Evaluates Academic Task 1 (graphs/charts/diagrams) and Task 2 (discursive essays) against all 4 IELTS band descriptors.
+- **Speaking Interview Simulator**: Structured practice for Part 1 (Introduction), Part 2 (Long Turn Cue Card), and Part 3 (Two-Way Discussion) with prep and speaking countdowns.
+- **Actionable Feedback**: Pinpoints grammar errors, highlights cohesive weaknesses, and suggests advanced lexical substitutions.
 
-### 📄 3. Application Document Generator (CV, SOP, PS, Cover Letter)
-- Generates tailored documents for university admissions, embassy visa interviews, and job applications.
-- **Only generates on user request**: Preview waits until you click the generate button so you are always in control.
-- **Isolated Clean PDF / Print Engine**: Prints or saves only your formatted document with professional margins and clean typography, completely hiding website menus and headers.
+### 📄 3. Academic Document Generator
+- Generates professional admissions documents (CV, SOP, Personal Statement, Cover Letter) tailored to university and visa requirements.
+- **Isolated Print/PDF Engine**: Generates clean, border-to-border printable outputs with zero application UI chrome.
+- **On-Demand Generation**: Full candidate control over input parameters, preview rendering, and cloud drafting.
 
-### 📊 4. Student Dashboard & Study Task Tracker
-- Visual band score summary and exam history.
-- Live study task planner that lets you add, complete, and delete your daily study goals with instant database sync.
+### 📊 4. Student Analytics & Dashboard
+- **Score Trajectory Visualizer**: Tracks historical mock attempts and identifies weak skill areas over time.
+- **Daily Study Streak & Task Planner**: Cloud-synced goal manager to track preparation milestones.
 
-### 💬 5. Community Forum & Discussion Board
-- Ask preparation questions, vote on helpful answers, and reply to fellow candidates.
-- **Top-voted discussions are automatically pinned** to the top of the forum so everyone finds the best advice first.
-- **Admin Moderation**: Platform admins can pin important announcements and delete spam, while students can delete their own posts.
+### 💬 5. Real-Time Community Forum
+- Interactive discussion boards for exam tips, university admissions queries, and score reviews.
+- **Automated Quality Pinning**: Posts meeting community upvote thresholds are automatically pinned for top visibility.
+- **Role-Based Moderation**: Admin announcements, moderation controls, and author deletion rights.
 
-### 📚 6. Study Materials & Resource Library
-- Download official Cambridge past papers and access verified reading and writing templates.
-- **One-click bookmarking**: Save your favorite guides to your account with real-time cloud synchronization.
+### 📚 6. Resource Library & Exam Calendar
+- Direct access to verified IELTS study materials, vocabulary guides, and Cambridge archives.
+- Filterable British Council test schedules by city, exam type (Computer vs Paper), and registration deadlines.
 
 ---
 
-## 🚀 How to Run the Project Offline on Your Computer
+## 🛠️ Technology Stack
 
-You can run Vistora completely locally on your computer. The application is designed to be fully functional **even if you have no internet connection**, because all Cambridge test datasets, scoring formulas, audio files, and offline document templates are packaged inside the project!
+| Layer | Technology | Engineering Role |
+| :--- | :--- | :--- |
+| **Frontend Framework** | React 19 | Component-driven architecture enabling reactive split-screen test navigation and instant DOM updates without full-page reloads. |
+| **Language** | TypeScript 5.7 | Static typing and compile-time verification across test schemas, conversion matrices, and data models. |
+| **Build & Tooling** | Vite 8 | Fast Hot Module Replacement (HMR) and optimized ES-module bundling for rapid load times. |
+| **Database & Auth** | Supabase (PostgreSQL) | Managed cloud database with Row-Level Security (RLS), real-time synchronization, and persistent authentication. |
+| **Styling & UI** | Tailwind CSS v4 | Utility-first design tokens recreating the authentic British Council dark and light exam room palettes. |
+| **AI Assessment** | Puku.sh AI Engine | Evaluates essays and interview responses against official IELTS assessment criteria. |
+| **Deployment** | Vercel Edge Network | Global edge network with automated CI/CD deployment from the main repository branch. |
+
+---
+
+## 🚀 Getting Started
 
 ### Prerequisites
-Make sure you have Node.js installed on your computer:
-- **Node.js**: Version 18.0.0 or higher ([Download Node.js](https://nodejs.org))
-- **npm**: Comes automatically with Node.js
+- **Node.js**: `v18.0.0` or higher
+- **npm**: `v9.0.0` or higher
 
----
+### Installation & Local Setup
 
-### Step-by-Step Offline Setup Guide
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/Pulok-Akibuzzaman/Vistora.git
+   cd Vistora
+   ```
 
-#### Step 1: Open Your Terminal
-- **On Windows**: Press `Win + R`, type `powershell` or `cmd`, and press Enter.
-- **On Mac/Linux**: Open the `Terminal` application.
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
 
-#### Step 2: Navigate to the Project Folder
+3. **Start the local development server:**
+   ```bash
+   npm run dev
+   ```
+
+4. **Open in browser:**
+   Navigate to `http://localhost:3000` (or the port indicated in your terminal).
+
+### Production Build
+To generate an optimized production bundle:
 ```bash
-cd "path/to/Vistora"
-```
-*(For example: `cd "F:\EWU\CSE412\Project\Vistora"`)*
-
-#### Step 3: Install Required Packages
-Run this command once to install the project dependencies:
-```bash
-npm install
-```
-
-#### Step 4: Start the Local Development Server
-```bash
-npm run dev
-```
-
-#### Step 5: Open in Your Browser
-After running the command, you will see a message in the terminal:
-```text
-  VITE v8.x.x  ready in 250 ms
-
-  ➜  Local:   http://localhost:3000/
-  ➜  Network: use --host to expose
-```
-Hold `Ctrl` and click the link, or open your web browser (Chrome, Edge, Firefox, or Safari) and navigate to:
-```text
-http://localhost:3000
+npm run build
+npm run preview
 ```
 
 ---
 
-### Why Vistora Works 100% Offline
-- **Built-in Cambridge Datasets**: Authentic Reading tests (Cambridge 18 and 21) and audio passages are bundled locally in `src/data/` and `Database/`.
-- **Instant Offline Grading**: The grading formulas execute directly inside your browser without contacting an external server.
-- **Local Storage Fallback**: User accounts, study tasks, bookmarked resources, and forum posts automatically save to browser storage if you are offline.
-- **Offline Document Compilation**: If an external AI connection is unavailable, Vistora uses its built-in academic template engine to generate complete, formatted CVs, SOPs, and cover letters offline.
-
----
-
-## 🏗️ Project Directory Structure
-
-Here is how the project files are organized:
+## 🏗️ Architecture & Directory Overview
 
 ```text
 Vistora/
-├── api/                          # Vercel serverless cloud endpoints
-│   ├── exam-dates.ts             # Live British Council Bangladesh exam schedule API
-│   └── forum.ts                  # Centralized Supabase forum synchronization API
-├── Database/                     # Official Cambridge IELTS resources
-│   ├── IELTS 18.pdf              # Cambridge 18 complete authentic test book
-│   ├── IELTS 19.pdf              # Cambridge 19 complete authentic test book
-│   ├── IELTS 20.pdf              # Cambridge 20 complete authentic test book
-│   ├── IELTS 21.pdf              # Cambridge 21 complete authentic test book
-│   └── IELTS 18-21 AUDIO/        # Authentic Listening test MP3 audio tracks
-├── public/                       # Static public assets
-│   └── favicon.svg               # Vistora logo icon
-├── src/                          # Application source code
-│   ├── components/               # Reusable interface components
-│   │   ├── FullTestResult.tsx    # Diagnostic test score card & review modal
-│   │   ├── Layout.tsx            # Navigation bar, header, and footer layout
-│   │   ├── Motion.tsx            # Smooth animations & transitions
-│   │   └── RequireAuth.tsx       # Protected route guard
-│   ├── data/                     # Exam datasets, passages, & answer keys
-│   │   ├── listeningTest1.ts     # Cambridge 18 Listening Test 1 data
-│   │   ├── listeningTest2.ts     # Cambridge 18 Listening Test 2 data
-│   │   ├── readingTest1.ts       # Cambridge 18 Reading Passage 1 data
-│   │   ├── readingTest2.ts       # Cambridge 18 Reading Passage 2 data
-│   │   ├── readingTest21.ts      # Cambridge 21 authentic test questions
-│   │   └── resourceGuides.ts     # IELTS vocabulary and preparation guides
-│   ├── lib/                      # Core logic & backend integration
-│   │   ├── api.ts                # API client, database sync, & offline fallbacks
-│   │   ├── authContext.tsx       # User login, signup, session, and role state
-│   │   ├── customTests.ts        # Custom PDF test parser
-│   │   ├── examDates.ts          # Exam date queries and filtering
-│   │   ├── pukuAi.ts             # Puku.sh AI client integration
-│   │   ├── scoring.ts            # Official IELTS Band 9.0 scoring engine
-│   │   ├── supabaseClient.ts     # Supabase database initialization
-│   │   └── theme.tsx             # Dark and light theme switcher
-│   ├── pages/                    # Main platform views
-│   │   ├── AdminDashboard.tsx    # Admin console & management panel
-│   │   ├── Auth.tsx              # Login & student registration view
-│   │   ├── CommunityForum.tsx    # Peer discussion board with live sync
-│   │   ├── Dashboard.tsx         # Student study room & task tracker
-│   │   ├── DocGenerator.tsx      # AI CV, SOP, and Cover Letter generator
-│   │   ├── ExamDates.tsx         # Searchable British Council test schedules
-│   │   ├── Landing.tsx           # Homepage & interactive feature showcase
-│   │   ├── PracticeTest.tsx      # Authentic computer-delivered exam room
-│   │   ├── ResourceLibrary.tsx   # Cambridge book archive & dynamic bookmarks
-│   │   ├── Results.tsx           # Exam attempt archive & score review
-│   │   ├── UserProfile.tsx       # Student profile, band score, & settings
-│   │   └── WritingEval.tsx       # AI Writing essay evaluator & score predictor
-│   ├── App.tsx                   # Main React root application
-│   ├── index.css                 # Global styles, typography, & print rules
-│   ├── main.tsx                  # Application entry point
-│   └── routes.ts                 # Page routing definitions
-├── supabase/                     # Cloud database configuration
-│   └── schema.sql                # Complete PostgreSQL schema, triggers, & RLS
-├── package.json                  # Project dependencies and run scripts
+├── api/                          # Serverless cloud edge endpoints (exam schedules, forum sync)
+├── public/                       # Static public assets and application icons
+├── src/
+│   ├── components/               # Modular UI components (Layout, Auth Guard, Diagnostic Modal)
+│   ├── data/                     # Authentic Cambridge test datasets, passages, and answer keys
+│   ├── lib/                      # Core logic (Scoring engine, Supabase client, AI integration, Auth)
+│   ├── pages/                    # Platform views (Practice Test, Forum, Dashboard, Doc Generator, etc.)
+│   ├── App.tsx                   # Root React router and global application state
+│   ├── index.css                 # Global theme variables, typography, and print rules
+│   └── main.tsx                  # Application bootstrap entry point
+├── supabase/                     # PostgreSQL database schema, triggers, and RLS policies
+├── package.json                  # Project dependencies and operational scripts
 ├── tsconfig.json                 # TypeScript compiler configuration
-├── vercel.json                   # Vercel deployment & routing settings
-├── vite.config.ts                # Vite build and dev server configuration
-└── README.md                     # Comprehensive project documentation
+└── vite.config.ts                # Vite build and development configuration
 ```
-
----
-
-## 💡 Technologies Used & Why We Chose Them (Easy to Understand)
-
-| Technology | What It Does | Why We Chose It (In Simple Words) |
-| :--- | :--- | :--- |
-| **React 19** | Frontend Framework | Lets us build the website like interlocking Lego blocks. When you click an answer or update a task, React updates only that specific box on screen instantly without reloading the page. |
-| **TypeScript** | Programming Language | Like JavaScript with a safety net. It catches typos and errors while coding so students never experience broken buttons or missing data during an exam. |
-| **Vite 8** | Dev Server & Bundler | Starts the local website in less than 1 second and packages all code cleanly for fast production loading. |
-| **Supabase** | Cloud Database & Auth | Provides a secure PostgreSQL database in the cloud to store user accounts, test scores, study tasks, and discussion threads across devices. |
-| **Puku.sh AI** | AI Academic Engine | Evaluates student essays against official IELTS band criteria, analyzes speaking pace, and drafts academic SOPs and CVs. |
-| **Vanilla CSS + Tokens** | Styling & Theme | Delivers the authentic dark and light exam-room look matching the official British Council test screen. |
-| **Vercel** | Cloud Hosting | Automatically deploys our updates directly from GitHub to a worldwide content delivery network for fast global access. |
-
----
-
-## 🤖 AI Technologies & Credits
-
-Vistora integrates artificial intelligence for in-platform academic features and was engineered with the assistance of modern AI tools:
-
-### Runtime Platform AI
-- **[Puku.sh AI](https://puku.sh) (`puku-ai-2.8`)**: Powers live IELTS Writing essay evaluation, speaking response analysis, academic document drafting (CV, SOP, Personal Statement, Cover Letter), and automated Cambridge PDF question extraction.
-
-### AI Development & Pair-Programming Assistance
-- **[Google Antigravity](https://deepmind.google) / [Google Gemini](https://gemini.google.com)**: Assisted with system architecture, database schema design, real-time Supabase synchronization, offline Cambridge test engine, and full-stack integration.
-- **[Anthropic Claude](https://claude.ai)**: Assisted with initial UI component scaffolding, styling design tokens, and user flow ideation.
 
 ---
 
 ## 👥 Course Information & Team Members
 
-This platform was developed as an academic project for **CSE412 (Software Engineering / Systems Project)** at **East West University (EWU)**, Dhaka, Bangladesh.
+This project was developed for **CSE412 (Software Engineering / Systems Project)** at **East West University (EWU)**, Dhaka, Bangladesh.
 
 ### Team Members
-- **[afrasultana-12 (Afra Sultana)](https://github.com/afrasultana-12)**
-- **[ahmed-mannan (Ahmed Mannan)](https://github.com/ahmed-mannan)**
-- **[Nusrat60-057 (Nusrat Rahman Aurna)](https://github.com/Nusrat60-057)**
-- **[Pulok-Akibuzzaman (Pulok Akibuzzaman)](https://github.com/Pulok-Akibuzzaman)**
-- **[roxZach (Ibna Jiam)](https://github.com/roxZach)**
+- **[Afra Sultana](https://github.com/afrasultana-12)**
+- **[Ahmed Mannan](https://github.com/ahmed-mannan)**
+- **[Nusrat Rahman Aurna](https://github.com/Nusrat60-057)**
+- **[Pulok Akibuzzaman](https://github.com/Pulok-Akibuzzaman)**
+- **[Ibna Jiam](https://github.com/roxZach)**
 
 ---
 
 <p align="center">
-  <b>Vistora</b> · Built with ❤️ for ambitious IELTS candidates worldwide.
+  <b>Vistora</b> · Built for ambitious IELTS candidates worldwide.
 </p>
