@@ -3528,6 +3528,20 @@ export default function PracticeTest() {
         {FILTERS.map(item => (
           <button key={item} onClick={() => setFilter(item)} className={`rounded-sm border px-4 py-2 font-mono text-xs uppercase tracking-wide transition-colors ${filter === item ? 'border-line-ink bg-navy text-white' : 'border-divider bg-surface text-graphite-mid hover:border-graphite-light'}`}>{item}</button>
         ))}
+
+      <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-divider pt-3">
+        <span className="font-mono text-xs font-semibold uppercase tracking-wider text-graphite-light mr-1">Book:</span>
+        {BOOK_FILTERS.map(book => (
+          <button
+            key={book}
+            type="button"
+            onClick={() => setBookFilter(book)}
+            className={`rounded-full border px-3 py-1 font-mono text-xs tracking-wide transition-colors ${bookFilter === book ? 'border-electric bg-electric-dim font-bold text-accent' : 'border-divider bg-surface text-graphite-mid hover:border-graphite-light'}`}
+          >
+            {book}
+          </button>
+        ))}
+      </div>
       </div>
 
       <section className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
