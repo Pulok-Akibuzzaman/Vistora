@@ -7,7 +7,9 @@ import { READING_ANSWERS, READING_PASSAGES } from '../data/readingTest1'
 import { READING_ANSWERS_2, READING_PASSAGES_2 } from '../data/readingTest2'
 import { READING_ANSWERS_3, READING_PASSAGES_3 } from '../data/readingTest3'
 import { READING_ANSWERS_4, READING_PASSAGES_4 } from '../data/readingTest4'
+import { READING_ANSWERS_19, READING_PASSAGES_19 } from '../data/readingTest19'
 import { READING_ANSWERS_21, READING_PASSAGES_21 } from '../data/readingTest21'
+import { READING_ANSWERS_21_T2, READING_PASSAGES_21_T2 } from '../data/readingTest21_2'
 import { LISTENING_ANSWERS, LISTENING_PARTS_1 } from '../data/listeningTest1'
 import { LISTENING_ANSWERS_2, LISTENING_PARTS_2 } from '../data/listeningTest2'
 
@@ -18,15 +20,27 @@ const READING_TESTS: Record<number, { passages: typeof READING_PASSAGES; answers
   2: { passages: READING_PASSAGES_2, answers: READING_ANSWERS_2 },
   3: { passages: READING_PASSAGES_3, answers: READING_ANSWERS_3 },
   4: { passages: READING_PASSAGES_4, answers: READING_ANSWERS_4 },
+  19: { passages: READING_PASSAGES_19, answers: READING_ANSWERS_19 },
   21: { passages: READING_PASSAGES_21, answers: READING_ANSWERS_21 },
+  22: { passages: READING_PASSAGES_21_T2, answers: READING_ANSWERS_21_T2 },
 }
 
 // Older results don't store testNumber/part, so fall back to the title, e.g. "IELTS 18 — Reading Test 3 · Part 1"
 function getResultTest(result: StoredExamResult) {
+  const isBook19 = /IELTS\s*19/i.test(result.testTitle)
+  const isBook21 = /IELTS\s*21/i.test(result.testTitle)
   const titleTest = result.testTitle.match(/Test (\d+)/)
   const titlePart = result.testTitle.match(/Part (\d+)/)
+  let testNum = result.testNumber ?? (titleTest ? Number(titleTest[1]) : 1)
+  if (isBook19 && (testNum === 1 || testNum === 19)) {
+    testNum = 19
+  } else if (isBook21 && (testNum === 2 || testNum === 22)) {
+    testNum = 22
+  } else if (isBook21 && (testNum === 1 || testNum === 21)) {
+    testNum = 21
+  }
   return {
-    testNumber: result.testNumber ?? (titleTest ? Number(titleTest[1]) : 1),
+    testNumber: testNum,
     part: result.part ?? (titlePart ? Number(titlePart[1]) : undefined),
   }
 }

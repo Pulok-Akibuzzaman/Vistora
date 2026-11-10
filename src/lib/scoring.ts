@@ -7,6 +7,8 @@ const LISTENING_PAIRS: Record<number, [number, number][]> = {
 
 const READING_PAIRS: Record<number, [number, number][]> = {
   4: [[10, 11], [12, 13]],
+  19: [[20, 21], [22, 23]],
+  191: [[20, 21], [22, 23]],
 }
 
 export const listeningPairs = (testNumber?: number) => LISTENING_PAIRS[testNumber === 2 ? 2 : 1]

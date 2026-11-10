@@ -3,6 +3,7 @@ import { READING_ANSWERS, READING_PASSAGES } from '../data/readingTest1'
 import { READING_ANSWERS_2, READING_PASSAGES_2 } from '../data/readingTest2'
 import { READING_ANSWERS_3, READING_PASSAGES_3 } from '../data/readingTest3'
 import { READING_ANSWERS_4, READING_PASSAGES_4 } from '../data/readingTest4'
+import { READING_ANSWERS_19, READING_PASSAGES_19 } from '../data/readingTest19'
 import { READING_ANSWERS_21, READING_PASSAGES_21 } from '../data/readingTest21'
 import { READING_ANSWERS_21_T2, READING_PASSAGES_21_T2 } from '../data/readingTest21_2'
 import { LISTENING_ANSWERS, LISTENING_PARTS_1 } from '../data/listeningTest1'
@@ -59,6 +60,10 @@ const TESTS: Test[] = [
   { id: 'r4-p1', type: 'Reading', module: 'Academic', title: 'IELTS 18 — Reading Test 4 · Part 1', questions: 13, duration: 20, difficulty: 'Passage practice', status: 'New', part: 1, book: '18', testNumber: 4 },
   { id: 'r4-p2', type: 'Reading', module: 'Academic', title: 'IELTS 18 — Reading Test 4 · Part 2', questions: 13, duration: 20, difficulty: 'Passage practice', status: 'New', part: 2, book: '18', testNumber: 4 },
   { id: 'r4-p3', type: 'Reading', module: 'Academic', title: 'IELTS 18 — Reading Test 4 · Part 3', questions: 14, duration: 20, difficulty: 'Passage practice', status: 'New', part: 3, book: '18', testNumber: 4 },
+  { id: 'r19', type: 'Reading', module: 'Academic', title: 'IELTS 19 — Academic Reading Test 1', questions: 40, duration: 60, difficulty: 'Official format', status: 'New', book: '19', testNumber: 19 },
+  { id: 'r19-p1', type: 'Reading', module: 'Academic', title: 'IELTS 19 — Reading Test 1 · Part 1 (How tennis rackets have changed)', questions: 13, duration: 20, difficulty: 'Passage practice', status: 'New', part: 1, book: '19', testNumber: 19 },
+  { id: 'r19-p2', type: 'Reading', module: 'Academic', title: 'IELTS 19 — Reading Test 1 · Part 2 (The pirates of the ancient Mediterranean)', questions: 13, duration: 20, difficulty: 'Passage practice', status: 'New', part: 2, book: '19', testNumber: 19 },
+  { id: 'r19-p3', type: 'Reading', module: 'Academic', title: 'IELTS 19 — Reading Test 1 · Part 3 (The persistence and peril of misinformation)', questions: 14, duration: 20, difficulty: 'Passage practice', status: 'New', part: 3, book: '19', testNumber: 19 },
   { id: 'l1', type: 'Listening', module: 'Academic', title: 'IELTS 18 — Listening Test 1 (Full 4 Parts)', questions: 40, duration: 40, difficulty: 'Official format', status: 'In progress', book: '18', testNumber: 1 },
   { id: 'l1-p1', type: 'Listening', module: 'Academic', title: 'IELTS 18 — Listening Test 1 · Part 1', questions: 10, duration: 10, difficulty: 'Section practice', status: 'New', part: 1, book: '18', testNumber: 1 },
   { id: 'l1-p2', type: 'Listening', module: 'Academic', title: 'IELTS 18 — Listening Test 1 · Part 2', questions: 10, duration: 10, difficulty: 'Section practice', status: 'New', part: 2, book: '18', testNumber: 1 },
@@ -434,18 +439,18 @@ function ListeningExam({
     }, 0)
   }
 
-  const partTitle = selectedTestNumber === 2 
+  const partTitle = selectedTestNumber === 2
     ? LISTENING_PARTS_2[currentPart - 1]?.title || `Part ${currentPart}`
     : ['Transport survey', 'Becoming a volunteer for ACE', 'Talk on jobs in fashion design', 'Elephant translocation'][currentPart - 1]
   const partInstruction = selectedTestNumber === 2
     ? 'Follow the specific instructions for each question below.'
     : currentPart === 1
-    ? 'Write ONE WORD AND/OR A NUMBER for each answer.'
-    : currentPart === 2
-      ? 'Choose the correct letter, A, B or C, then complete the matching questions.'
-      : currentPart === 3
-        ? 'Choose TWO letters for each paired question, then match each resource.'
-        : 'Write ONE WORD ONLY for each answer.'
+      ? 'Write ONE WORD AND/OR A NUMBER for each answer.'
+      : currentPart === 2
+        ? 'Choose the correct letter, A, B or C, then complete the matching questions.'
+        : currentPart === 3
+          ? 'Choose TWO letters for each paired question, then match each resource.'
+          : 'Write ONE WORD ONLY for each answer.'
   const partAnswered = Array.from({ length: 10 }, (_, index) => answers[partStart + index]?.trim()).filter(Boolean).length
 
   return (
@@ -732,11 +737,10 @@ function ListeningExam({
                                       setCurrentQ(q.id)
                                     }
                                   }}
-                                  className={`rounded-lg border px-3 py-2 text-left text-xs transition ${
-                                    isSelected
-                                      ? 'border-rose-500/80 bg-rose-500/20 text-rose-200 shadow-sm font-semibold'
-                                      : 'border-slate-700 bg-[#111A2E] text-slate-300 hover:border-slate-500 hover:bg-[#16233d]'
-                                  }`}
+                                  className={`rounded-lg border px-3 py-2 text-left text-xs transition ${isSelected
+                                    ? 'border-rose-500/80 bg-rose-500/20 text-rose-200 shadow-sm font-semibold'
+                                    : 'border-slate-700 bg-[#111A2E] text-slate-300 hover:border-slate-500 hover:bg-[#16233d]'
+                                    }`}
                                 >
                                   {opt}
                                 </button>
@@ -755,268 +759,268 @@ function ListeningExam({
               </section>
             ) : (
               <>
-            {currentPart === 1 && (
-              <section className="space-y-5 rounded-2xl border border-slate-800/90 bg-[#0F172A] p-4 shadow-xl sm:p-6">
-                <div className="border-b border-slate-800/80 pb-3">
-                  <div className="flex items-center gap-2.5">
-                    <span className="h-2.5 w-2.5 rounded-full bg-rose-500" />
-                    <h2 className="text-sm font-extrabold uppercase tracking-wider text-rose-400">Transport survey</h2>
-                  </div>
-                  <p className="mt-1 text-xs text-slate-400">Complete the notes below. Write <strong className="text-slate-200">ONE WORD AND/OR A NUMBER</strong> for each answer.</p>
-                </div>
-
-                <div className="rounded-xl border border-slate-800 bg-[#090E17]/60 p-4 space-y-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs border-b border-slate-800/80 pb-3 text-slate-300">
-                    <div><span className="text-slate-500 font-medium">Name:</span> <strong className="text-white ml-2">Sadie Jones</strong></div>
-                    <div><span className="text-slate-500 font-medium">Year of birth:</span> <strong className="text-white ml-2">1991</strong></div>
-                  </div>
-
-                  <ul className="space-y-3">{PART_1_PROMPTS.slice(0, 1).map(completionRow)}</ul>
-
-                  <div className="pt-2">
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-cyan-400 mb-2">Travelling by bus</h3>
-                    <ul className="space-y-3">{PART_1_PROMPTS.slice(1, 7).map(completionRow)}</ul>
-                  </div>
-
-                  <div className="pt-2">
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-amber-400 mb-2">Travelling by car</h3>
-                    <ul className="space-y-3">{PART_1_PROMPTS.slice(7, 8).map(completionRow)}</ul>
-                  </div>
-
-                  <div className="pt-2">
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-emerald-400 mb-2">Travelling by bicycle</h3>
-                    <ul className="space-y-3">{PART_1_PROMPTS.slice(8, 10).map(completionRow)}</ul>
-                  </div>
-                </div>
-              </section>
-            )}
-
-            {currentPart === 2 && (
-              <>
-                <section className="space-y-4 rounded-2xl border border-slate-800/90 bg-[#0F172A] p-4 shadow-xl sm:p-6">
-                  <div className="flex items-center gap-2.5 border-b border-slate-800/80 pb-3">
-                    <span className="h-2.5 w-2.5 rounded-full bg-rose-500" />
-                    <div>
-                      <h2 className="text-[11px] font-extrabold uppercase tracking-wider text-rose-400">Becoming a volunteer for ACE</h2>
-                      <p className="mt-0.5 text-xs text-slate-400">Questions 11–13 · Choose the correct letter, A, B or C.</p>
-                    </div>
-                  </div>
-                  <div className="space-y-4">
-                    {PART_2_MULTIPLE_CHOICE.map(question => (
-                      <fieldset key={question.id} id={`listening-question-${question.id}`} className={`rounded-xl border p-3.5 transition ${currentQ === question.id ? 'border-rose-500/80 bg-[#111C30] shadow-[0_0_15px_rgba(225,29,72,0.12)]' : 'border-slate-800/70 bg-[#090E17]/80'}`}>
-                        <legend className="px-1 text-sm font-semibold text-slate-100">{question.id}. {question.text}</legend>
-                        <div className="mt-2.5 grid gap-2 sm:grid-cols-3">
-                          {question.options.map((option, index) => {
-                            const letter = String.fromCharCode(65 + index)
-                            return (
-                              <button
-                                key={option}
-                                type="button"
-                                onClick={() => setAnswer(question.id, letter)}
-                                className={`rounded-lg border px-3 py-2 text-left text-xs transition ${answers[question.id] === letter ? 'border-rose-500/70 bg-rose-500/15 text-rose-200' : 'border-slate-800 bg-[#111A2E] text-slate-300 hover:border-slate-600'}`}
-                              >
-                                <span className="mr-2 font-mono font-bold text-rose-400">{letter}</span>
-                                {option}
-                              </button>
-                            )
-                          })}
-                        </div>
-                      </fieldset>
-                    ))}
-                  </div>
-                </section>
-
-                <section className="space-y-4 rounded-2xl border border-slate-800/90 bg-[#0F172A] p-4 shadow-xl sm:p-6">
-                  <div className="border-b border-slate-800/80 pb-3">
-                    <h2 className="text-[11px] font-extrabold uppercase tracking-wider text-rose-400">Questions 14 and 15</h2>
-                    <p className="mt-1 text-xs text-slate-400">{PART_2_PAIRED.instruction}</p>
-                    <h3 className="mt-3 text-sm font-semibold text-slate-100">{PART_2_PAIRED.text}</h3>
-                  </div>
-                  <div className="grid gap-2">
-                    {PART_2_PAIRED.options.map((option, index) => {
-                      const letter = String.fromCharCode(65 + index)
-                      const selectedId = PART_2_PAIRED.ids.find(id => answers[id] === letter)
-                      return (
-                        <button
-                          key={option}
-                          type="button"
-                          onClick={() => {
-                            if (selectedId) setAnswer(selectedId, '')
-                            else {
-                              const target = PART_2_PAIRED.ids.find(id => !answers[id]) ?? PART_2_PAIRED.ids[1]
-                              setAnswer(target, letter)
-                            }
-                          }}
-                          className={`rounded-lg border px-3 py-2.5 text-left text-sm transition ${selectedId ? 'border-rose-500/70 bg-rose-500/15 text-rose-100' : 'border-slate-800 bg-[#090E17]/80 text-slate-300 hover:border-slate-600'}`}
-                        >
-                          <span className="mr-3 font-mono font-bold text-rose-400">{letter}</span>
-                          {option}
-                        </button>
-                      )
-                    })}
-                  </div>
-                </section>
-
-                <section className="space-y-4 rounded-2xl border border-slate-800/90 bg-[#0F172A] p-4 shadow-xl sm:p-6">
-                  <div className="border-b border-slate-800/80 pb-3">
-                    <h2 className="text-[11px] font-extrabold uppercase tracking-wider text-cyan-400">Questions 16–20 · Matching</h2>
-                    <p className="mt-1 text-xs text-slate-400">What does the speaker suggest would be helpful for each of the following areas of voluntary work?</p>
-                    <p className="mt-1 text-xs text-slate-400">Choose <strong className="text-slate-200">FIVE</strong> answers from the box and write the correct letter, <strong className="text-slate-200">A–G</strong>, next to Questions 16–20.</p>
-                  </div>
-                  <div className="rounded-xl border border-slate-800 bg-[#090E17]/80 p-3.5">
-                    <div className="text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-2">Helpful things volunteers might offer</div>
-                    <div className="grid gap-1.5 text-xs text-slate-300 sm:grid-cols-2">
-                      {PART_2_MATCHING_BOX.map((item, index) => (
-                        <div key={item}><strong className="text-rose-400 font-mono mr-1.5">{String.fromCharCode(65 + index)}</strong> {item}</div>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="space-y-3">
-                    {PART_2_MATCHING.map(question => (
-                      <div
-                        key={question.id}
-                        id={`listening-question-${question.id}`}
-                        className={`flex flex-wrap items-center gap-3 rounded-xl border p-3 transition ${currentQ === question.id ? 'border-rose-500/80 bg-[#111C30]' : 'border-slate-800/70 bg-[#090E17]/80'}`}
-                      >
-                        <span className={`flex h-6 w-6 items-center justify-center rounded-md border font-mono text-xs font-bold ${answers[question.id] ? 'border-emerald-500/30 bg-emerald-500/20 text-emerald-300' : 'border-slate-700 bg-[#162238] text-slate-400'}`}>{question.id}</span>
-                        <span className="min-w-40 flex-1 text-sm text-slate-200">{question.text}</span>
-                        <select
-                          aria-label={`Answer ${question.id}`}
-                          value={answers[question.id] || ''}
-                          onFocus={() => setCurrentQ(question.id)}
-                          onChange={event => setAnswer(question.id, event.target.value)}
-                          className="min-w-24 rounded-lg border border-slate-700 bg-[#152033] px-3 py-2 text-sm text-white focus:border-rose-500 focus:outline-none"
-                        >
-                          <option value="">Select</option>
-                          {PART_2_MATCHING_BOX.map((_, index) => {
-                            const letter = String.fromCharCode(65 + index)
-                            return <option key={letter} value={letter}>{letter}</option>
-                          })}
-                        </select>
-                      </div>
-                    ))}
-                  </div>
-                </section>
-              </>
-            )}
-
-            {currentPart === 3 && (
-              <>
-                <section className="space-y-4 rounded-2xl border border-slate-800/90 bg-[#0F172A] p-4 shadow-xl sm:p-6">
-                  <div className="flex items-center gap-2.5 border-b border-slate-800/80 pb-3">
-                    <span className="h-2.5 w-2.5 rounded-full bg-rose-500" />
-                    <div>
-                      <h2 className="text-[11px] font-extrabold uppercase tracking-wider text-rose-400">Talk on jobs in fashion design</h2>
-                      <p className="mt-0.5 text-xs text-slate-400">Questions 21–26 · Choose the correct letter, A, B or C.</p>
-                    </div>
-                  </div>
-                  <div className="space-y-4">
-                    {PART_3_MULTIPLE_CHOICE.map(question => (
-                      <fieldset
-                        key={question.id}
-                        id={`listening-question-${question.id}`}
-                        className={`rounded-xl border p-3.5 transition ${currentQ === question.id ? 'border-rose-500/80 bg-[#111C30] shadow-[0_0_15px_rgba(225,29,72,0.12)]' : 'border-slate-800/70 bg-[#090E17]/80'}`}
-                      >
-                        <legend className="px-1 text-sm font-semibold text-slate-100">{question.id}. {question.text}</legend>
-                        <div className="mt-2.5 grid gap-2">
-                          {question.options.map((option, index) => {
-                            const letter = String.fromCharCode(65 + index)
-                            return (
-                              <button
-                                key={option}
-                                type="button"
-                                onClick={() => setAnswer(question.id, letter)}
-                                className={`rounded-lg border px-3 py-2 text-left text-xs transition ${answers[question.id] === letter ? 'border-rose-500/70 bg-rose-500/15 text-rose-200' : 'border-slate-800 bg-[#111A2E] text-slate-300 hover:border-slate-600'}`}
-                              >
-                                <span className="mr-2.5 font-mono font-bold text-rose-400">{letter}</span>
-                                {option}
-                              </button>
-                            )
-                          })}
-                        </div>
-                      </fieldset>
-                    ))}
-                  </div>
-                </section>
-
-                {PART_3_PAIRS.map(pair => (
-                  <section key={pair.ids[0]} className="space-y-4 rounded-2xl border border-slate-800/90 bg-[#0F172A] p-4 shadow-xl sm:p-6">
+                {currentPart === 1 && (
+                  <section className="space-y-5 rounded-2xl border border-slate-800/90 bg-[#0F172A] p-4 shadow-xl sm:p-6">
                     <div className="border-b border-slate-800/80 pb-3">
-                      <h2 className="text-[11px] font-extrabold uppercase tracking-wider text-rose-400">{pair.title}</h2>
-                      <p className="mt-1 text-xs text-slate-400">{pair.instruction}</p>
-                      <h3 className="mt-3 text-sm font-semibold text-slate-100">{pair.text}</h3>
+                      <div className="flex items-center gap-2.5">
+                        <span className="h-2.5 w-2.5 rounded-full bg-rose-500" />
+                        <h2 className="text-sm font-extrabold uppercase tracking-wider text-rose-400">Transport survey</h2>
+                      </div>
+                      <p className="mt-1 text-xs text-slate-400">Complete the notes below. Write <strong className="text-slate-200">ONE WORD AND/OR A NUMBER</strong> for each answer.</p>
                     </div>
-                    <div className="grid gap-2">
-                      {pair.options.map((option, index) => {
-                        const letter = String.fromCharCode(65 + index)
-                        const selectedId = pair.ids.find(id => answers[id] === letter)
-                        return (
-                          <button
-                            key={option}
-                            type="button"
-                            onClick={() => {
-                              if (selectedId) setAnswer(selectedId, '')
-                              else {
-                                const target = pair.ids.find(id => !answers[id]) ?? pair.ids[1]
-                                setAnswer(target, letter)
-                              }
-                            }}
-                            className={`rounded-lg border px-3 py-2.5 text-left text-sm transition ${selectedId ? 'border-rose-500/70 bg-rose-500/15 text-rose-100' : 'border-slate-800 bg-[#090E17]/80 text-slate-300 hover:border-slate-600'}`}
-                          >
-                            <span className="mr-3 font-mono font-bold text-rose-400">{letter}</span>
-                            {option}
-                          </button>
-                        )
-                      })}
+
+                    <div className="rounded-xl border border-slate-800 bg-[#090E17]/60 p-4 space-y-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs border-b border-slate-800/80 pb-3 text-slate-300">
+                        <div><span className="text-slate-500 font-medium">Name:</span> <strong className="text-white ml-2">Sadie Jones</strong></div>
+                        <div><span className="text-slate-500 font-medium">Year of birth:</span> <strong className="text-white ml-2">1991</strong></div>
+                      </div>
+
+                      <ul className="space-y-3">{PART_1_PROMPTS.slice(0, 1).map(completionRow)}</ul>
+
+                      <div className="pt-2">
+                        <h3 className="text-xs font-bold uppercase tracking-wider text-cyan-400 mb-2">Travelling by bus</h3>
+                        <ul className="space-y-3">{PART_1_PROMPTS.slice(1, 7).map(completionRow)}</ul>
+                      </div>
+
+                      <div className="pt-2">
+                        <h3 className="text-xs font-bold uppercase tracking-wider text-amber-400 mb-2">Travelling by car</h3>
+                        <ul className="space-y-3">{PART_1_PROMPTS.slice(7, 8).map(completionRow)}</ul>
+                      </div>
+
+                      <div className="pt-2">
+                        <h3 className="text-xs font-bold uppercase tracking-wider text-emerald-400 mb-2">Travelling by bicycle</h3>
+                        <ul className="space-y-3">{PART_1_PROMPTS.slice(8, 10).map(completionRow)}</ul>
+                      </div>
                     </div>
                   </section>
-                ))}
+                )}
+
+                {currentPart === 2 && (
+                  <>
+                    <section className="space-y-4 rounded-2xl border border-slate-800/90 bg-[#0F172A] p-4 shadow-xl sm:p-6">
+                      <div className="flex items-center gap-2.5 border-b border-slate-800/80 pb-3">
+                        <span className="h-2.5 w-2.5 rounded-full bg-rose-500" />
+                        <div>
+                          <h2 className="text-[11px] font-extrabold uppercase tracking-wider text-rose-400">Becoming a volunteer for ACE</h2>
+                          <p className="mt-0.5 text-xs text-slate-400">Questions 11–13 · Choose the correct letter, A, B or C.</p>
+                        </div>
+                      </div>
+                      <div className="space-y-4">
+                        {PART_2_MULTIPLE_CHOICE.map(question => (
+                          <fieldset key={question.id} id={`listening-question-${question.id}`} className={`rounded-xl border p-3.5 transition ${currentQ === question.id ? 'border-rose-500/80 bg-[#111C30] shadow-[0_0_15px_rgba(225,29,72,0.12)]' : 'border-slate-800/70 bg-[#090E17]/80'}`}>
+                            <legend className="px-1 text-sm font-semibold text-slate-100">{question.id}. {question.text}</legend>
+                            <div className="mt-2.5 grid gap-2 sm:grid-cols-3">
+                              {question.options.map((option, index) => {
+                                const letter = String.fromCharCode(65 + index)
+                                return (
+                                  <button
+                                    key={option}
+                                    type="button"
+                                    onClick={() => setAnswer(question.id, letter)}
+                                    className={`rounded-lg border px-3 py-2 text-left text-xs transition ${answers[question.id] === letter ? 'border-rose-500/70 bg-rose-500/15 text-rose-200' : 'border-slate-800 bg-[#111A2E] text-slate-300 hover:border-slate-600'}`}
+                                  >
+                                    <span className="mr-2 font-mono font-bold text-rose-400">{letter}</span>
+                                    {option}
+                                  </button>
+                                )
+                              })}
+                            </div>
+                          </fieldset>
+                        ))}
+                      </div>
+                    </section>
+
+                    <section className="space-y-4 rounded-2xl border border-slate-800/90 bg-[#0F172A] p-4 shadow-xl sm:p-6">
+                      <div className="border-b border-slate-800/80 pb-3">
+                        <h2 className="text-[11px] font-extrabold uppercase tracking-wider text-rose-400">Questions 14 and 15</h2>
+                        <p className="mt-1 text-xs text-slate-400">{PART_2_PAIRED.instruction}</p>
+                        <h3 className="mt-3 text-sm font-semibold text-slate-100">{PART_2_PAIRED.text}</h3>
+                      </div>
+                      <div className="grid gap-2">
+                        {PART_2_PAIRED.options.map((option, index) => {
+                          const letter = String.fromCharCode(65 + index)
+                          const selectedId = PART_2_PAIRED.ids.find(id => answers[id] === letter)
+                          return (
+                            <button
+                              key={option}
+                              type="button"
+                              onClick={() => {
+                                if (selectedId) setAnswer(selectedId, '')
+                                else {
+                                  const target = PART_2_PAIRED.ids.find(id => !answers[id]) ?? PART_2_PAIRED.ids[1]
+                                  setAnswer(target, letter)
+                                }
+                              }}
+                              className={`rounded-lg border px-3 py-2.5 text-left text-sm transition ${selectedId ? 'border-rose-500/70 bg-rose-500/15 text-rose-100' : 'border-slate-800 bg-[#090E17]/80 text-slate-300 hover:border-slate-600'}`}
+                            >
+                              <span className="mr-3 font-mono font-bold text-rose-400">{letter}</span>
+                              {option}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </section>
+
+                    <section className="space-y-4 rounded-2xl border border-slate-800/90 bg-[#0F172A] p-4 shadow-xl sm:p-6">
+                      <div className="border-b border-slate-800/80 pb-3">
+                        <h2 className="text-[11px] font-extrabold uppercase tracking-wider text-cyan-400">Questions 16–20 · Matching</h2>
+                        <p className="mt-1 text-xs text-slate-400">What does the speaker suggest would be helpful for each of the following areas of voluntary work?</p>
+                        <p className="mt-1 text-xs text-slate-400">Choose <strong className="text-slate-200">FIVE</strong> answers from the box and write the correct letter, <strong className="text-slate-200">A–G</strong>, next to Questions 16–20.</p>
+                      </div>
+                      <div className="rounded-xl border border-slate-800 bg-[#090E17]/80 p-3.5">
+                        <div className="text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-2">Helpful things volunteers might offer</div>
+                        <div className="grid gap-1.5 text-xs text-slate-300 sm:grid-cols-2">
+                          {PART_2_MATCHING_BOX.map((item, index) => (
+                            <div key={item}><strong className="text-rose-400 font-mono mr-1.5">{String.fromCharCode(65 + index)}</strong> {item}</div>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="space-y-3">
+                        {PART_2_MATCHING.map(question => (
+                          <div
+                            key={question.id}
+                            id={`listening-question-${question.id}`}
+                            className={`flex flex-wrap items-center gap-3 rounded-xl border p-3 transition ${currentQ === question.id ? 'border-rose-500/80 bg-[#111C30]' : 'border-slate-800/70 bg-[#090E17]/80'}`}
+                          >
+                            <span className={`flex h-6 w-6 items-center justify-center rounded-md border font-mono text-xs font-bold ${answers[question.id] ? 'border-emerald-500/30 bg-emerald-500/20 text-emerald-300' : 'border-slate-700 bg-[#162238] text-slate-400'}`}>{question.id}</span>
+                            <span className="min-w-40 flex-1 text-sm text-slate-200">{question.text}</span>
+                            <select
+                              aria-label={`Answer ${question.id}`}
+                              value={answers[question.id] || ''}
+                              onFocus={() => setCurrentQ(question.id)}
+                              onChange={event => setAnswer(question.id, event.target.value)}
+                              className="min-w-24 rounded-lg border border-slate-700 bg-[#152033] px-3 py-2 text-sm text-white focus:border-rose-500 focus:outline-none"
+                            >
+                              <option value="">Select</option>
+                              {PART_2_MATCHING_BOX.map((_, index) => {
+                                const letter = String.fromCharCode(65 + index)
+                                return <option key={letter} value={letter}>{letter}</option>
+                              })}
+                            </select>
+                          </div>
+                        ))}
+                      </div>
+                    </section>
+                  </>
+                )}
+
+                {currentPart === 3 && (
+                  <>
+                    <section className="space-y-4 rounded-2xl border border-slate-800/90 bg-[#0F172A] p-4 shadow-xl sm:p-6">
+                      <div className="flex items-center gap-2.5 border-b border-slate-800/80 pb-3">
+                        <span className="h-2.5 w-2.5 rounded-full bg-rose-500" />
+                        <div>
+                          <h2 className="text-[11px] font-extrabold uppercase tracking-wider text-rose-400">Talk on jobs in fashion design</h2>
+                          <p className="mt-0.5 text-xs text-slate-400">Questions 21–26 · Choose the correct letter, A, B or C.</p>
+                        </div>
+                      </div>
+                      <div className="space-y-4">
+                        {PART_3_MULTIPLE_CHOICE.map(question => (
+                          <fieldset
+                            key={question.id}
+                            id={`listening-question-${question.id}`}
+                            className={`rounded-xl border p-3.5 transition ${currentQ === question.id ? 'border-rose-500/80 bg-[#111C30] shadow-[0_0_15px_rgba(225,29,72,0.12)]' : 'border-slate-800/70 bg-[#090E17]/80'}`}
+                          >
+                            <legend className="px-1 text-sm font-semibold text-slate-100">{question.id}. {question.text}</legend>
+                            <div className="mt-2.5 grid gap-2">
+                              {question.options.map((option, index) => {
+                                const letter = String.fromCharCode(65 + index)
+                                return (
+                                  <button
+                                    key={option}
+                                    type="button"
+                                    onClick={() => setAnswer(question.id, letter)}
+                                    className={`rounded-lg border px-3 py-2 text-left text-xs transition ${answers[question.id] === letter ? 'border-rose-500/70 bg-rose-500/15 text-rose-200' : 'border-slate-800 bg-[#111A2E] text-slate-300 hover:border-slate-600'}`}
+                                  >
+                                    <span className="mr-2.5 font-mono font-bold text-rose-400">{letter}</span>
+                                    {option}
+                                  </button>
+                                )
+                              })}
+                            </div>
+                          </fieldset>
+                        ))}
+                      </div>
+                    </section>
+
+                    {PART_3_PAIRS.map(pair => (
+                      <section key={pair.ids[0]} className="space-y-4 rounded-2xl border border-slate-800/90 bg-[#0F172A] p-4 shadow-xl sm:p-6">
+                        <div className="border-b border-slate-800/80 pb-3">
+                          <h2 className="text-[11px] font-extrabold uppercase tracking-wider text-rose-400">{pair.title}</h2>
+                          <p className="mt-1 text-xs text-slate-400">{pair.instruction}</p>
+                          <h3 className="mt-3 text-sm font-semibold text-slate-100">{pair.text}</h3>
+                        </div>
+                        <div className="grid gap-2">
+                          {pair.options.map((option, index) => {
+                            const letter = String.fromCharCode(65 + index)
+                            const selectedId = pair.ids.find(id => answers[id] === letter)
+                            return (
+                              <button
+                                key={option}
+                                type="button"
+                                onClick={() => {
+                                  if (selectedId) setAnswer(selectedId, '')
+                                  else {
+                                    const target = pair.ids.find(id => !answers[id]) ?? pair.ids[1]
+                                    setAnswer(target, letter)
+                                  }
+                                }}
+                                className={`rounded-lg border px-3 py-2.5 text-left text-sm transition ${selectedId ? 'border-rose-500/70 bg-rose-500/15 text-rose-100' : 'border-slate-800 bg-[#090E17]/80 text-slate-300 hover:border-slate-600'}`}
+                              >
+                                <span className="mr-3 font-mono font-bold text-rose-400">{letter}</span>
+                                {option}
+                              </button>
+                            )
+                          })}
+                        </div>
+                      </section>
+                    ))}
+                  </>
+                )}
+
+                {currentPart === 4 && (
+                  <section className="space-y-5 rounded-2xl border border-slate-800/90 bg-[#0F172A] p-4 shadow-xl sm:p-6">
+                    <div className="border-b border-slate-800/80 pb-3">
+                      <div className="flex items-center gap-2.5">
+                        <span className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
+                        <h2 className="text-sm font-extrabold uppercase tracking-wider text-emerald-400">Elephant translocation</h2>
+                      </div>
+                      <p className="mt-1 text-xs text-slate-400">Complete the notes below. Write <strong className="text-slate-200">ONE WORD ONLY</strong> for each answer.</p>
+                    </div>
+
+                    <div className="rounded-xl border border-slate-800 bg-[#090E17]/60 p-4 space-y-4">
+                      <div className="border-b border-slate-800/80 pb-3">
+                        <h3 className="text-xs font-bold uppercase tracking-wider text-rose-400 mb-2">Reasons for overpopulation at Majete National Park</h3>
+                        <ul className="list-disc list-inside space-y-1 text-xs text-slate-300">
+                          <li>strict enforcement of anti-poaching laws</li>
+                          <li>successful breeding</li>
+                        </ul>
+                      </div>
+
+                      <div className="border-b border-slate-800/80 pb-3">
+                        <h3 className="text-xs font-bold uppercase tracking-wider text-amber-400 mb-2">Problems caused by elephant overpopulation</h3>
+                        <p className="text-xs text-slate-300 mb-2">• greater competition, causing hunger for elephants</p>
+                        <ul className="space-y-3">{PART_4_PROMPTS.slice(0, 1).map(completionRow)}</ul>
+                      </div>
+
+                      <div className="border-b border-slate-800/80 pb-3">
+                        <h3 className="text-xs font-bold uppercase tracking-wider text-cyan-400 mb-2">The translocation process</h3>
+                        <ul className="space-y-3">{PART_4_PROMPTS.slice(1, 3).map(completionRow)}</ul>
+                        <p className="text-xs text-slate-300 my-2">• elephants were immobilised with tranquilisers</p>
+                        <ul className="space-y-3">{PART_4_PROMPTS.slice(3, 7).map(completionRow)}</ul>
+                        <p className="text-xs text-slate-300 mt-2">• tracking devices were fitted to the matriarchs</p>
+                        <p className="text-xs text-slate-300 mt-1">• elephants were taken by truck to their new reserve</p>
+                      </div>
+
+                      <div>
+                        <h3 className="text-xs font-bold uppercase tracking-wider text-emerald-400 mb-2">Advantages of translocation at Nkhotakota Wildlife Park</h3>
+                        <ul className="space-y-3">{PART_4_PROMPTS.slice(7, 10).map(completionRow)}</ul>
+                        <p className="text-xs text-slate-300 mt-2">• an example of conservation that other parks can follow</p>
+                      </div>
+                    </div>
+                  </section>
+                )}
               </>
-            )}
-
-            {currentPart === 4 && (
-              <section className="space-y-5 rounded-2xl border border-slate-800/90 bg-[#0F172A] p-4 shadow-xl sm:p-6">
-                <div className="border-b border-slate-800/80 pb-3">
-                  <div className="flex items-center gap-2.5">
-                    <span className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
-                    <h2 className="text-sm font-extrabold uppercase tracking-wider text-emerald-400">Elephant translocation</h2>
-                  </div>
-                  <p className="mt-1 text-xs text-slate-400">Complete the notes below. Write <strong className="text-slate-200">ONE WORD ONLY</strong> for each answer.</p>
-                </div>
-
-                <div className="rounded-xl border border-slate-800 bg-[#090E17]/60 p-4 space-y-4">
-                  <div className="border-b border-slate-800/80 pb-3">
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-rose-400 mb-2">Reasons for overpopulation at Majete National Park</h3>
-                    <ul className="list-disc list-inside space-y-1 text-xs text-slate-300">
-                      <li>strict enforcement of anti-poaching laws</li>
-                      <li>successful breeding</li>
-                    </ul>
-                  </div>
-
-                  <div className="border-b border-slate-800/80 pb-3">
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-amber-400 mb-2">Problems caused by elephant overpopulation</h3>
-                    <p className="text-xs text-slate-300 mb-2">• greater competition, causing hunger for elephants</p>
-                    <ul className="space-y-3">{PART_4_PROMPTS.slice(0, 1).map(completionRow)}</ul>
-                  </div>
-
-                  <div className="border-b border-slate-800/80 pb-3">
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-cyan-400 mb-2">The translocation process</h3>
-                    <ul className="space-y-3">{PART_4_PROMPTS.slice(1, 3).map(completionRow)}</ul>
-                    <p className="text-xs text-slate-300 my-2">• elephants were immobilised with tranquilisers</p>
-                    <ul className="space-y-3">{PART_4_PROMPTS.slice(3, 7).map(completionRow)}</ul>
-                    <p className="text-xs text-slate-300 mt-2">• tracking devices were fitted to the matriarchs</p>
-                    <p className="text-xs text-slate-300 mt-1">• elephants were taken by truck to their new reserve</p>
-                  </div>
-
-                  <div>
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-emerald-400 mb-2">Advantages of translocation at Nkhotakota Wildlife Park</h3>
-                    <ul className="space-y-3">{PART_4_PROMPTS.slice(7, 10).map(completionRow)}</ul>
-                    <p className="text-xs text-slate-300 mt-2">• an example of conservation that other parks can follow</p>
-                  </div>
-                </div>
-              </section>
-            )}
-            </>
             )}
 
             <div className="flex items-center justify-between border-t border-slate-800 py-4 text-xs text-slate-500">
@@ -1048,6 +1052,7 @@ type ReadingExamProps = {
 function ReadingExam({ answers, setAnswers, currentQ, setCurrentQ, timeLeft, part, selectedTestNumber = 1, customPassages, onFinish }: ReadingExamProps) {
   const [mobileView, setMobileView] = useState<'passage' | 'questions'>('passage')
   const activePassages = customPassages && customPassages.length > 0 ? customPassages : selectedTestNumber === 22 ? READING_PASSAGES_21_T2 : selectedTestNumber === 21 ? READING_PASSAGES_21 : selectedTestNumber === 4 ? READING_PASSAGES_4 : selectedTestNumber === 3 ? READING_PASSAGES_3 : selectedTestNumber === 2 ? READING_PASSAGES_2 : READING_PASSAGES
+  const activePassages = customPassages && customPassages.length > 0 ? customPassages : selectedTestNumber === 19 ? READING_PASSAGES_19 : selectedTestNumber === 22 ? READING_PASSAGES_21_T2 : selectedTestNumber === 21 ? READING_PASSAGES_21 : selectedTestNumber === 4 ? READING_PASSAGES_4 : selectedTestNumber === 3 ? READING_PASSAGES_3 : selectedTestNumber === 2 ? READING_PASSAGES_2 : READING_PASSAGES
   const passageIndex = part !== undefined ? part - 1 : currentQ <= 13 ? 0 : currentQ <= 26 ? 1 : 2
   const passage = activePassages[passageIndex] || activePassages[0]
   const answered = Object.keys(answers).filter(key => {
@@ -1123,18 +1128,16 @@ function ReadingExam({ answers, setAnswers, currentQ, setCurrentQ, timeLeft, par
         <button
           type="button"
           onClick={() => setMobileView('passage')}
-          className={`flex-1 py-1.5 px-3 rounded text-xs font-mono font-semibold transition-colors ${
-            mobileView === 'passage' ? 'bg-electric text-white' : 'bg-surface-2 text-graphite hover:text-ink'
-          }`}
+          className={`flex-1 py-1.5 px-3 rounded text-xs font-mono font-semibold transition-colors ${mobileView === 'passage' ? 'bg-electric text-white' : 'bg-surface-2 text-graphite hover:text-ink'
+            }`}
         >
           📖 Reading Passage
         </button>
         <button
           type="button"
           onClick={() => setMobileView('questions')}
-          className={`flex-1 py-1.5 px-3 rounded text-xs font-mono font-semibold transition-colors ${
-            mobileView === 'questions' ? 'bg-electric text-white' : 'bg-surface-2 text-graphite hover:text-ink'
-          }`}
+          className={`flex-1 py-1.5 px-3 rounded text-xs font-mono font-semibold transition-colors ${mobileView === 'questions' ? 'bg-electric text-white' : 'bg-surface-2 text-graphite hover:text-ink'
+            }`}
         >
           ✍️ Questions ({answered}/{totalQuestions})
         </button>
@@ -1155,11 +1158,10 @@ function ReadingExam({ answers, setAnswers, currentQ, setCurrentQ, timeLeft, par
                     <p
                       key={index}
                       id={`reading-paragraph-${match[1][0]}`}
-                      className={`whitespace-pre-line transition-all duration-300 ${
-                        isParagraphActive
-                          ? 'border-l-4 border-electric pl-3 bg-electric/5 rounded-r py-1 ring-1 ring-electric/20'
-                          : ''
-                      }`}
+                      className={`whitespace-pre-line transition-all duration-300 ${isParagraphActive
+                        ? 'border-l-4 border-electric pl-3 bg-electric/5 rounded-r py-1 ring-1 ring-electric/20'
+                        : ''
+                        }`}
                     >
                       <strong className={`mr-2 inline-block font-bold ${isParagraphActive ? 'text-accent' : 'text-ink'}`}>
                         {label}
@@ -1201,11 +1203,10 @@ function ReadingExam({ answers, setAnswers, currentQ, setCurrentQ, timeLeft, par
                   key={question.id}
                   id={`reading-question-${question.id}`}
                   onClick={() => setCurrentQ(question.id)}
-                  className={`scroll-mt-4 rounded-sm p-3 transition-all ${
-                    currentQ === question.id
-                      ? 'border-l-4 border-electric bg-surface-2/60 shadow-sm'
-                      : 'border-l-4 border-transparent hover:bg-surface-2/30'
-                  }`}
+                  className={`scroll-mt-4 rounded-sm p-3 transition-all ${currentQ === question.id
+                    ? 'border-l-4 border-electric bg-surface-2/60 shadow-sm'
+                    : 'border-l-4 border-transparent hover:bg-surface-2/30'
+                    }`}
                 >
                   {showHeading && (
                     <div className="mb-4">
@@ -1255,14 +1256,13 @@ function ReadingExam({ answers, setAnswers, currentQ, setCurrentQ, timeLeft, par
                           <div
                             key={option}
                             onClick={togglePair}
-                            className={`flex cursor-pointer items-start gap-3 rounded-sm border px-3 py-2 font-plex text-sm transition ${
-                              isChecked ? 'border-electric bg-electric-dim' : 'border-transparent hover:bg-surface-2'
-                            }`}
+                            className={`flex cursor-pointer items-start gap-3 rounded-sm border px-3 py-2 font-plex text-sm transition ${isChecked ? 'border-electric bg-electric-dim' : 'border-transparent hover:bg-surface-2'
+                              }`}
                           >
                             <input
                               type="checkbox"
                               checked={isChecked}
-                              onChange={() => {}}
+                              onChange={() => { }}
                               className="mt-1 accent-electric pointer-events-none"
                             />
                             <span>{option}</span>
@@ -1399,7 +1399,7 @@ function WritingChart2() {
       ))}
       <line x1="50" x2="50" y1="40" y2="240" className="stroke-ink" />
       <text x="20" y="140" transform="rotate(-90, 20, 140)" textAnchor="middle" className="fill-ink font-plex text-sm font-semibold">Number of households (millions)</text>
-      
+
       {years.map((year, i) => {
         const xOffset = 90 + i * 160
         return (
@@ -1415,7 +1415,7 @@ function WritingChart2() {
           </g>
         )
       })}
-      
+
       <g transform="translate(50, 290)">
         {series.map((s, i) => (
           <g key={i} transform={`translate(${i * 105}, 0)`}>
@@ -1583,18 +1583,16 @@ function WritingExam({ answers, setAnswers, currentTask, setCurrentTask, timeLef
         <button
           type="button"
           onClick={() => setMobileWritingView('prompt')}
-          className={`flex-1 py-1.5 px-3 rounded text-xs font-mono font-semibold transition-colors ${
-            mobileWritingView === 'prompt' ? 'bg-electric text-white' : 'bg-surface-2 text-graphite hover:text-ink'
-          }`}
+          className={`flex-1 py-1.5 px-3 rounded text-xs font-mono font-semibold transition-colors ${mobileWritingView === 'prompt' ? 'bg-electric text-white' : 'bg-surface-2 text-graphite hover:text-ink'
+            }`}
         >
           📋 Task Instructions
         </button>
         <button
           type="button"
           onClick={() => setMobileWritingView('editor')}
-          className={`flex-1 py-1.5 px-3 rounded text-xs font-mono font-semibold transition-colors ${
-            mobileWritingView === 'editor' ? 'bg-electric text-white' : 'bg-surface-2 text-graphite hover:text-ink'
-          }`}
+          className={`flex-1 py-1.5 px-3 rounded text-xs font-mono font-semibold transition-colors ${mobileWritingView === 'editor' ? 'bg-electric text-white' : 'bg-surface-2 text-graphite hover:text-ink'
+            }`}
         >
           ✍️ Your Essay ({wordCount} words)
         </button>
@@ -2070,7 +2068,7 @@ function SpeakingExam({ currentPart, setCurrentPart, timeLeft, part, onRecording
     recognitionRef.current = null
     streamRef.current?.getTracks().forEach(track => track.stop())
     if (rec) {
-      try { rec.stop() } catch {}
+      try { rec.stop() } catch { }
     }
   }, [])
 
@@ -2166,7 +2164,7 @@ function SpeakingExam({ currentPart, setCurrentPart, timeLeft, part, onRecording
                 try {
                   rec.start()
                   return
-                } catch {}
+                } catch { }
               }
               resolve()
             }
@@ -2193,7 +2191,7 @@ function SpeakingExam({ currentPart, setCurrentPart, timeLeft, part, onRecording
       recorderRef.current.stop()
     }
     if (rec) {
-      try { rec.stop() } catch {}
+      try { rec.stop() } catch { }
     }
     setInterimText('')
     setRecording(false)
@@ -2464,7 +2462,7 @@ export default function PracticeTest() {
           setBestOverall(Math.max(...scores).toFixed(1))
         }
       }
-    }).catch(() => {})
+    }).catch(() => { })
   }, [user?.email, user?.id])
 
   // Synchronize stages with browser history so clicking browser back navigates between stages
@@ -2558,6 +2556,7 @@ export default function PracticeTest() {
 
   const readingMarks = useMemo(() => {
     const activeAnswers = activeCustomTest ? activeCustomTest.answers : selectedTest.testNumber === 22 ? READING_ANSWERS_21_T2 : selectedTest.testNumber === 21 ? READING_ANSWERS_21 : selectedTest.testNumber === 4 ? READING_ANSWERS_4 : selectedTest.testNumber === 3 ? READING_ANSWERS_3 : selectedTest.testNumber === 2 ? READING_ANSWERS_2 : READING_ANSWERS
+    const activeAnswers = activeCustomTest ? activeCustomTest.answers : selectedTest.testNumber === 19 ? READING_ANSWERS_19 : selectedTest.testNumber === 22 ? READING_ANSWERS_21_T2 : selectedTest.testNumber === 21 ? READING_ANSWERS_21 : selectedTest.testNumber === 4 ? READING_ANSWERS_4 : selectedTest.testNumber === 3 ? READING_ANSWERS_3 : selectedTest.testNumber === 2 ? READING_ANSWERS_2 : READING_ANSWERS
     return markAnswers(activeAnswers, answers, readingPairs(selectedTest.testNumber))
   }, [answers, selectedTest.testNumber, activeCustomTest])
   const readingScore = countCorrect(readingMarks)
@@ -2649,7 +2648,7 @@ export default function PracticeTest() {
     }
 
     saveExamResult(resultRecord as any, user?.email)
-    saveExamResultApi(resultRecord as any).catch(() => {})
+    saveExamResultApi(resultRecord as any).catch(() => { })
   }, [listeningScore, readingScore, selectedTest, selectedTestNum, selectedBook, stage, timeLeft, user, answers])
 
   const handleFinishSpeaking = async (data: {
@@ -2712,7 +2711,7 @@ export default function PracticeTest() {
         source: (evalRes.source?.toLowerCase().includes('puku') ? 'AI' : 'Automatic') as any,
       }
       saveExamResult(record as any, user?.email)
-      saveExamResultApi(record as any).catch(() => {})
+      saveExamResultApi(record as any).catch(() => { })
     } catch (err: any) {
       setSpeakingError(err?.message || 'Failed to complete Speaking evaluation.')
     } finally {
@@ -2761,12 +2760,13 @@ export default function PracticeTest() {
     savedResultKey.current = ''
     setAnswers({})
     const activeReadingPassages = selectedTest.testNumber === 4 ? READING_PASSAGES_4 : selectedTest.testNumber === 3 ? READING_PASSAGES_3 : selectedTest.testNumber === 2 ? READING_PASSAGES_2 : READING_PASSAGES
+    const activeReadingPassages = selectedTest.testNumber === 19 ? READING_PASSAGES_19 : selectedTest.testNumber === 22 ? READING_PASSAGES_21_T2 : selectedTest.testNumber === 21 ? READING_PASSAGES_21 : selectedTest.testNumber === 4 ? READING_PASSAGES_4 : selectedTest.testNumber === 3 ? READING_PASSAGES_3 : selectedTest.testNumber === 2 ? READING_PASSAGES_2 : READING_PASSAGES
     const partStart = selectedTest.part
       ? selectedTest.type === 'Reading'
         ? (activeReadingPassages[selectedTest.part - 1]?.range[0] || 1)
         : selectedTest.type === 'Writing' || selectedTest.type === 'Speaking'
           ? selectedTest.part
-        : (selectedTest.part - 1) * 10 + 1
+          : (selectedTest.part - 1) * 10 + 1
       : 1
     setCurrentQ(partStart)
     if (selectedTest.type === 'Full Test') {
@@ -2897,9 +2897,8 @@ export default function PracticeTest() {
                       <div className="font-mono text-xs uppercase tracking-wider text-graphite-light">Official Band</div>
                       <div className="font-mono text-xs font-semibold text-accent">{descriptorForSpeakingBand(speakingEval.overallBand)}</div>
                     </div>
-                    <div className={`flex h-20 w-24 flex-col items-center justify-center rounded border border-divider bg-surface-2 shadow-inner font-mono text-4xl font-extrabold ${
-                      speakingEval.overallBand >= 7.5 ? 'text-positive' : speakingEval.overallBand >= 6.0 ? 'text-accent' : speakingEval.overallBand >= 4.0 ? 'text-caution' : 'text-danger'
-                    }`}>
+                    <div className={`flex h-20 w-24 flex-col items-center justify-center rounded border border-divider bg-surface-2 shadow-inner font-mono text-4xl font-extrabold ${speakingEval.overallBand >= 7.5 ? 'text-positive' : speakingEval.overallBand >= 6.0 ? 'text-accent' : speakingEval.overallBand >= 4.0 ? 'text-caution' : 'text-danger'
+                      }`}>
                       {speakingEval.overallBand.toFixed(1)}
                       <span className="font-mono text-[10px] uppercase font-normal text-graphite-mid">Overall Band</span>
                     </div>
@@ -2972,9 +2971,8 @@ export default function PracticeTest() {
                           <span className="font-plex text-sm font-bold text-ink">{item.title}</span>
                           <div className="font-plex text-[11px] text-graphite-mid">{item.desc}</div>
                         </div>
-                        <div className={`font-mono text-2xl font-bold px-3 py-1 rounded bg-surface-2 border border-divider ${
-                          item.crit.band >= 7.5 ? 'text-positive' : item.crit.band >= 6.0 ? 'text-accent' : item.crit.band >= 4.0 ? 'text-caution' : 'text-danger'
-                        }`}>
+                        <div className={`font-mono text-2xl font-bold px-3 py-1 rounded bg-surface-2 border border-divider ${item.crit.band >= 7.5 ? 'text-positive' : item.crit.band >= 6.0 ? 'text-accent' : item.crit.band >= 4.0 ? 'text-caution' : 'text-danger'
+                          }`}>
                           {item.crit.band.toFixed(1)}
                         </div>
                       </div>
@@ -3136,6 +3134,8 @@ export default function PracticeTest() {
 
     const activePassages = activeCustomTest ? activeCustomTest.passages : selectedTest.testNumber === 22 ? READING_PASSAGES_21_T2 : selectedTest.testNumber === 21 ? READING_PASSAGES_21 : selectedTest.testNumber === 4 ? READING_PASSAGES_4 : selectedTest.testNumber === 3 ? READING_PASSAGES_3 : selectedTest.testNumber === 2 ? READING_PASSAGES_2 : READING_PASSAGES
     const activeAnswers = activeCustomTest ? activeCustomTest.answers : selectedTest.testNumber === 22 ? READING_ANSWERS_21_T2 : selectedTest.testNumber === 21 ? READING_ANSWERS_21 : selectedTest.testNumber === 4 ? READING_ANSWERS_4 : selectedTest.testNumber === 3 ? READING_ANSWERS_3 : selectedTest.testNumber === 2 ? READING_ANSWERS_2 : READING_ANSWERS
+    const activePassages = activeCustomTest ? activeCustomTest.passages : selectedTest.testNumber === 19 ? READING_PASSAGES_19 : selectedTest.testNumber === 22 ? READING_PASSAGES_21_T2 : selectedTest.testNumber === 21 ? READING_PASSAGES_21 : selectedTest.testNumber === 4 ? READING_PASSAGES_4 : selectedTest.testNumber === 3 ? READING_PASSAGES_3 : selectedTest.testNumber === 2 ? READING_PASSAGES_2 : READING_PASSAGES
+    const activeAnswers = activeCustomTest ? activeCustomTest.answers : selectedTest.testNumber === 19 ? READING_ANSWERS_19 : selectedTest.testNumber === 22 ? READING_ANSWERS_21_T2 : selectedTest.testNumber === 21 ? READING_ANSWERS_21 : selectedTest.testNumber === 4 ? READING_ANSWERS_4 : selectedTest.testNumber === 3 ? READING_ANSWERS_3 : selectedTest.testNumber === 2 ? READING_ANSWERS_2 : READING_ANSWERS
 
     const readingQuestions = selectedTest.type === 'Reading'
       ? selectedTest.part !== undefined
@@ -3166,27 +3166,27 @@ export default function PracticeTest() {
     const listeningQuestionsMap = new Map(activeListeningParts.flatMap(p => p.questions).map(q => [q.id, q]))
     const listeningReviewItems = isListening
       ? Object.entries(listeningAnswerKey)
-          .filter(([key]) => {
-            const id = Number(key)
-            return selectedTest.part === undefined || (id >= (selectedTest.part - 1) * 10 + 1 && id <= selectedTest.part * 10)
-          })
-          .map(([key, accepted]) => {
-            const id = Number(key)
-            const q = listeningQuestionsMap.get(id)
-            const userAns = answers[id]?.trim() || ''
-            const correct = !!listeningMarks[id]
-            const unanswered = !userAns
-            return {
-              id,
-              prompt: q?.prompt || `Question ${id}`,
-              userAns,
-              accepted,
-              correct,
-              unanswered,
-              explanation: q?.explanation,
-              passageReference: undefined,
-            }
-          })
+        .filter(([key]) => {
+          const id = Number(key)
+          return selectedTest.part === undefined || (id >= (selectedTest.part - 1) * 10 + 1 && id <= selectedTest.part * 10)
+        })
+        .map(([key, accepted]) => {
+          const id = Number(key)
+          const q = listeningQuestionsMap.get(id)
+          const userAns = answers[id]?.trim() || ''
+          const correct = !!listeningMarks[id]
+          const unanswered = !userAns
+          return {
+            id,
+            prompt: q?.prompt || `Question ${id}`,
+            userAns,
+            accepted,
+            correct,
+            unanswered,
+            explanation: q?.explanation,
+            passageReference: undefined,
+          }
+        })
       : []
 
     const reviewItems = isListening ? listeningReviewItems : questionReviewItems
@@ -3254,33 +3254,30 @@ export default function PracticeTest() {
                 <button
                   type="button"
                   onClick={() => setResultFilter('all')}
-                  className={`rounded-sm border px-3 py-1.5 font-mono text-xs font-semibold transition-colors ${
-                    resultFilter === 'all'
-                      ? 'border-navy bg-navy text-white'
-                      : 'border-divider bg-surface text-graphite hover:border-graphite-light'
-                  }`}
+                  className={`rounded-sm border px-3 py-1.5 font-mono text-xs font-semibold transition-colors ${resultFilter === 'all'
+                    ? 'border-navy bg-navy text-white'
+                    : 'border-divider bg-surface text-graphite hover:border-graphite-light'
+                    }`}
                 >
                   All Questions ({reviewItems.length})
                 </button>
                 <button
                   type="button"
                   onClick={() => setResultFilter('incorrect')}
-                  className={`rounded-sm border px-3 py-1.5 font-mono text-xs font-semibold transition-colors ${
-                    resultFilter === 'incorrect'
-                      ? 'border-rose-600 bg-rose-600 text-white'
-                      : 'border-rose-200 bg-rose-50 text-rose-700 hover:border-rose-300'
-                  }`}
+                  className={`rounded-sm border px-3 py-1.5 font-mono text-xs font-semibold transition-colors ${resultFilter === 'incorrect'
+                    ? 'border-rose-600 bg-rose-600 text-white'
+                    : 'border-rose-200 bg-rose-50 text-rose-700 hover:border-rose-300'
+                    }`}
                 >
                   Mistakes ({reviewItems.filter(item => !item.correct).length})
                 </button>
                 <button
                   type="button"
                   onClick={() => setResultFilter('correct')}
-                  className={`rounded-sm border px-3 py-1.5 font-mono text-xs font-semibold transition-colors ${
-                    resultFilter === 'correct'
-                      ? 'border-emerald-600 bg-emerald-600 text-white'
-                      : 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:border-emerald-300'
-                  }`}
+                  className={`rounded-sm border px-3 py-1.5 font-mono text-xs font-semibold transition-colors ${resultFilter === 'correct'
+                    ? 'border-emerald-600 bg-emerald-600 text-white'
+                    : 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:border-emerald-300'
+                    }`}
                 >
                   Correct ({reviewItems.filter(item => item.correct).length})
                 </button>
@@ -3296,13 +3293,12 @@ export default function PracticeTest() {
                 filteredReviewItems.map(item => (
                   <article
                     key={item.id}
-                    className={`rounded-sm border p-5 sm:p-6 transition-all ${
-                      item.correct
-                        ? 'border-emerald-200 bg-surface border-l-4 border-l-emerald-600'
-                        : item.unanswered
-                          ? 'border-amber-200 bg-surface border-l-4 border-l-amber-500'
-                          : 'border-rose-200 bg-surface border-l-4 border-l-rose-600'
-                    }`}
+                    className={`rounded-sm border p-5 sm:p-6 transition-all ${item.correct
+                      ? 'border-emerald-200 bg-surface border-l-4 border-l-emerald-600'
+                      : item.unanswered
+                        ? 'border-amber-200 bg-surface border-l-4 border-l-amber-500'
+                        : 'border-rose-200 bg-surface border-l-4 border-l-rose-600'
+                      }`}
                   >
                     <div className="flex flex-wrap items-center justify-between gap-3 border-b border-divider pb-3">
                       <div className="flex items-center gap-3">
@@ -3314,13 +3310,12 @@ export default function PracticeTest() {
                         </span>
                       </div>
                       <span
-                        className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-mono text-xs font-semibold ${
-                          item.correct
-                            ? 'border border-emerald-200 bg-emerald-50 text-emerald-700'
-                            : item.unanswered
-                              ? 'border border-amber-200 bg-amber-50 text-amber-700'
-                              : 'border border-rose-200 bg-rose-50 text-rose-700'
-                        }`}
+                        className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-mono text-xs font-semibold ${item.correct
+                          ? 'border border-emerald-200 bg-emerald-50 text-emerald-700'
+                          : item.unanswered
+                            ? 'border border-amber-200 bg-amber-50 text-amber-700'
+                            : 'border border-rose-200 bg-rose-50 text-rose-700'
+                          }`}
                       >
                         {item.correct ? '✓ Correct' : item.unanswered ? '○ Unanswered' : '✕ Incorrect'}
                       </span>
@@ -3332,15 +3327,13 @@ export default function PracticeTest() {
 
                     <div className="mt-4 grid gap-3 sm:grid-cols-2">
                       <div
-                        className={`rounded-sm border p-3 ${
-                          item.correct ? 'border-emerald-200 bg-emerald-50/30' : 'border-rose-200 bg-rose-50/30'
-                        }`}
+                        className={`rounded-sm border p-3 ${item.correct ? 'border-emerald-200 bg-emerald-50/30' : 'border-rose-200 bg-rose-50/30'
+                          }`}
                       >
                         <div className="font-mono text-[11px] uppercase tracking-wider text-graphite-light">Your Response</div>
                         <div
-                          className={`mt-1 font-mono text-sm font-bold ${
-                            item.correct ? 'text-emerald-700' : 'text-rose-600'
-                          }`}
+                          className={`mt-1 font-mono text-sm font-bold ${item.correct ? 'text-emerald-700' : 'text-rose-600'
+                            }`}
                         >
                           {item.userAns || <span className="font-normal italic text-graphite-light">(No answer given)</span>}
                         </div>
@@ -3514,20 +3507,20 @@ export default function PracticeTest() {
                   {isFullTest
                     ? 'You will complete Listening, Reading, Writing, and Speaking in sequence (total 85 questions, 174 minutes).'
                     : isListening
-                    ? (selectedTest.part
+                      ? (selectedTest.part
                         ? `You have ${selectedTest.duration} minutes to answer ${selectedTest.questions} questions for Listening Part ${selectedTest.part}. The recording plays once only.`
                         : `You have ${selectedTest.duration} minutes to answer ${selectedTest.questions} questions across four parts. The recording plays once only.`)
-                    : isWriting
-                    ? (selectedTest.part
-                        ? `You have ${selectedTest.duration} minutes for Writing Task ${selectedTest.part}. Target: at least ${selectedTest.part === 1 ? '150' : '250'} words.`
-                        : `You have ${selectedTest.duration} minutes to complete both writing tasks (Task 1: 150+ words, Task 2: 250+ words).`)
-                    : isSpeaking
-                    ? (selectedTest.part
-                        ? `This section lasts approximately ${selectedTest.duration} minutes for Speaking Part ${selectedTest.part}.`
-                        : `This interview simulation lasts approximately ${selectedTest.duration} minutes across Parts 1, 2, and 3.`)
-                    : (selectedTest.part
-                        ? `You have ${selectedTest.duration} minutes to answer ${selectedTest.questions} questions for Reading Passage ${selectedTest.part}.`
-                        : `You have ${selectedTest.duration} minutes to answer ${selectedTest.questions} questions across three passages.`)}
+                      : isWriting
+                        ? (selectedTest.part
+                          ? `You have ${selectedTest.duration} minutes for Writing Task ${selectedTest.part}. Target: at least ${selectedTest.part === 1 ? '150' : '250'} words.`
+                          : `You have ${selectedTest.duration} minutes to complete both writing tasks (Task 1: 150+ words, Task 2: 250+ words).`)
+                        : isSpeaking
+                          ? (selectedTest.part
+                            ? `This section lasts approximately ${selectedTest.duration} minutes for Speaking Part ${selectedTest.part}.`
+                            : `This interview simulation lasts approximately ${selectedTest.duration} minutes across Parts 1, 2, and 3.`)
+                          : (selectedTest.part
+                            ? `You have ${selectedTest.duration} minutes to answer ${selectedTest.questions} questions for Reading Passage ${selectedTest.part}.`
+                            : `You have ${selectedTest.duration} minutes to answer ${selectedTest.questions} questions across three passages.`)}
                 </span>
               </li>
               <li className="flex gap-3"><span className="font-mono text-accent">02</span><span>Answers are saved automatically as you move through the test.</span></li>
@@ -3536,13 +3529,13 @@ export default function PracticeTest() {
                 <span>
                   {isWriting
                     ? (selectedTest.part === 1
-                        ? 'Task 1 requires at least 150 words (worth 1/3 of the writing score).'
-                        : selectedTest.part === 2
+                      ? 'Task 1 requires at least 150 words (worth 1/3 of the writing score).'
+                      : selectedTest.part === 2
                         ? 'Task 2 requires at least 250 words (worth 2/3 of the writing score).'
                         : 'Task 1 requires at least 150 words and Task 2 requires at least 250 words.')
                     : isSpeaking
-                    ? 'Allow microphone access, record in a quiet room, and answer naturally in full sentences.'
-                    : 'Spelling matters. Follow word-limit instructions exactly for completion questions.'}
+                      ? 'Allow microphone access, record in a quiet room, and answer naturally in full sentences.'
+                      : 'Spelling matters. Follow word-limit instructions exactly for completion questions.'}
                 </span>
               </li>
               <li className="flex gap-3"><span className="font-mono text-accent">04</span><span>The test submits automatically when the timer reaches zero.</span></li>
@@ -3637,9 +3630,8 @@ export default function PracticeTest() {
                           })
                         }
                       }}
-                      className={`w-full flex items-center justify-center gap-2 rounded px-4 py-2 font-plex text-xs font-semibold text-white transition-all ${
-                        soundTestPlaying ? 'bg-danger' : 'bg-emerald-600 hover:bg-emerald-700'
-                      }`}
+                      className={`w-full flex items-center justify-center gap-2 rounded px-4 py-2 font-plex text-xs font-semibold text-white transition-all ${soundTestPlaying ? 'bg-danger' : 'bg-emerald-600 hover:bg-emerald-700'
+                        }`}
                     >
                       {soundTestPlaying ? (
                         <><span>■ Stop Preview</span> <span className="animate-pulse">🔊 Playing sound check...</span></>
