@@ -4,6 +4,7 @@ import { READING_ANSWERS_2, READING_PASSAGES_2 } from '../data/readingTest2'
 import { READING_ANSWERS_3, READING_PASSAGES_3 } from '../data/readingTest3'
 import { READING_ANSWERS_4, READING_PASSAGES_4 } from '../data/readingTest4'
 import { READING_ANSWERS_19, READING_PASSAGES_19 } from '../data/readingTest19'
+import { READING_ANSWERS_192, READING_PASSAGES_192 } from '../data/readingTest19_2'
 import { READING_ANSWERS_21, READING_PASSAGES_21 } from '../data/readingTest21'
 import { READING_ANSWERS_21_T2, READING_PASSAGES_21_T2 } from '../data/readingTest21_2'
 import { LISTENING_ANSWERS, LISTENING_PARTS_1 } from '../data/listeningTest1'
@@ -64,6 +65,10 @@ const TESTS: Test[] = [
   { id: 'r19-p1', type: 'Reading', module: 'Academic', title: 'IELTS 19 — Reading Test 1 · Part 1', questions: 13, duration: 20, difficulty: 'Passage practice', status: 'New', part: 1, book: '19', testNumber: 19 },
   { id: 'r19-p2', type: 'Reading', module: 'Academic', title: 'IELTS 19 — Reading Test 1 · Part 2', questions: 13, duration: 20, difficulty: 'Passage practice', status: 'New', part: 2, book: '19', testNumber: 19 },
   { id: 'r19-p3', type: 'Reading', module: 'Academic', title: 'IELTS 19 — Reading Test 1 · Part 3', questions: 14, duration: 20, difficulty: 'Passage practice', status: 'New', part: 3, book: '19', testNumber: 19 },
+  { id: 'r19-2', type: 'Reading', module: 'Academic', title: 'IELTS 19 — Academic Reading Test 2', questions: 40, duration: 60, difficulty: 'Official format', status: 'New', book: '19', testNumber: 192 },
+  { id: 'r19-2-p1', type: 'Reading', module: 'Academic', title: 'IELTS 19 — Reading Test 2 · Part 1', questions: 13, duration: 20, difficulty: 'Passage practice', status: 'New', part: 1, book: '19', testNumber: 192 },
+  { id: 'r19-2-p2', type: 'Reading', module: 'Academic', title: 'IELTS 19 — Reading Test 2 · Part 2', questions: 13, duration: 20, difficulty: 'Passage practice', status: 'New', part: 2, book: '19', testNumber: 192 },
+  { id: 'r19-2-p3', type: 'Reading', module: 'Academic', title: 'IELTS 19 — Reading Test 2 · Part 3', questions: 14, duration: 20, difficulty: 'Passage practice', status: 'New', part: 3, book: '19', testNumber: 192 },
   { id: 'l1', type: 'Listening', module: 'Academic', title: 'IELTS 18 — Listening Test 1 (Full 4 Parts)', questions: 40, duration: 40, difficulty: 'Official format', status: 'In progress', book: '18', testNumber: 1 },
   { id: 'l1-p1', type: 'Listening', module: 'Academic', title: 'IELTS 18 — Listening Test 1 · Part 1', questions: 10, duration: 10, difficulty: 'Section practice', status: 'New', part: 1, book: '18', testNumber: 1 },
   { id: 'l1-p2', type: 'Listening', module: 'Academic', title: 'IELTS 18 — Listening Test 1 · Part 2', questions: 10, duration: 10, difficulty: 'Section practice', status: 'New', part: 2, book: '18', testNumber: 1 },
@@ -2578,7 +2583,7 @@ export default function PracticeTest() {
   }, [answers, selectedTestNum])
 
   const readingMarks = useMemo(() => {
-    const activeAnswers = activeCustomTest ? activeCustomTest.answers : selectedTest.testNumber === 19 ? READING_ANSWERS_19 : selectedTest.testNumber === 22 ? READING_ANSWERS_21_T2 : selectedTest.testNumber === 21 ? READING_ANSWERS_21 : selectedTest.testNumber === 4 ? READING_ANSWERS_4 : selectedTest.testNumber === 3 ? READING_ANSWERS_3 : selectedTest.testNumber === 2 ? READING_ANSWERS_2 : READING_ANSWERS
+    const activeAnswers = activeCustomTest ? activeCustomTest.answers : selectedTest.testNumber === 192 ? READING_ANSWERS_192 : selectedTest.testNumber === 19 ? READING_ANSWERS_19 : selectedTest.testNumber === 22 ? READING_ANSWERS_21_T2 : selectedTest.testNumber === 21 ? READING_ANSWERS_21 : selectedTest.testNumber === 4 ? READING_ANSWERS_4 : selectedTest.testNumber === 3 ? READING_ANSWERS_3 : selectedTest.testNumber === 2 ? READING_ANSWERS_2 : READING_ANSWERS
     return markAnswers(activeAnswers, answers, readingPairs(selectedTest.testNumber))
   }, [answers, selectedTest.testNumber, activeCustomTest])
   const readingScore = countCorrect(readingMarks)
@@ -2781,7 +2786,7 @@ export default function PracticeTest() {
     }
     savedResultKey.current = ''
     setAnswers({})
-    const activeReadingPassages = selectedTest.testNumber === 19 ? READING_PASSAGES_19 : selectedTest.testNumber === 22 ? READING_PASSAGES_21_T2 : selectedTest.testNumber === 21 ? READING_PASSAGES_21 : selectedTest.testNumber === 4 ? READING_PASSAGES_4 : selectedTest.testNumber === 3 ? READING_PASSAGES_3 : selectedTest.testNumber === 2 ? READING_PASSAGES_2 : READING_PASSAGES
+    const activeReadingPassages = selectedTest.testNumber === 192 ? READING_PASSAGES_192 : selectedTest.testNumber === 19 ? READING_PASSAGES_19 : selectedTest.testNumber === 22 ? READING_PASSAGES_21_T2 : selectedTest.testNumber === 21 ? READING_PASSAGES_21 : selectedTest.testNumber === 4 ? READING_PASSAGES_4 : selectedTest.testNumber === 3 ? READING_PASSAGES_3 : selectedTest.testNumber === 2 ? READING_PASSAGES_2 : READING_PASSAGES
     const partStart = selectedTest.part
       ? selectedTest.type === 'Reading'
         ? (activeReadingPassages[selectedTest.part - 1]?.range[0] || 1)
@@ -3153,8 +3158,8 @@ export default function PracticeTest() {
     const displayedBand = isListening ? listeningBand(projectedListeningScore) : readingBand(projectedReadingScore)
     const correctAnswers = isListening ? listeningScore : readingScore
 
-    const activePassages = activeCustomTest ? activeCustomTest.passages : selectedTest.testNumber === 19 ? READING_PASSAGES_19 : selectedTest.testNumber === 22 ? READING_PASSAGES_21_T2 : selectedTest.testNumber === 21 ? READING_PASSAGES_21 : selectedTest.testNumber === 4 ? READING_PASSAGES_4 : selectedTest.testNumber === 3 ? READING_PASSAGES_3 : selectedTest.testNumber === 2 ? READING_PASSAGES_2 : READING_PASSAGES
-    const activeAnswers = activeCustomTest ? activeCustomTest.answers : selectedTest.testNumber === 19 ? READING_ANSWERS_19 : selectedTest.testNumber === 22 ? READING_ANSWERS_21_T2 : selectedTest.testNumber === 21 ? READING_ANSWERS_21 : selectedTest.testNumber === 4 ? READING_ANSWERS_4 : selectedTest.testNumber === 3 ? READING_ANSWERS_3 : selectedTest.testNumber === 2 ? READING_ANSWERS_2 : READING_ANSWERS
+    const activePassages = activeCustomTest ? activeCustomTest.passages : selectedTest.testNumber === 192 ? READING_PASSAGES_192 : selectedTest.testNumber === 19 ? READING_PASSAGES_19 : selectedTest.testNumber === 22 ? READING_PASSAGES_21_T2 : selectedTest.testNumber === 21 ? READING_PASSAGES_21 : selectedTest.testNumber === 4 ? READING_PASSAGES_4 : selectedTest.testNumber === 3 ? READING_PASSAGES_3 : selectedTest.testNumber === 2 ? READING_PASSAGES_2 : READING_PASSAGES
+    const activeAnswers = activeCustomTest ? activeCustomTest.answers : selectedTest.testNumber === 192 ? READING_ANSWERS_192 : selectedTest.testNumber === 19 ? READING_ANSWERS_19 : selectedTest.testNumber === 22 ? READING_ANSWERS_21_T2 : selectedTest.testNumber === 21 ? READING_ANSWERS_21 : selectedTest.testNumber === 4 ? READING_ANSWERS_4 : selectedTest.testNumber === 3 ? READING_ANSWERS_3 : selectedTest.testNumber === 2 ? READING_ANSWERS_2 : READING_ANSWERS
 
     const readingQuestions = selectedTest.type === 'Reading'
       ? selectedTest.part !== undefined

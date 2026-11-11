@@ -8,6 +8,7 @@ import { READING_ANSWERS_2, READING_PASSAGES_2 } from '../data/readingTest2'
 import { READING_ANSWERS_3, READING_PASSAGES_3 } from '../data/readingTest3'
 import { READING_ANSWERS_4, READING_PASSAGES_4 } from '../data/readingTest4'
 import { READING_ANSWERS_19, READING_PASSAGES_19 } from '../data/readingTest19'
+import { READING_ANSWERS_192, READING_PASSAGES_192 } from '../data/readingTest19_2'
 import { READING_ANSWERS_21, READING_PASSAGES_21 } from '../data/readingTest21'
 import { READING_ANSWERS_21_T2, READING_PASSAGES_21_T2 } from '../data/readingTest21_2'
 import { LISTENING_ANSWERS, LISTENING_PARTS_1 } from '../data/listeningTest1'
@@ -21,6 +22,7 @@ const READING_TESTS: Record<number, { passages: typeof READING_PASSAGES; answers
   3: { passages: READING_PASSAGES_3, answers: READING_ANSWERS_3 },
   4: { passages: READING_PASSAGES_4, answers: READING_ANSWERS_4 },
   19: { passages: READING_PASSAGES_19, answers: READING_ANSWERS_19 },
+  192: { passages: READING_PASSAGES_192, answers: READING_ANSWERS_192 },
   21: { passages: READING_PASSAGES_21, answers: READING_ANSWERS_21 },
   22: { passages: READING_PASSAGES_21_T2, answers: READING_ANSWERS_21_T2 },
 }
@@ -32,7 +34,9 @@ function getResultTest(result: StoredExamResult) {
   const titleTest = result.testTitle.match(/Test (\d+)/)
   const titlePart = result.testTitle.match(/Part (\d+)/)
   let testNum = result.testNumber ?? (titleTest ? Number(titleTest[1]) : 1)
-  if (isBook19 && (testNum === 1 || testNum === 19)) {
+  if (isBook19 && (testNum === 2 || testNum === 192)) {
+    testNum = 192
+  } else if (isBook19 && (testNum === 1 || testNum === 19)) {
     testNum = 19
   } else if (isBook21 && (testNum === 2 || testNum === 22)) {
     testNum = 22
