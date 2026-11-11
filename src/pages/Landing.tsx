@@ -266,21 +266,16 @@ export default function Landing() {
           <div className="hero-in flex items-center justify-center gap-3 flex-wrap mb-8" style={cssVars({ '--delay': '540ms' })}>
             {isAuthenticated ? (
               <>
-                <NavLink to="/dashboard"
+                <NavLink to="/practice"
                   className="group btn-sheen flex items-center gap-2 bg-[#DC2626] text-white text-sm font-semibold px-8 py-3.5 hover:bg-[#B91C1C] hover:shadow-lg hover:shadow-[#DC2626]/30 active:scale-[0.97] transition"
                   style={{ fontFamily: 'IBM Plex Sans, sans-serif', borderRadius: 4 }}>
-                  Go to Dashboard
+                  Take a Practice Test
                   <span className="text-[#FCA5A5] transition-transform group-hover:translate-x-1">→</span>
                 </NavLink>
-                <NavLink to="/practice"
+                <NavLink to="/documents"
                   className="flex items-center gap-2 bg-transparent border border-[#334155] text-faint text-sm font-medium px-8 py-3.5 hover:border-[#DC2626]/60 hover:text-white hover:bg-navy-mid/60 active:scale-[0.97] transition"
                   style={{ fontFamily: 'IBM Plex Sans, sans-serif', borderRadius: 4 }}>
-                  Take a Practice Test
-                </NavLink>
-                <NavLink to="/writing"
-                  className="flex items-center gap-2 bg-navy-mid/90 border border-[#DC2626]/40 text-[#F87171] text-sm font-medium px-6 py-3.5 hover:border-[#DC2626] hover:text-white active:scale-[0.97] transition"
-                  style={{ fontFamily: 'IBM Plex Sans, sans-serif', borderRadius: 4 }}>
-                  AI Essay Review
+                  Document Generator
                 </NavLink>
               </>
             ) : (
@@ -299,31 +294,6 @@ export default function Landing() {
               </>
             )}
           </div>
-
-          {/* Quick candidate strip when authenticated */}
-          {isAuthenticated && (
-            <div className="hero-in max-w-xl mx-auto mb-10 p-3 bg-navy-mid/90 border border-[#1E293B] shadow-lg flex flex-wrap items-center justify-between gap-3 text-left" style={{ ...cssVars({ '--delay': '620ms' }), borderRadius: 4 }}>
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded bg-[#DC2626]/20 border border-[#DC2626]/40 flex items-center justify-center text-[#F87171] text-xs font-bold mono">
-                  {user?.name ? user.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : 'ST'}
-                </div>
-                <div>
-                  <div className="text-xs font-semibold text-white">{user?.name || 'Student Candidate'}</div>
-                  <div className="text-[10px] text-muted mono">{user?.institution || user?.email || 'Logged-in Account'}</div>
-                </div>
-              </div>
-              <div className="flex items-center gap-4 text-xs">
-                <div className="text-right">
-                  <span className="text-[10px] text-muted uppercase mono block">Target Band</span>
-                  <span className="mono font-bold text-[#F87171]">{user?.targetBand ?? 7.5}</span>
-                </div>
-                <div className="w-px h-6 bg-[#334155]" />
-                <NavLink to="/dashboard" className="text-[11px] text-[#F87171] hover:text-white underline underline-offset-2 mono font-medium">
-                  Resume Study →
-                </NavLink>
-              </div>
-            </div>
-          )}
 
           {/* Stats row */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-2xl mx-auto">
