@@ -1559,7 +1559,7 @@ function WritingExam({ answers, setAnswers, currentTask, setCurrentTask, timeLef
     `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`
 
   return (
-    <main className="fixed inset-x-0 bottom-0 top-14 z-30 flex flex-col bg-surface">
+    <main className="writing-test-shell fixed inset-x-0 bottom-0 top-14 z-30 flex flex-col bg-surface">
       <header className="flex min-h-14 items-center justify-between border-b border-divider bg-surface px-4">
         <div className="flex items-center gap-5">
           <div className="border-r border-divider pr-5 font-plex text-2xl font-bold tracking-tight text-accent">IELTS</div>
@@ -2444,6 +2444,14 @@ export default function PracticeTest() {
     document.body.classList.toggle('reading-test-active', readingTestActive)
     return () => {
       document.body.classList.remove('reading-test-active')
+    }
+  }, [stage, selectedTest.type, fullModule])
+
+  useEffect(() => {
+    const writingTestActive = stage === 'test' && (selectedTest.type === 'Writing' || (selectedTest.type === 'Full Test' && fullModule === 'Writing'))
+    document.body.classList.toggle('writing-test-active', writingTestActive)
+    return () => {
+      document.body.classList.remove('writing-test-active')
     }
   }, [stage, selectedTest.type, fullModule])
 
