@@ -2238,7 +2238,7 @@ function SpeakingExam({ currentPart, setCurrentPart, timeLeft, part, onRecording
   const currentWpm = currentDuration > 0 ? Math.round((currentWords / currentDuration) * 60) : 0
 
   return (
-    <main className="fixed inset-x-0 bottom-0 top-14 z-30 flex flex-col bg-paper">
+    <main className="speaking-test-shell fixed inset-x-0 bottom-0 top-14 z-30 flex flex-col bg-paper">
       <header className="flex min-h-14 items-center justify-between border-b border-divider bg-surface px-4">
         <div className="flex items-center gap-5">
           <div className="border-r border-divider pr-5 font-plex text-2xl font-bold tracking-tight text-accent">IELTS</div>
@@ -2452,6 +2452,14 @@ export default function PracticeTest() {
     document.body.classList.toggle('writing-test-active', writingTestActive)
     return () => {
       document.body.classList.remove('writing-test-active')
+    }
+  }, [stage, selectedTest.type, fullModule])
+
+  useEffect(() => {
+    const speakingTestActive = stage === 'test' && (selectedTest.type === 'Speaking' || (selectedTest.type === 'Full Test' && fullModule === 'Speaking'))
+    document.body.classList.toggle('speaking-test-active', speakingTestActive)
+    return () => {
+      document.body.classList.remove('speaking-test-active')
     }
   }, [stage, selectedTest.type, fullModule])
 
