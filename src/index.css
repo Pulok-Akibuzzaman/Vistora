@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Manrope:wght@300;400;500;600;700;800&display=swap');
 @import 'tailwindcss';
 
 /* Dark theme is switched with data-theme="dark" on <html> (see src/lib/theme.ts) */
@@ -15,8 +15,8 @@
   --color-warning: #D97706;
   --color-success: #059669;
 
-  --font-sans: 'Inter', 'IBM Plex Sans', system-ui, sans-serif;
-  --font-plex: 'IBM Plex Sans', 'Inter', system-ui, sans-serif;
+  --font-sans: 'Manrope', system-ui, sans-serif;
+  --font-plex: 'Manrope', system-ui, sans-serif;
   --font-mono: 'IBM Plex Mono', monospace;
 
   --radius-card: 4px;
@@ -249,7 +249,7 @@ body {
 }
 
 body {
-  font-family: 'Inter', 'IBM Plex Sans', system-ui, sans-serif;
+  font-family: 'Manrope', system-ui, sans-serif;
   background-color: var(--t-paper, #FAFAF7);
   color: var(--t-ink, #0F172A);
   -webkit-font-smoothing: antialiased;
@@ -388,7 +388,7 @@ textarea::placeholder {
 
 /* Mono helper */
 .mono { font-family: 'IBM Plex Mono', monospace; }
-.plex { font-family: 'IBM Plex Sans', sans-serif; }
+.plex { font-family: 'Manrope', sans-serif; }
 
 /* Blueprint divider */
 .blueprint-rule {

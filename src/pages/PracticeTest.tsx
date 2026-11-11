@@ -1051,7 +1051,6 @@ type ReadingExamProps = {
 
 function ReadingExam({ answers, setAnswers, currentQ, setCurrentQ, timeLeft, part, selectedTestNumber = 1, customPassages, onFinish }: ReadingExamProps) {
   const [mobileView, setMobileView] = useState<'passage' | 'questions'>('passage')
-  const activePassages = customPassages && customPassages.length > 0 ? customPassages : selectedTestNumber === 22 ? READING_PASSAGES_21_T2 : selectedTestNumber === 21 ? READING_PASSAGES_21 : selectedTestNumber === 4 ? READING_PASSAGES_4 : selectedTestNumber === 3 ? READING_PASSAGES_3 : selectedTestNumber === 2 ? READING_PASSAGES_2 : READING_PASSAGES
   const activePassages = customPassages && customPassages.length > 0 ? customPassages : selectedTestNumber === 19 ? READING_PASSAGES_19 : selectedTestNumber === 22 ? READING_PASSAGES_21_T2 : selectedTestNumber === 21 ? READING_PASSAGES_21 : selectedTestNumber === 4 ? READING_PASSAGES_4 : selectedTestNumber === 3 ? READING_PASSAGES_3 : selectedTestNumber === 2 ? READING_PASSAGES_2 : READING_PASSAGES
   const passageIndex = part !== undefined ? part - 1 : currentQ <= 13 ? 0 : currentQ <= 26 ? 1 : 2
   const passage = activePassages[passageIndex] || activePassages[0]
@@ -2555,7 +2554,6 @@ export default function PracticeTest() {
   }, [answers, selectedTestNum])
 
   const readingMarks = useMemo(() => {
-    const activeAnswers = activeCustomTest ? activeCustomTest.answers : selectedTest.testNumber === 22 ? READING_ANSWERS_21_T2 : selectedTest.testNumber === 21 ? READING_ANSWERS_21 : selectedTest.testNumber === 4 ? READING_ANSWERS_4 : selectedTest.testNumber === 3 ? READING_ANSWERS_3 : selectedTest.testNumber === 2 ? READING_ANSWERS_2 : READING_ANSWERS
     const activeAnswers = activeCustomTest ? activeCustomTest.answers : selectedTest.testNumber === 19 ? READING_ANSWERS_19 : selectedTest.testNumber === 22 ? READING_ANSWERS_21_T2 : selectedTest.testNumber === 21 ? READING_ANSWERS_21 : selectedTest.testNumber === 4 ? READING_ANSWERS_4 : selectedTest.testNumber === 3 ? READING_ANSWERS_3 : selectedTest.testNumber === 2 ? READING_ANSWERS_2 : READING_ANSWERS
     return markAnswers(activeAnswers, answers, readingPairs(selectedTest.testNumber))
   }, [answers, selectedTest.testNumber, activeCustomTest])
@@ -2759,7 +2757,6 @@ export default function PracticeTest() {
     }
     savedResultKey.current = ''
     setAnswers({})
-    const activeReadingPassages = selectedTest.testNumber === 4 ? READING_PASSAGES_4 : selectedTest.testNumber === 3 ? READING_PASSAGES_3 : selectedTest.testNumber === 2 ? READING_PASSAGES_2 : READING_PASSAGES
     const activeReadingPassages = selectedTest.testNumber === 19 ? READING_PASSAGES_19 : selectedTest.testNumber === 22 ? READING_PASSAGES_21_T2 : selectedTest.testNumber === 21 ? READING_PASSAGES_21 : selectedTest.testNumber === 4 ? READING_PASSAGES_4 : selectedTest.testNumber === 3 ? READING_PASSAGES_3 : selectedTest.testNumber === 2 ? READING_PASSAGES_2 : READING_PASSAGES
     const partStart = selectedTest.part
       ? selectedTest.type === 'Reading'
@@ -3132,8 +3129,6 @@ export default function PracticeTest() {
     const displayedBand = isListening ? listeningBand(projectedListeningScore) : readingBand(projectedReadingScore)
     const correctAnswers = isListening ? listeningScore : readingScore
 
-    const activePassages = activeCustomTest ? activeCustomTest.passages : selectedTest.testNumber === 22 ? READING_PASSAGES_21_T2 : selectedTest.testNumber === 21 ? READING_PASSAGES_21 : selectedTest.testNumber === 4 ? READING_PASSAGES_4 : selectedTest.testNumber === 3 ? READING_PASSAGES_3 : selectedTest.testNumber === 2 ? READING_PASSAGES_2 : READING_PASSAGES
-    const activeAnswers = activeCustomTest ? activeCustomTest.answers : selectedTest.testNumber === 22 ? READING_ANSWERS_21_T2 : selectedTest.testNumber === 21 ? READING_ANSWERS_21 : selectedTest.testNumber === 4 ? READING_ANSWERS_4 : selectedTest.testNumber === 3 ? READING_ANSWERS_3 : selectedTest.testNumber === 2 ? READING_ANSWERS_2 : READING_ANSWERS
     const activePassages = activeCustomTest ? activeCustomTest.passages : selectedTest.testNumber === 19 ? READING_PASSAGES_19 : selectedTest.testNumber === 22 ? READING_PASSAGES_21_T2 : selectedTest.testNumber === 21 ? READING_PASSAGES_21 : selectedTest.testNumber === 4 ? READING_PASSAGES_4 : selectedTest.testNumber === 3 ? READING_PASSAGES_3 : selectedTest.testNumber === 2 ? READING_PASSAGES_2 : READING_PASSAGES
     const activeAnswers = activeCustomTest ? activeCustomTest.answers : selectedTest.testNumber === 19 ? READING_ANSWERS_19 : selectedTest.testNumber === 22 ? READING_ANSWERS_21_T2 : selectedTest.testNumber === 21 ? READING_ANSWERS_21 : selectedTest.testNumber === 4 ? READING_ANSWERS_4 : selectedTest.testNumber === 3 ? READING_ANSWERS_3 : selectedTest.testNumber === 2 ? READING_ANSWERS_2 : READING_ANSWERS
 
