@@ -60,7 +60,8 @@ export default function Layout() {
   useEffect(() => {
     setMobileOpen(false)
     setAccountOpen(false)
-  }, [location.pathname])
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
+  }, [location.pathname, location.search])
 
   const signOut = () => {
     logout()
