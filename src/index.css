@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Manrope:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Manrope:wght@300;400;500;600;700;800&family=Roboto+Mono:wght@400;500;600&display=swap');
 @import 'tailwindcss';
 
 /* Dark theme is switched with data-theme="dark" on <html> (see src/lib/theme.ts) */
@@ -17,7 +17,9 @@
 
   --font-sans: 'Manrope', system-ui, sans-serif;
   --font-plex: 'Manrope', system-ui, sans-serif;
-  --font-mono: 'IBM Plex Mono', monospace;
+  --font-mono: 'Roboto Mono', monospace;
+  --text-xs: 0.8125rem;
+  --text-sm: 0.9375rem;
 
   --radius-card: 4px;
   --radius-sm: 3px;
@@ -411,7 +413,7 @@ textarea::placeholder {
 ::-webkit-scrollbar-thumb:hover { background: var(--t-subtle, #94A3B8); }
 
 /* Mono helper */
-.mono { font-family: 'IBM Plex Mono', monospace; }
+.mono { font-family: 'Roboto Mono', monospace; }
 .plex { font-family: 'Manrope', sans-serif; }
 
 /* Blueprint divider */
@@ -423,8 +425,8 @@ textarea::placeholder {
 /* Prose label */
 .label-tag {
   display: inline-flex; align-items: center; gap: 6px;
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 10px; font-weight: 600;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 11px; font-weight: 600;
   letter-spacing: 0.12em; text-transform: uppercase;
   color: var(--t-subtle, #334155);
 }

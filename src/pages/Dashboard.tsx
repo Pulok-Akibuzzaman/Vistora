@@ -41,10 +41,10 @@ function BandArc({ score, target }: { score: number | null; target: number }) {
         <path d={arcPath(startAngle, scoreAngle, r)} fill="none" stroke="#DC2626" strokeWidth="7" strokeLinecap="round" />
       )}
       <path d={arcPath(scoreAngle, targetAngle, r)} fill="none" className="stroke-electric-dim" strokeWidth="3" strokeLinecap="round" strokeDasharray="2 3" />
-      <text x={cx} y={cy - 4} textAnchor="middle" fontSize={score !== null ? 18 : 16} fontWeight="700" className="fill-ink" fontFamily="IBM Plex Mono">
+      <text x={cx} y={cy - 4} textAnchor="middle" fontSize={score !== null ? 18 : 16} fontWeight="700" className="fill-ink" fontFamily="Roboto Mono">
         {score !== null ? score.toFixed(1) : '—'}
       </text>
-      <text x={cx} y={cy + 10} textAnchor="middle" fontSize="7" className="fill-subtle" fontFamily="IBM Plex Mono">
+      <text x={cx} y={cy + 10} textAnchor="middle" fontSize="7" className="fill-subtle" fontFamily="Roboto Mono">
         {score !== null ? '/ 9.0' : 'No Attempts'}
       </text>
       <text x={cx} y={cy + 22} textAnchor="middle" fontSize="6.5" className="fill-muted" fontFamily="Inter, sans-serif">
