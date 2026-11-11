@@ -4,13 +4,46 @@ import { useAuth } from '../lib/authContext'
 import { themeText } from '../lib/theme'
 
 type DocType = 'cv' | 'sop' | 'ps' | 'cl'
+type DocumentIconType = 'cv' | 'sop' | 'ps' | 'cl'
 
-const DOC_TYPES: { id: DocType; label: string; desc: string; icon: string }[] = [
-  { id: 'cv', label: 'Curriculum Vitae', desc: 'Academic / professional CV for university or visa applications', icon: '◈' },
-  { id: 'sop', label: 'Statement of Purpose', desc: 'Graduate school SOP tailored to your target program', icon: '✦' },
-  { id: 'ps', label: 'Personal Statement', desc: 'Undergraduate or scholarship personal statement', icon: '◎' },
-  { id: 'cl', label: 'Cover Letter', desc: 'Professional cover letter for job or internship applications', icon: '▣' },
+const DOC_TYPES: { id: DocType; label: string; desc: string; icon: DocumentIconType }[] = [
+  { id: 'cv', label: 'Curriculum Vitae', desc: 'Showcase your education, skills, and experience for applications.', icon: 'cv' },
+  { id: 'sop', label: 'Statement of Purpose', desc: 'Explain your academic goals and why a program is right for you.', icon: 'sop' },
+  { id: 'ps', label: 'Personal Statement', desc: 'Share your story and motivation for a course or scholarship.', icon: 'ps' },
+  { id: 'cl', label: 'Cover Letter', desc: 'Introduce yourself and connect your experience to a role.', icon: 'cl' },
 ]
+
+function DocumentIcon({ type, active }: { type: DocumentIconType; active: boolean }) {
+  const stroke = active ? '#FFFFFF' : '#DC2626'
+  return (
+    <svg aria-hidden="true" className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke={stroke} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      {type === 'cv' && (
+        <>
+          <path d="M6 3.75h8l4 4V20.25H6z" />
+          <path d="M14 3.75v4h4M9 12h6M9 15h6M9 18h3" />
+        </>
+      )}
+      {type === 'sop' && (
+        <>
+          <path d="m3.5 9 8.5-4 8.5 4-8.5 4z" />
+          <path d="M6.5 11.2v4.1c2.8 2 8.2 2 11 0v-4.1M20.5 9v5" />
+        </>
+      )}
+      {type === 'ps' && (
+        <>
+          <circle cx="12" cy="8" r="3" />
+          <path d="M5.5 20c.7-3.1 3-5 6.5-5s5.8 1.9 6.5 5M18.5 4.5l1 1M20 3l1 1" />
+        </>
+      )}
+      {type === 'cl' && (
+        <>
+          <rect x="4" y="6" width="16" height="13" rx="1.5" />
+          <path d="m4.5 8 7.5 5 7.5-5M8 3.5h8" />
+        </>
+      )}
+    </svg>
+  )
+}
 
 const FORM_FIELDS: Record<DocType, { label: string; key: string; type: 'text' | 'textarea' | 'select'; options?: string[] }[]> = {
   cv: [
@@ -616,10 +649,16 @@ export default function DocGenerator() {
       </p>
 
       {/* Doc type selector */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6 no-print">
+      <div className="mb-3 no-print">
+        <div className="text-sm font-semibold text-ink plex">What would you like to create?</div>
+        <div className="mt-1 text-xs text-muted">Choose a document type to start with the right structure and prompts.</div>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6 no-print">
         {DOC_TYPES.map(d => (
           <button
             key={d.id}
+            type="button"
+            aria-pressed={docType === d.id}
             onClick={() => {
               setDocType(d.id)
               setIsGenerated(false)
@@ -628,17 +667,36 @@ export default function DocGenerator() {
               setDocSource('DOCUMENT PREVIEW')
               setError('')
             }}
-            className={`text-left p-4 border-2 transition-all ${
-              docType === d.id ? 'border-[#DC2626] bg-electric-soft' : 'border-divider bg-surface hover:border-line-strong'
+            className={`group flex min-h-[204px] flex-col text-left p-5 border transition-all ${
+              docType === d.id
+                ? 'border-[#DC2626] bg-electric-soft shadow-sm'
+                : 'border-divider bg-surface hover:border-line-strong hover:shadow-sm'
             }`}
             style={{ borderRadius: 4 }}
           >
-            <span className="text-lg mb-2 block" style={{ color: themeText(docType === d.id ? '#DC2626' : '#94A3B8') }}>
-              {d.icon}
-            </span>
-            <div className="text-[13px] font-semibold text-ink plex mb-0.5">{d.label}</div>
-            <div className="text-[11px] text-subtle" style={{ fontFamily: 'Inter, sans-serif' }}>
+            <div className="flex items-start gap-3">
+              <span
+                className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-md ${
+                docType === d.id ? 'bg-[#DC2626] text-white' : 'bg-surface-2 text-subtle group-hover:bg-electric-soft group-hover:text-accent'
+                }`}
+                style={{ color: docType === d.id ? undefined : themeText('#64748B') }}
+              >
+                <DocumentIcon type={d.icon} active={docType === d.id} />
+              </span>
+              <div className="min-w-0 flex-1 pt-1">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="text-base font-bold leading-5 text-ink plex">{d.label}</div>
+                  {docType === d.id && <span className="shrink-0 text-sm font-bold leading-5 text-accent" aria-hidden="true">✓</span>}
+                </div>
+              </div>
+            </div>
+            <div className="mt-4 text-xs leading-5 text-subtle" style={{ fontFamily: 'Inter, sans-serif' }}>
               {d.desc}
+            </div>
+            <div className={`mt-auto pt-5 text-[11px] font-semibold transition-colors ${
+              docType === d.id ? 'text-accent' : 'text-muted group-hover:text-accent'
+            }`}>
+              {docType === d.id ? 'Selected' : 'Use this template'} <span aria-hidden="true">→</span>
             </div>
           </button>
         ))}
