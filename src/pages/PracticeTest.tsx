@@ -1086,7 +1086,7 @@ function ReadingExam({ answers, setAnswers, currentQ, setCurrentQ, timeLeft, par
   }, [currentQuestionObj])
 
   return (
-    <main className="fixed inset-x-0 bottom-0 top-14 z-30 flex flex-col bg-surface">
+    <main className="reading-test-shell fixed inset-x-0 bottom-0 top-14 z-30 flex flex-col bg-surface">
       <header className="flex min-h-14 items-center justify-between border-b border-divider bg-surface px-4">
         <div className="flex items-center gap-5">
           <div className="border-r border-divider pr-5 font-plex text-2xl font-bold tracking-tight text-accent">IELTS</div>
@@ -2438,6 +2438,14 @@ export default function PracticeTest() {
   const [speakingEval, setSpeakingEval] = useState<SpeakingEvaluationResult | null>(null)
   const [speakingLoading, setSpeakingLoading] = useState(false)
   const [speakingError, setSpeakingError] = useState('')
+
+  useEffect(() => {
+    const readingTestActive = stage === 'test' && (selectedTest.type === 'Reading' || (selectedTest.type === 'Full Test' && fullModule === 'Reading'))
+    document.body.classList.toggle('reading-test-active', readingTestActive)
+    return () => {
+      document.body.classList.remove('reading-test-active')
+    }
+  }, [stage, selectedTest.type, fullModule])
 
   useEffect(() => {
     checkBackendHealth().then(status => {

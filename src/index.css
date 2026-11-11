@@ -257,6 +257,14 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+body.reading-test-active .site-chrome {
+  display: none;
+}
+
+body.reading-test-active .reading-test-shell {
+  top: 0;
+}
+
 ::selection {
   background: var(--t-electric-dim, #FEE2E2);
   color: var(--t-ink, #0F172A);

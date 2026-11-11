@@ -70,10 +70,10 @@ export default function Layout() {
   return (
     <div className="min-h-screen flex flex-col bg-paper-grid">
       {/* Top accent bar */}
-      <div className="h-[2px] bg-gradient-to-r from-[#DC2626] via-[#BE123C] to-[#DC2626] fixed top-0 left-0 right-0 z-50" />
+      <div className="site-chrome h-[2px] bg-gradient-to-r from-[#DC2626] via-[#BE123C] to-[#DC2626] fixed top-0 left-0 right-0 z-50" />
 
       {/* Header */}
-      <header className={`fixed top-[2px] left-0 right-0 z-40 border-b ${isDarkHeader ? 'bg-[#0F172A]/95 border-[#1E293B]' : 'bg-surface/95 border-divider'} backdrop-blur-sm`}>
+      <header className={`site-chrome fixed top-[2px] left-0 right-0 z-40 border-b ${isDarkHeader ? 'bg-[#0F172A]/95 border-[#1E293B]' : 'bg-surface/95 border-divider'} backdrop-blur-sm`}>
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           {/* Wordmark */}
           <NavLink to="/" className="flex items-center gap-2.5 group">
