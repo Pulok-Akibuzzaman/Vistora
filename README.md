@@ -12,7 +12,7 @@
 > **Official Repository:** [https://github.com/Pulok-Akibuzzaman/Vistora](https://github.com/Pulok-Akibuzzaman/Vistora)  
 > **Academic Institution:** East West University (EWU), Dhaka, Bangladesh  
 > **Department:** Department of Computer Science & Engineering (CSE)  
-> **Course:** CSE412 — Software Engineering / Systems Project  
+> **Course:** CSE412 — Software Engineering 
 
 ---
 
@@ -106,7 +106,7 @@ Preparing for the official computer-delivered IELTS exam can be stressful and ex
    ```
 
 4. **Open in browser:**
-   Navigate to `http://localhost:3000` (or the port indicated in your terminal).
+   Navigate to `http://localhost:8443` (or the port indicated in your terminal).
 
 ### Production Build
 To generate an optimized production bundle:
