@@ -1,4 +1,5 @@
 import { NavLink } from 'react-router'
+import Icon from '../components/Icon'
 import { FormEvent, useEffect, useState } from 'react'
 import { useAuth } from '../lib/authContext'
 import {
@@ -40,14 +41,17 @@ function BandArc({ score, target }: { score: number | null; target: number }) {
       {score !== null && score > 0 && (
         <path d={arcPath(startAngle, scoreAngle, r)} fill="none" stroke="#DC2626" strokeWidth="7" strokeLinecap="round" />
       )}
-      <path d={arcPath(scoreAngle, targetAngle, r)} fill="none" className="stroke-electric-dim" strokeWidth="3" strokeLinecap="round" strokeDasharray="2 3" />
+      {/* Remaining gap to the target; skipped once the score has reached it, otherwise the arc would be drawn backwards */}
+      {targetAngle > scoreAngle && (
+        <path d={arcPath(scoreAngle, targetAngle, r)} fill="none" className="stroke-electric-dim" strokeWidth="3" strokeLinecap="round" strokeDasharray="2 3" />
+      )}
       <text x={cx} y={cy - 4} textAnchor="middle" fontSize={score !== null ? 18 : 16} fontWeight="700" className="fill-ink" fontFamily="Roboto Mono">
         {score !== null ? score.toFixed(1) : '—'}
       </text>
       <text x={cx} y={cy + 10} textAnchor="middle" fontSize="7" className="fill-subtle" fontFamily="Roboto Mono">
         {score !== null ? '/ 9.0' : 'No Attempts'}
       </text>
-      <text x={cx} y={cy + 22} textAnchor="middle" fontSize="6.5" className="fill-muted" fontFamily="Inter, sans-serif">
+      <text x={cx} y={cy + 22} textAnchor="middle" fontSize="6.5" className="fill-muted" fontFamily="Manrope, sans-serif">
         {score !== null ? 'Overall' : 'Diagnostic Pending'}
       </text>
     </svg>
@@ -72,9 +76,8 @@ export default function Dashboard() {
   // Load live data from backend
   useEffect(() => {
     const loadData = () => {
-      fetchDashboardStats(user?.email).then(data => {
-        if (data) setStats(data)
-      }).catch(() => {})
+      // Always apply the response: null means there are no results left, so old stats must be cleared
+      fetchDashboardStats(user?.email, user?.targetBand).then(setStats).catch(() => {})
 
       fetchTasks(user?.id).then(setTasks).catch(() => {})
 
@@ -93,7 +96,7 @@ export default function Dashboard() {
       window.removeEventListener('vistora:result-saved', loadData)
       window.removeEventListener('storage', loadData)
     }
-  }, [user?.email, user?.id])
+  }, [user?.email, user?.id, user?.targetBand])
 
   const addTask = async (event: FormEvent) => {
     event.preventDefault()
@@ -133,7 +136,7 @@ export default function Dashboard() {
       ? scoredAttempts.reduce((s, r) => s + (r.overallBand || 0), 0) / scoredAttempts.length
       : null
   const targetBand = stats?.targetBand ?? (user?.targetBand || 8.0)
-  const skillScores = stats?.skillScores ?? DEFAULT_SKILLS
+  const skillScores = stats?.skillScores ?? DEFAULT_SKILLS.map(skill => ({ ...skill, target: targetBand }))
   const activities = stats?.recentActivities ?? []
   const weeklyProgress = stats?.weeklyProgress ?? [
     { day: 'Mon', mins: 65 }, { day: 'Tue', mins: 90 }, { day: 'Wed', mins: 45 },
@@ -150,7 +153,7 @@ export default function Dashboard() {
         <div>
           <div className="label-tag mb-1">STUDENT DASHBOARD · ACADEMIC PREPARATION</div>
           <h1 className="text-2xl font-bold text-ink plex tracking-tight">Welcome back, {firstName}</h1>
-          <p className="text-sm text-muted mt-0.5" style={{ fontFamily: 'Inter, sans-serif' }}>
+          <p className="text-sm text-muted mt-0.5">
             Current Overall Band:{' '}
             <span className="mono text-accent font-semibold">
               {overallBand !== null ? overallBand.toFixed(1) : '— (No attempts yet)'}
@@ -165,21 +168,21 @@ export default function Dashboard() {
             className="bg-[#DC2626] text-white text-xs font-semibold px-4 py-2.5 hover:bg-[#B91C1C] transition-colors shadow-sm"
             style={{ fontFamily: 'IBM Plex Sans, sans-serif', borderRadius: 4 }}
           >
-            🎧 Start Listening Practice
+            <Icon name="headphones" /> Start Listening Practice
           </NavLink>
           <NavLink
             to="/writing"
             className="bg-navy text-white text-xs font-semibold px-4 py-2.5 hover:bg-navy-mid transition-colors shadow-sm"
             style={{ fontFamily: 'IBM Plex Sans, sans-serif', borderRadius: 4 }}
           >
-            ✍️ AI Essay Evaluation
+            <Icon name="pen" /> AI Essay Evaluation
           </NavLink>
           <NavLink
             to="/documents"
             className="border border-divider bg-surface text-ink text-xs font-semibold px-4 py-2.5 hover:border-line-strong hover:bg-surface-2 transition-colors shadow-sm"
             style={{ fontFamily: 'IBM Plex Sans, sans-serif', borderRadius: 4 }}
           >
-            📄 AI Doc Generator
+            <Icon name="file" /> AI Doc Generator
           </NavLink>
         </div>
       </div>
@@ -187,12 +190,12 @@ export default function Dashboard() {
       {/* Top row: band + skills */}
       <div className="grid grid-cols-1 lg:grid-cols-[auto_1fr] gap-4 mb-4">
         {/* Overall Band card */}
-        <div className="bg-surface border border-divider p-6 w-64 corner-mark" style={{ borderRadius: 4 }}>
+        <div className="bg-surface border border-divider p-6 w-full lg:w-64 corner-mark" style={{ borderRadius: 4 }}>
           <div className="label-tag mb-4">OVERALL BAND SCORE</div>
           <div className="flex flex-col items-center">
             <BandArc score={overallBand} target={targetBand} />
             <div className="mt-3 text-center">
-              <div className="text-[11px] text-subtle" style={{ fontFamily: 'Inter, sans-serif' }}>
+              <div className="text-[11px] text-subtle">
                 Target: <span className="mono text-accent font-medium">{targetBand.toFixed(1)}</span>
               </div>
               <div className="text-[11px] text-subtle mt-0.5">
@@ -227,21 +230,21 @@ export default function Dashboard() {
             </div>
             <span className="mono text-[10px] text-subtle">{examResults.length} test records evaluated</span>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-0 divide-x divide-y divide-divider-soft">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-divider-soft">
             {skillScores.map(s => {
               const hasScore = s.hasAttempts && typeof s.score === 'number' && s.score > 0
               const scoreVal = hasScore ? (s.score as number) : 0
               const linkPath = s.skill === 'Listening' ? '/practice'
                              : s.skill === 'Reading' ? '/practice'
                              : s.skill === 'Writing' ? '/writing'
-                             : '/results'
+                             : '/practice'
               const linkAction = s.skill === 'Listening' ? 'Start listening test →'
                                : s.skill === 'Reading' ? 'Start reading test →'
                                : s.skill === 'Writing' ? 'Evaluate an essay →'
                                : 'Take speaking interview →'
 
               return (
-                <div key={s.skill} className="p-6 flex flex-col justify-between">
+                <div key={s.skill} className="bg-surface p-6 flex flex-col justify-between">
                   <div>
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-2">
@@ -287,7 +290,7 @@ export default function Dashboard() {
                           }}
                         />
                       </div>
-                      <span className="text-[10px] text-subtle" style={{ fontFamily: 'Inter, sans-serif' }}>
+                      <span className="text-[10px] text-subtle">
                         {hasScore ? (
                           scoreVal < s.target
                             ? `+${(s.target - scoreVal).toFixed(1)} needed`
@@ -316,7 +319,7 @@ export default function Dashboard() {
               <span className="w-1 h-4 bg-[#BE123C]" style={{ borderRadius: 1 }} />
               <span className="text-sm font-semibold text-ink plex">Recent Activity & Submissions</span>
             </div>
-            <NavLink to="/results" className="text-[11px] text-accent hover:underline" style={{ fontFamily: 'Inter, sans-serif' }}>
+            <NavLink to="/results" className="text-[11px] text-accent hover:underline">
               View full report →
             </NavLink>
           </div>
@@ -457,7 +460,7 @@ export default function Dashboard() {
               placeholder="e.g. Listen to Cambridge 18 Test 2 Part 3"
               rows={3}
               className="mt-3 w-full resize-none border border-divider bg-surface-2 px-3 py-2.5 text-[12px] leading-relaxed text-ink outline-none focus:border-[#DC2626]"
-              style={{ borderRadius: 3, fontFamily: 'Inter, sans-serif' }}
+              style={{ borderRadius: 3 }}
             />
             <button
               type="submit"
@@ -531,7 +534,11 @@ export default function Dashboard() {
                     </div>
                   </div>
                   <span className="mono text-xs font-bold text-accent">
-                    {result.overallBand !== null ? `Band ${result.overallBand}` : `${result.correctAnswers}/${result.totalQuestions}`}
+                    {result.overallBand !== null
+                      ? `Band ${result.overallBand}`
+                      : result.correctAnswers !== undefined && result.totalQuestions
+                        ? `${result.correctAnswers}/${result.totalQuestions}`
+                        : 'Pending'}
                   </span>
                 </button>
               ))}

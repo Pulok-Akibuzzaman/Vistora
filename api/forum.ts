@@ -429,6 +429,13 @@ export default async function handler(req: any, res: any) {
       return res.status(400).json({ success: false, error: insertErr.message })
     }
 
+    // The response reports one upvote from the author, so record it or it is gone on the next fetch
+    if (authorId) {
+      await supabaseAdmin
+        .from('forum_upvotes')
+        .insert({ thread_id: newRow.id, user_id: authorId })
+    }
+
     const a = newRow.author || {}
     const formatted = {
       id: newRow.id,

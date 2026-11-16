@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import Icon from '../components/Icon'
 import {
   fetchForumThreads,
   createForumThreadApi,
@@ -251,21 +252,21 @@ export default function CommunityForum() {
                 if (isAdminPinned) {
                   return (
                     <span className="mono text-[9px] px-2 py-0.5 bg-amber-50 text-amber-800 border border-amber-200 rounded font-bold">
-                      ADMIN PINNED 📌
+                      ADMIN PINNED <Icon name="pin" />
                     </span>
                   )
                 }
                 if (isTopVoted) {
                   return (
                     <span className="mono text-[9px] px-2 py-0.5 bg-rose-50 text-rose-800 border border-rose-200 rounded font-bold">
-                      TOP VOTED 📌
+                      TOP VOTED <Icon name="pin" />
                     </span>
                   )
                 }
                 if (activeThread.pinned) {
                   return (
                     <span className="mono text-[9px] px-2 py-0.5 bg-amber-50 text-amber-800 border border-amber-200 rounded font-bold">
-                      PINNED 📌
+                      PINNED <Icon name="pin" />
                     </span>
                   )
                 }
@@ -283,11 +284,11 @@ export default function CommunityForum() {
                   className={`mono text-[10px] px-2.5 py-0.5 rounded transition-all flex items-center gap-1 font-semibold cursor-pointer border ${
                     activeThread.adminPinned || activeThread.pinned
                       ? 'bg-amber-100 text-amber-900 border-amber-300 hover:bg-amber-200'
-                      : 'text-amber-700 bg-amber-50 border-amber-200 hover:bg-amber-100'
+                      : 'text-amber-800 bg-amber-50 border-amber-200 hover:bg-amber-100'
                   }`}
                   title="Admin action: Pin or unpin this thread"
                 >
-                  📌 {activeThread.adminPinned || activeThread.pinned ? 'Unpin Thread' : 'Pin Thread'}
+                  <Icon name="pin" /> {activeThread.adminPinned || activeThread.pinned ? 'Unpin Thread' : 'Pin Thread'}
                 </button>
               )}
               {canDeleteForumItem(activeThread, user) && (
@@ -297,7 +298,7 @@ export default function CommunityForum() {
                   className="mono text-[10px] text-rose-600 hover:text-white hover:bg-rose-600 border border-rose-300 px-2.5 py-0.5 rounded transition-all flex items-center gap-1 font-semibold cursor-pointer shadow-xs ml-1"
                   title={user?.role?.toLowerCase() === 'admin' ? 'Admin: Delete this thread' : 'Delete your thread'}
                 >
-                  🗑️ Delete Thread
+                  <Icon name="trash" /> Delete Thread
                 </button>
               )}
             </div>
@@ -317,7 +318,7 @@ export default function CommunityForum() {
                 ▲ Upvote ({activeThread.upvotes || 0})
               </button>
               <span className="h-4 w-px bg-divider mx-1" />
-              <span className={`font-mono text-xs font-extrabold px-1.5 ${netScore > 0 ? 'text-emerald-700' : netScore < 0 ? 'text-rose-600' : 'text-ink'}`}>
+              <span className={`font-mono text-xs font-extrabold px-1.5 ${netScore > 0 ? 'text-emerald-800' : netScore < 0 ? 'text-rose-600' : 'text-ink'}`}>
                 {netScore > 0 ? `+${netScore}` : netScore}
               </span>
               <span className="h-4 w-px bg-divider mx-1" />
@@ -348,7 +349,7 @@ export default function CommunityForum() {
               </span>
             </div>
           </div>
-          <p className="text-[13px] text-graphite leading-[1.8] whitespace-pre-line" style={{ fontFamily: 'Inter, sans-serif' }}>
+          <p className="text-[13px] text-graphite leading-[1.8] whitespace-pre-line">
             {activeThread.content || activeThread.preview}
           </p>
           <div className="flex items-center gap-2 mt-4">
@@ -383,7 +384,7 @@ export default function CommunityForum() {
                       <span className="text-xs font-medium text-ink plex">{rep.author}</span>
                       <span className="mono text-[10px] text-subtle">{rep.time}</span>
                     </div>
-                    <p className="text-[12px] text-graphite leading-relaxed whitespace-pre-line" style={{ fontFamily: 'Inter, sans-serif' }}>
+                    <p className="text-[12px] text-graphite leading-relaxed whitespace-pre-line">
                       {rep.content}
                     </p>
                   </div>
@@ -394,7 +395,7 @@ export default function CommunityForum() {
                       className="mono text-[10px] text-rose-600 hover:text-rose-800 hover:bg-rose-50 border border-rose-200 px-2 py-0.5 rounded transition-colors cursor-pointer flex-shrink-0 flex items-center gap-1"
                       title={user?.role?.toLowerCase() === 'admin' ? 'Admin: Delete this reply' : 'Delete your reply'}
                     >
-                      🗑️ Delete
+                      <Icon name="trash" /> Delete
                     </button>
                   )}
                 </div>
@@ -413,7 +414,7 @@ export default function CommunityForum() {
               onChange={e => setReplyText(e.target.value)}
               placeholder={`Write a helpful reply as ${user?.name || 'Student Candidate'}...`}
               className="w-full border border-divider focus:border-[#DC2626] px-4 py-3 text-[12px] outline-none resize-none bg-surface rounded"
-              style={{ fontFamily: 'Inter, sans-serif', minHeight: 90 }}
+              style={{ minHeight: 90 }}
               required
             />
             <div className="flex justify-between items-center mt-2">
@@ -441,7 +442,7 @@ export default function CommunityForum() {
         <div>
           <div className="label-tag mb-1">COMMUNITY FORUM · LIVE PEER LEARNING</div>
           <h1 className="text-2xl font-bold text-ink plex tracking-tight">IELTS Discussion Forum</h1>
-          <p className="text-sm text-muted mt-0.5" style={{ fontFamily: 'Inter, sans-serif' }}>
+          <p className="text-sm text-muted mt-0.5">
             Open community discussions: ask questions, share preparation strategies, upvote or downvote helpful insights, and reply to fellow candidates.
           </p>
         </div>
@@ -456,8 +457,8 @@ export default function CommunityForum() {
 
       {/* New Thread Modal / Form */}
       {newPostOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs">
-          <div className="w-full max-w-xl rounded-sm border border-divider bg-surface p-6 shadow-2xl">
+        <div onClick={() => setNewPostOpen(false)} className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs">
+          <div onClick={event => event.stopPropagation()} className="max-h-[calc(100dvh-2rem)] w-full max-w-xl overflow-y-auto rounded-sm border border-divider bg-surface p-6 shadow-2xl">
             <div className="flex items-center justify-between border-b border-divider pb-3">
               <h2 className="font-plex text-lg font-bold text-ink">Start a Community Discussion Thread</h2>
               <button onClick={() => setNewPostOpen(false)} className="text-graphite hover:text-ink text-sm font-mono cursor-pointer">✕</button>
@@ -584,21 +585,21 @@ export default function CommunityForum() {
                       if (isAdminPinned) {
                         return (
                           <span className="mono text-[9px] px-2 py-0.5 bg-amber-50 text-amber-800 border border-amber-200 rounded font-bold">
-                            ADMIN PINNED 📌
+                            ADMIN PINNED <Icon name="pin" />
                           </span>
                         )
                       }
                       if (isTopVoted) {
                         return (
                           <span className="mono text-[9px] px-2 py-0.5 bg-rose-50 text-rose-800 border border-rose-200 rounded font-bold">
-                            TOP VOTED 📌
+                            TOP VOTED <Icon name="pin" />
                           </span>
                         )
                       }
                       if (thread.pinned) {
                         return (
                           <span className="mono text-[9px] px-2 py-0.5 bg-amber-50 text-amber-800 border border-amber-200 rounded font-bold">
-                            PINNED 📌
+                            PINNED <Icon name="pin" />
                           </span>
                         )
                       }
@@ -633,11 +634,11 @@ export default function CommunityForum() {
                         className={`mono text-[10px] px-2 py-0.5 rounded transition-all flex items-center gap-1 font-semibold cursor-pointer border ml-auto sm:ml-2 shadow-xs ${
                           thread.adminPinned || thread.pinned
                             ? 'bg-amber-100 text-amber-900 border-amber-300 hover:bg-amber-200'
-                            : 'text-amber-700 bg-amber-50 border-amber-200 hover:bg-amber-100'
+                            : 'text-amber-800 bg-amber-50 border-amber-200 hover:bg-amber-100'
                         }`}
                         title="Admin action: Pin or unpin this thread"
                       >
-                        📌 {thread.adminPinned || thread.pinned ? 'Unpin' : 'Pin'}
+                        <Icon name="pin" /> {thread.adminPinned || thread.pinned ? 'Unpin' : 'Pin'}
                       </button>
                     )}
                     {canDeleteForumItem(thread, user) && (
@@ -647,7 +648,7 @@ export default function CommunityForum() {
                         className="mono text-[10px] text-rose-600 hover:text-white hover:bg-rose-600 border border-rose-300 px-2 py-0.5 rounded transition-all flex items-center gap-1 font-semibold cursor-pointer ml-auto sm:ml-2 shadow-xs"
                         title={user?.role?.toLowerCase() === 'admin' ? 'Admin: Delete this thread' : 'Delete your thread'}
                       >
-                        🗑️ Delete
+                        <Icon name="trash" /> Delete
                       </button>
                     )}
                   </div>
@@ -671,7 +672,7 @@ export default function CommunityForum() {
                     >
                       ▲ {thread.upvotes || 0}
                     </button>
-                    <span className={`font-mono text-xs font-extrabold px-1.5 ${netScore > 0 ? 'text-emerald-700' : netScore < 0 ? 'text-rose-600' : 'text-ink'}`}>
+                    <span className={`font-mono text-xs font-extrabold px-1.5 ${netScore > 0 ? 'text-emerald-800' : netScore < 0 ? 'text-rose-600' : 'text-ink'}`}>
                       {netScore > 0 ? `+${netScore}` : netScore}
                     </span>
                     <button
@@ -689,7 +690,7 @@ export default function CommunityForum() {
                   </div>
 
                   <div className="mono text-xs text-muted flex items-center gap-1">
-                    💬 {thread.replies || thread.replyList?.length || 0} replies
+                    <Icon name="message" /> {thread.replies || thread.replyList?.length || 0} replies
                   </div>
                 </div>
               </div>

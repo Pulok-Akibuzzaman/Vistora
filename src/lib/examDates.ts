@@ -311,9 +311,11 @@ export function getLocalOfficialExamDates(filters: ExamDateFilters): OfficialExa
   const now = new Date()
   let list: OfficialExamDate[] = OFFICIAL_EXAM_SESSIONS.map((item) => {
     const d = new Date(now.getTime() + item.offsetDays * 24 * 60 * 60 * 1000)
+    // Build the date from local parts: toISOString() is UTC, which is still "yesterday" until 6 AM in Bangladesh
+    const localDate = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
     return {
-      id: `${item.id}-${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`,
-      date: d.toISOString().split('T')[0],
+      id: `${item.id}-${localDate}`,
+      date: localDate,
       time: item.time,
       city: item.city,
       venue: item.venue,

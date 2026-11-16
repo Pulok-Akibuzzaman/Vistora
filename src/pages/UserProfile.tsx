@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import Icon from '../components/Icon'
 import { NavLink } from 'react-router'
 import { useAuth } from '../lib/authContext'
 import { fetchResults, type StoredExamResult } from '../lib/api'
@@ -79,7 +80,7 @@ export default function UserProfile() {
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <h1 className="text-xl font-bold text-ink plex">{user?.name}</h1>
-                <div className="text-sm text-muted mt-0.5" style={{ fontFamily: 'Inter, sans-serif' }}>{user?.email}</div>
+                <div className="text-sm text-muted mt-0.5">{user?.email}</div>
                 <div className="flex flex-wrap items-center gap-2 mt-2">
                   <span className="mono text-[10px] text-muted border border-divider px-2 py-0.5" style={{ borderRadius: 2 }}>{user?.country || 'Bangladesh'}</span>
                   <span className="mono text-[10px] text-muted border border-divider px-2 py-0.5" style={{ borderRadius: 2 }}>{user?.institution || 'East West University'}</span>
@@ -94,7 +95,7 @@ export default function UserProfile() {
                 className="border border-divider text-ink font-semibold text-xs px-4 py-2 hover:bg-surface-2 transition-colors shadow-sm"
                 style={{ borderRadius: 3, fontFamily: 'IBM Plex Sans, sans-serif' }}
               >
-                ✏️ Edit Profile
+                <Icon name="pen" /> Edit Profile
               </button>
             </div>
 
@@ -119,8 +120,8 @@ export default function UserProfile() {
 
       {/* Edit Profile Modal */}
       {isEditing && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs">
-          <div className="w-full max-w-lg rounded-sm border border-divider bg-surface p-6 shadow-2xl">
+        <div onClick={() => setIsEditing(false)} className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs">
+          <div onClick={event => event.stopPropagation()} className="max-h-[calc(100dvh-2rem)] w-full max-w-lg overflow-y-auto rounded-sm border border-divider bg-surface p-6 shadow-2xl">
             <div className="flex items-center justify-between border-b border-divider pb-3">
               <h2 className="font-plex text-lg font-bold text-ink">Edit Your Profile</h2>
               <button onClick={() => setIsEditing(false)} className="text-graphite hover:text-ink text-sm font-mono">✕</button>
@@ -247,7 +248,7 @@ export default function UserProfile() {
                 { title: 'Band 8 Target Club', desc: `Targeting Band ${(user?.targetBand || 8.0).toFixed(1)} for international graduate entry`, earned: true },
               ].map(ach => (
                 <div key={ach.title} className={`p-3 border rounded-sm flex items-start gap-3 ${ach.earned ? 'border-emerald-300/80 bg-emerald-50/70' : 'border-divider bg-surface-2'}`}>
-                  <span className="text-lg">{ach.earned ? '🏆' : '🔒'}</span>
+                  <span className="text-lg"><Icon name={ach.earned ? 'trophy' : 'lock'} /></span>
                   <div>
                     <div className={`text-xs font-semibold ${ach.earned ? 'text-ink' : 'text-ink-2'}`}>{ach.title}</div>
                     <div className={`text-[11px] mt-0.5 ${ach.earned ? 'text-muted' : 'text-ink-4'}`}>{ach.desc}</div>
@@ -294,13 +295,13 @@ export default function UserProfile() {
           <div className="bg-surface border border-divider p-5 space-y-2.5" style={{ borderRadius: 4 }}>
             <div className="label-tag mb-2">QUICK ACTIONS</div>
             <NavLink to="/practice" className="block w-full py-2.5 px-3 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold text-center rounded transition-colors">
-              🎧 Start Cambridge Listening Test
+              <Icon name="headphones" /> Start Cambridge Listening Test
             </NavLink>
             <NavLink to="/writing" className="block w-full py-2.5 px-3 bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold text-center rounded transition-colors">
-              ✍️ AI Writing Evaluation
+              <Icon name="pen" /> AI Writing Evaluation
             </NavLink>
             <NavLink to="/documents" className="block w-full py-2.5 px-3 border border-divider hover:bg-surface-2 text-ink text-xs font-semibold text-center rounded transition-colors">
-              📄 Generate SOP / CV
+              <Icon name="file" /> Generate SOP / CV
             </NavLink>
           </div>
         </div>

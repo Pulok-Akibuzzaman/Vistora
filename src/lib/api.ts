@@ -565,6 +565,8 @@ export async function fetchResults(email?: string, userId?: string): Promise<Sto
         .order('created_at', { ascending: false })
 
       if (!error && data) {
+        // overall_band is NOT NULL, so a Writing attempt that is still awaiting evaluation is stored as 0
+        const isPendingWriting = (row: any) => row.test_type === 'Writing' && Number(row.overall_band) === 0
         supabaseResults = data.map((row: any) => ({
           id: row.id,
           userId: row.user_id,
@@ -573,13 +575,15 @@ export async function fetchResults(email?: string, userId?: string): Promise<Sto
           testTitle: row.test_title,
           testType: row.test_type,
           completedAt: row.created_at,
-          overallBand: row.overall_band !== null ? Number(row.overall_band) : null,
+          overallBand: row.overall_band !== null && !isPendingWriting(row) ? Number(row.overall_band) : null,
           skillBands: row.skill_bands || {},
           correctAnswers: row.correct_answers,
           totalQuestions: row.total_questions,
           userAnswers: row.user_answers || {},
           comment: row.feedback || '',
-          source: (row.feedback?.toLowerCase().includes('puku') || row.feedback?.toLowerCase().includes('ai')) ? 'AI' : 'Automatic',
+          source: isPendingWriting(row)
+            ? 'Pending AI'
+            : (row.feedback?.toLowerCase().includes('puku') || row.feedback?.toLowerCase().includes('ai')) ? 'AI' : 'Automatic',
         }))
       }
     }
@@ -647,7 +651,19 @@ export async function fetchResults(email?: string, userId?: string): Promise<Sto
   return combined
 }
 
-export async function saveExamResultApi(result: StoredExamResult): Promise<StoredExamResult> {
+// Saves that are still running, keyed by the result's local id, so the same attempt is never inserted twice
+const inFlightResultSaves = new Map<string, Promise<StoredExamResult>>()
+
+export function saveExamResultApi(result: StoredExamResult): Promise<StoredExamResult> {
+  const localId = result.id
+  const running = inFlightResultSaves.get(localId)
+  if (running) return running
+  const save = persistExamResult(result).finally(() => inFlightResultSaves.delete(localId))
+  inFlightResultSaves.set(localId, save)
+  return save
+}
+
+async function persistExamResult(result: StoredExamResult): Promise<StoredExamResult> {
   // 1. Immediately cache strictly in user-scoped localStorage
   if (result.userEmail) {
     try {
@@ -696,6 +712,8 @@ export async function saveExamResultApi(result: StoredExamResult): Promise<Store
         .single()
 
       if (!supabaseError && savedRow) {
+        // Remember the local id before swapping in the Supabase UUID, so the cached copy can be replaced
+        const localId = result.id
         result.id = savedRow.id
         result.userId = savedRow.user_id
 
@@ -705,7 +723,7 @@ export async function saveExamResultApi(result: StoredExamResult): Promise<Store
           const raw = window.localStorage.getItem(userKey)
           if (raw) {
             const list: StoredExamResult[] = JSON.parse(raw)
-            const updated = [result, ...list.filter(r => r.id !== result.id && r.id !== savedRow.id)].slice(0, 50)
+            const updated = [result, ...list.filter(r => r.id !== localId && r.id !== savedRow.id)].slice(0, 50)
             window.localStorage.setItem(userKey, JSON.stringify(updated))
           }
         }
@@ -765,7 +783,7 @@ export async function deleteExamResultApi(id: string, userEmail?: string): Promi
   }
 }
 
-export async function fetchDashboardStats(email?: string): Promise<DashboardStats | null> {
+export async function fetchDashboardStats(email?: string, targetBand?: number): Promise<DashboardStats | null> {
   try {
     const url = email ? `${API_BASE}/dashboard/stats?email=${encodeURIComponent(email)}` : `${API_BASE}/dashboard/stats`
     const res = await fetch(url, { signal: AbortSignal.timeout(1200) })
@@ -779,28 +797,57 @@ export async function fetchDashboardStats(email?: string): Promise<DashboardStat
       const scored = results.filter(r => typeof r.overallBand === 'number' && r.overallBand > 0)
       const avgBand = scored.length > 0
         ? Number((scored.reduce((acc, r) => acc + (r.overallBand || 0), 0) / scored.length).toFixed(1))
-        : 7.0
+        : 0
 
-      const skillScores: Record<string, number[]> = { Listening: [], Reading: [], Writing: [], Speaking: [] }
+      const skillTarget = typeof targetBand === 'number' && targetBand > 0 ? targetBand : 7.5
+      const bandsBySkill: Record<string, number[]> = { Reading: [], Listening: [], Writing: [], Speaking: [] }
       for (const r of results) {
         if (r.skillBands) {
           for (const [skill, val] of Object.entries(r.skillBands)) {
-            if (typeof val === 'number' && val > 0 && skillScores[skill]) {
-              skillScores[skill].push(val)
+            if (typeof val === 'number' && val > 0 && bandsBySkill[skill]) {
+              bandsBySkill[skill].push(val)
             }
           }
         }
       }
 
-      const skillBreakdown = Object.entries(skillScores).map(([skill, scores]) => ({
+      const averageBand = (scores: number[]) => Number((scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1))
+
+      const skillBreakdown = Object.entries(bandsBySkill).map(([skill, scores]) => ({
         skill,
-        band: scores.length > 0 ? Number((scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1)) : 7.0,
+        band: scores.length > 0 ? averageBand(scores) : 0,
         testsCount: scores.length,
       }))
 
+      // The dashboard reads skillScores and recentActivities, so build them from the same results
+      const skillScores = Object.entries(bandsBySkill).map(([skill, scores]) => ({
+        skill,
+        score: scores.length > 0 ? averageBand(scores) : null,
+        hasAttempts: scores.length > 0,
+        attemptsCount: scores.length,
+        target: skillTarget,
+        color: scores.length > 0 ? '#DC2626' : '#94A3B8',
+        bg: scores.length > 0 ? '#FEE2E2' : '#F1F5F9',
+      }))
+
+      const recentActivities = results.slice(0, 5).map(r => ({
+        id: r.id,
+        type: r.testType,
+        title: r.testTitle,
+        score: typeof r.overallBand === 'number'
+          ? `Band ${r.overallBand.toFixed(1)}`
+          : r.correctAnswers !== undefined && r.totalQuestions
+            ? `${r.correctAnswers}/${r.totalQuestions}`
+            : '—',
+        time: new Date(r.completedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        status: typeof r.overallBand === 'number' ? 'Completed' : 'Pending',
+      }))
+
       return {
+        skillScores,
+        recentActivities,
         overallBand: avgBand,
-        targetBand: 7.5,
+        targetBand: skillTarget,
         targetExamDate: '2026-11-15',
         daysUntilExam: 15,
         totalHoursStudied: Math.round(results.length * 1.8),
@@ -929,8 +976,8 @@ export async function fetchTasks(userId?: string): Promise<StudyTask[]> {
           id: Number(t.id),
           userId: t.user_id,
           title: t.title,
-          due: t.due || 'TODAY',
-          complete: Boolean(t.complete)
+          due: t.due_date ?? t.due ?? 'TODAY',
+          complete: Boolean(t.is_completed ?? t.complete)
         }))
         if (typeof window !== 'undefined') {
           window.localStorage.setItem(getTaskKey(targetUserId), JSON.stringify(mapped))
@@ -967,10 +1014,11 @@ export async function createTask(title: string, due = 'TODAY', userId?: string):
       const { data, error } = await supabase
         .from('study_tasks')
         .insert({
+          // Column names follow supabase/schema.sql (due_date, is_completed)
           user_id: sessionUserId,
           title,
-          due,
-          complete: false,
+          due_date: due,
+          is_completed: false,
         })
         .select()
         .single()
@@ -980,7 +1028,7 @@ export async function createTask(title: string, due = 'TODAY', userId?: string):
           id: Number(data.id),
           userId: data.user_id,
           title: data.title,
-          due: data.due || due,
+          due: data.due_date ?? data.due ?? due,
           complete: false,
         }
         try {
@@ -1009,7 +1057,7 @@ export async function createTask(title: string, due = 'TODAY', userId?: string):
 
 export async function toggleTaskComplete(id: number, complete: boolean, userId?: string): Promise<StudyTask> {
   try {
-    await supabase.from('study_tasks').update({ complete }).eq('id', id)
+    await supabase.from('study_tasks').update({ is_completed: complete }).eq('id', id)
   } catch { }
 
   try {
@@ -1909,14 +1957,17 @@ export async function voteForumThreadApi(
     window.localStorage.setItem(FORUM_STORAGE_KEY, JSON.stringify(threads))
   } catch { }
 
-  // Also try updating backend / Supabase
+  // Sync with the forum API, which stores one upvote per signed-in user ("down" or no vote removes it)
   try {
-    await fetch(`${API_BASE}/forum/threads/${threadId}/vote`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ direction: newVote }),
-      signal: AbortSignal.timeout(800),
-    })
+    const { data: { session } } = await supabase.auth.getSession()
+    if (session?.user?.id) {
+      await fetch(`${API_BASE}/forum`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'vote', threadId, userId: session.user.id, direction: newVote }),
+        signal: AbortSignal.timeout(2500),
+      })
+    }
   } catch { }
 
   return { upvotes: finalUp, downvotes: finalDown, score: finalUp - finalDown, userVote: newVote }
@@ -1947,6 +1998,28 @@ export async function replyToForumThreadApi(
 
   let updatedThread: ForumThread | null = null
 
+  // Persist through the forum API (it writes forum_replies.author_id) and keep the database id,
+  // so the reply survives a reload and can be deleted later
+  try {
+    const res = await fetch(`${API_BASE}/forum`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'reply',
+        threadId,
+        content: content.trim(),
+        authorId: isValidUUID(authorId) ? authorId : undefined,
+      }),
+      signal: AbortSignal.timeout(4000),
+    })
+    if (res.ok) {
+      const json = await res.json()
+      if (json.success && json.reply?.id) reply.id = String(json.reply.id)
+    }
+  } catch (err) {
+    console.warn('Live forum reply error, kept locally:', err)
+  }
+
   // Save to persistent community threads in localStorage
   try {
     const raw = window.localStorage.getItem(FORUM_STORAGE_KEY)
@@ -1964,16 +2037,6 @@ export async function replyToForumThreadApi(
       return t
     })
     window.localStorage.setItem(FORUM_STORAGE_KEY, JSON.stringify(threads))
-  } catch { }
-
-  // Try updating Supabase
-  try {
-    const { data: { session } } = await supabase.auth.getSession()
-    await supabase.from('forum_replies').insert({
-      thread_id: threadId,
-      user_id: session?.user?.id || authorId || null,
-      content: content.trim(),
-    })
   } catch { }
 
   if (!updatedThread) {
@@ -2074,7 +2137,8 @@ export async function createForumThreadApi(data: {
     } catch {}
 
     try {
-      const voteKey = getVoteStorageKey(authorName)
+      // Same identifier the forum page uses to read votes back (email, then id, then name)
+      const voteKey = getVoteStorageKey(data.authorEmail || data.authorId || authorName)
       const rawVotes = window.localStorage.getItem(voteKey)
       const votes = rawVotes ? JSON.parse(rawVotes) : {}
       votes[newThread.id] = 'up'

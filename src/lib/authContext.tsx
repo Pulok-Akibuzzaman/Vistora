@@ -83,6 +83,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (email: string, password: string) => {
     setIsLoading(true)
+    let rejected: Error | null = null
     try {
       // 1. Try Supabase Auth
       const { data, error } = await supabase.auth.signInWithPassword({ email, password })
@@ -110,10 +111,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
         setUser(profile)
         window.localStorage.setItem('vistora-auth-user', JSON.stringify(profile))
+        // This early return skips the finally block below, so reset the flag here
+        setIsLoading(false)
         return
+      }
+      // A 4xx means Supabase was reached and refused these credentials (wrong password, unknown
+      // account, unconfirmed email). Only an unreachable Supabase may use the offline fallback.
+      if (error && typeof error.status === 'number' && error.status >= 400 && error.status < 500) {
+        rejected = new Error(error.message || 'Invalid email or password.')
       }
     } catch (e) {
       console.warn('Supabase auth attempt:', e)
+    }
+
+    if (rejected) {
+      setIsLoading(false)
+      throw rejected
     }
 
     try {
@@ -146,6 +159,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const payload: RegisterPayload = typeof payloadOrName === 'object'
       ? payloadOrName
       : { name: payloadOrName, email: email || '', password: password || '', role, country }
+    let rejected: Error | null = null
 
     try {
       // 1. Try Supabase Auth
@@ -160,6 +174,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       })
       if (!error && data?.user) {
+        // The signup trigger creates the profile row with the default 7.5 target, and that row wins
+        // on the next session restore, so write the chosen goal to it while we have a session
+        if (data.session) {
+          try {
+            await supabase
+              .from('profiles')
+              .update({
+                target_band: payload.targetBand || 7.5,
+                ...(payload.country ? { country: payload.country } : {}),
+                updated_at: new Date().toISOString(),
+              })
+              .eq('id', data.user.id)
+          } catch (e) {
+            console.warn('Supabase profile goal sync:', e)
+          }
+        }
+
         const profile: UserProfile = {
           ...DEFAULT_USER,
           id: data.user.id,
@@ -171,10 +202,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
         setUser(profile)
         window.localStorage.setItem('vistora-auth-user', JSON.stringify(profile))
+        setIsLoading(false)
         return
+      }
+      // Supabase was reached and refused the signup (email already registered, weak password, ...)
+      if (error && typeof error.status === 'number' && error.status >= 400 && error.status < 500) {
+        rejected = new Error(error.message || 'Could not create the account.')
       }
     } catch (e) {
       console.warn('Supabase signup attempt:', e)
+    }
+
+    if (rejected) {
+      setIsLoading(false)
+      throw rejected
     }
 
     try {

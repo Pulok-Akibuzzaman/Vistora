@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import Icon from '../components/Icon'
 import { READING_ANSWERS, READING_PASSAGES } from '../data/readingTest1'
 import { READING_ANSWERS_2, READING_PASSAGES_2 } from '../data/readingTest2'
 import { READING_ANSWERS_3, READING_PASSAGES_3 } from '../data/readingTest3'
@@ -11,7 +12,7 @@ import { LISTENING_ANSWERS, LISTENING_PARTS_1 } from '../data/listeningTest1'
 import { LISTENING_ANSWERS_2, LISTENING_PARTS_2 } from '../data/listeningTest2'
 import FullTestResult from '../components/FullTestResult'
 import { saveExamResult } from '../lib/results'
-import { checkBackendHealth, getStreamUrl, getSharepointAudioUrl, saveExamResultApi, fetchResults, evaluateSpeakingApi, type BackendHealth, type SpeakingEvaluationResult } from '../lib/api'
+import { checkBackendHealth, getStreamUrl, getSharepointAudioUrl, fetchResults, evaluateSpeakingApi, type BackendHealth, type SpeakingEvaluationResult } from '../lib/api'
 import { useAuth } from '../lib/authContext'
 import { countCorrect, listeningPairs, markAnswers, readingPairs } from '../lib/scoring'
 import { themeText, ThemeToggle } from '../lib/theme'
@@ -136,6 +137,10 @@ type FullTestAttempt = {
 }
 
 const emptyFullAttempt = (): FullTestAttempt => ({ listening: {}, reading: {}, writing: {}, speaking: {} })
+
+// Books after IELTS 18 use internal test ids (19, 192, 20, 21, 22), so map them back to the printed test number
+const displayTestNumber = (testNumber: number) =>
+  testNumber === 192 || testNumber === 22 ? 2 : testNumber >= 19 ? 1 : testNumber
 
 const PART_1_PROMPTS = [
   { id: 1, prefix: 'Postcode:', suffix: '' },
@@ -520,7 +525,7 @@ function ListeningExam({
                   className="shrink-0 text-rose-400 hover:text-rose-300 underline"
                   title="Open direct file in SharePoint"
                 >
-                  SharePoint ↗
+                  SharePoint <Icon name="external" />
                 </a>
               )}
             </div>
@@ -532,7 +537,7 @@ function ListeningExam({
               <div className="flex items-center gap-1.5">
                 <button type="button" onClick={() => seekBy(-5)} aria-label="Rewind 5 seconds" title="Rewind 5 seconds" className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-800 text-xs text-slate-300 hover:bg-slate-700 hover:text-white">−5</button>
                 <button type="button" onClick={togglePlayPause} aria-label={audioPlaying ? 'Pause audio' : 'Play audio'} className="flex h-8 w-8 items-center justify-center rounded-full bg-[#FF334B] text-sm text-white shadow-md shadow-rose-900/50 transition hover:scale-105 hover:bg-rose-600">
-                  {audioPlaying ? 'Ⅱ' : '▶'}
+                  <Icon name={audioPlaying ? 'pause' : 'play'} fill={audioPlaying ? 'none' : 'currentColor'} />
                 </button>
                 <button type="button" onClick={() => seekBy(5)} aria-label="Forward 5 seconds" title="Forward 5 seconds" className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-800 text-xs text-slate-300 hover:bg-slate-700 hover:text-white">+5</button>
               </div>
@@ -548,7 +553,7 @@ function ListeningExam({
             {audioError && (
               <div role="alert" className="space-y-2 rounded-lg border border-rose-800/80 bg-rose-950/70 p-2.5 text-[11px] text-rose-200">
                 <div className="flex items-start justify-between gap-2">
-                  <span className="font-semibold text-rose-300">⚠️ Could not stream Part {currentPart} online</span>
+                  <span className="font-semibold text-rose-300"><Icon name="alert" /> Could not stream Part {currentPart} online</span>
                   <button
                     type="button"
                     onClick={() => {
@@ -573,11 +578,11 @@ function ListeningExam({
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-1 rounded bg-rose-600 px-2 py-1 text-[10px] font-bold text-white transition hover:bg-rose-500"
                     >
-                      <span>↗ Open in SharePoint / Download</span>
+                      <span><Icon name="external" /> Open in SharePoint / Download</span>
                     </a>
                   )}
                   <label className="inline-flex cursor-pointer items-center gap-1 rounded border border-slate-600 bg-slate-800 px-2 py-1 text-[10px] font-semibold text-slate-200 transition hover:border-slate-400 hover:text-white">
-                    <span>📁 Select Local MP3 from Database</span>
+                    <span><Icon name="folder" /> Select Local MP3 from Database</span>
                     <input
                       className="sr-only"
                       type="file"
@@ -1056,7 +1061,7 @@ type ReadingExamProps = {
 
 function ReadingExam({ answers, setAnswers, currentQ, setCurrentQ, timeLeft, part, selectedTestNumber = 1, customPassages, onFinish }: ReadingExamProps) {
   const [mobileView, setMobileView] = useState<'passage' | 'questions'>('passage')
-  const activePassages = customPassages && customPassages.length > 0 ? customPassages : selectedTestNumber === 19 ? READING_PASSAGES_19 : selectedTestNumber === 22 ? READING_PASSAGES_21_T2 : selectedTestNumber === 21 ? READING_PASSAGES_21 : selectedTestNumber === 4 ? READING_PASSAGES_4 : selectedTestNumber === 3 ? READING_PASSAGES_3 : selectedTestNumber === 2 ? READING_PASSAGES_2 : READING_PASSAGES
+  const activePassages = customPassages && customPassages.length > 0 ? customPassages : selectedTestNumber === 192 ? READING_PASSAGES_192 : selectedTestNumber === 19 ? READING_PASSAGES_19 : selectedTestNumber === 22 ? READING_PASSAGES_21_T2 : selectedTestNumber === 21 ? READING_PASSAGES_21 : selectedTestNumber === 4 ? READING_PASSAGES_4 : selectedTestNumber === 3 ? READING_PASSAGES_3 : selectedTestNumber === 2 ? READING_PASSAGES_2 : READING_PASSAGES
   const passageIndex = part !== undefined ? part - 1 : currentQ <= 13 ? 0 : currentQ <= 26 ? 1 : 2
   const passage = activePassages[passageIndex] || activePassages[0]
   const answered = Object.keys(answers).filter(key => {
@@ -1097,7 +1102,7 @@ function ReadingExam({ answers, setAnswers, currentQ, setCurrentQ, timeLeft, par
           <div className="border-r border-divider pr-5 font-plex text-2xl font-bold tracking-tight text-accent">IELTS</div>
           <div>
             <div className="font-plex text-xs font-semibold text-ink">Test taker ID</div>
-            <div className="font-plex text-xs text-graphite-mid">Academic Reading · Test {selectedTestNumber}{part ? ` · Passage ${part}` : ''}</div>
+            <div className="font-plex text-xs text-graphite-mid">Academic Reading · Test {displayTestNumber(selectedTestNumber)}{part ? ` · Passage ${part}` : ''}</div>
           </div>
         </div>
         <div className="hidden sm:flex flex-col items-center gap-1 min-w-[200px]">
@@ -1135,7 +1140,7 @@ function ReadingExam({ answers, setAnswers, currentQ, setCurrentQ, timeLeft, par
           className={`flex-1 py-1.5 px-3 rounded text-xs font-mono font-semibold transition-colors ${mobileView === 'passage' ? 'bg-electric text-white' : 'bg-surface-2 text-graphite hover:text-ink'
             }`}
         >
-          📖 Reading Passage
+          <Icon name="book-open" /> Reading Passage
         </button>
         <button
           type="button"
@@ -1143,7 +1148,7 @@ function ReadingExam({ answers, setAnswers, currentQ, setCurrentQ, timeLeft, par
           className={`flex-1 py-1.5 px-3 rounded text-xs font-mono font-semibold transition-colors ${mobileView === 'questions' ? 'bg-electric text-white' : 'bg-surface-2 text-graphite hover:text-ink'
             }`}
         >
-          ✍️ Questions ({answered}/{totalQuestions})
+          <Icon name="pen" /> Questions ({answered}/{totalQuestions})
         </button>
       </div>
 
@@ -1315,7 +1320,7 @@ function ReadingExam({ answers, setAnswers, currentQ, setCurrentQ, timeLeft, par
             <span className="hidden whitespace-nowrap font-mono text-xs text-graphite-mid lg:inline">{answered}/{totalQuestions} answered</span>
           </div>
           <div className="flex items-center gap-2">
-            <button aria-label="Previous reading passage" disabled={passage.part === 1 || part !== undefined || !activePassages[passageIndex - 1]} onClick={() => setCurrentQ(activePassages[passageIndex - 1].range[0])} className="h-11 w-11 rounded-sm bg-divider font-plex text-xl font-bold text-white disabled:cursor-not-allowed disabled:opacity-40">←</button>
+            <button aria-label="Previous reading passage" disabled={passage.part === 1 || part !== undefined || !activePassages[passageIndex - 1]} onClick={() => setCurrentQ(activePassages[passageIndex - 1].range[0])} className="h-11 w-11 rounded-sm border border-line-strong bg-surface-3 font-plex text-xl font-bold text-ink disabled:cursor-not-allowed disabled:opacity-40">←</button>
             <button aria-label="Next reading passage" disabled={passage.part === activePassages.length || part !== undefined || !activePassages[passageIndex + 1]} onClick={() => setCurrentQ(activePassages[passageIndex + 1].range[0])} className="h-11 w-11 rounded-sm bg-navy font-plex text-xl font-bold text-white disabled:cursor-not-allowed disabled:opacity-40">→</button>
           </div>
         </div>
@@ -1495,24 +1500,24 @@ function WritingFloorPlan3() {
       <div className="border border-divider bg-surface p-3">
         <h4 className="font-bold text-ink mb-2">Central Library 20 years ago</h4>
         <div className="grid grid-cols-2 gap-2 text-graphite-mid text-[11px]">
-          <div className="border border-divider p-2 bg-paper-light">CDs, videos, computer games</div>
-          <div className="border border-divider p-2 bg-paper-light">Children's books</div>
-          <div className="border border-divider p-2 bg-paper-light">Adult fiction books</div>
-          <div className="border border-divider p-2 bg-paper-light">Adult non-fiction books</div>
-          <div className="border border-divider p-2 bg-paper-light">Tables & chairs</div>
-          <div className="border border-divider p-2 bg-paper-light">Reading room (newspapers & magazines)</div>
+          <div className="border border-divider p-2 bg-paper">CDs, videos, computer games</div>
+          <div className="border border-divider p-2 bg-paper">Children's books</div>
+          <div className="border border-divider p-2 bg-paper">Adult fiction books</div>
+          <div className="border border-divider p-2 bg-paper">Adult non-fiction books</div>
+          <div className="border border-divider p-2 bg-paper">Tables & chairs</div>
+          <div className="border border-divider p-2 bg-paper">Reading room (newspapers & magazines)</div>
           <div className="col-span-2 border border-divider p-2 bg-paper-dark text-center font-semibold">Enquiry desk (tickets, book returns, etc.) · Entrance</div>
         </div>
       </div>
       <div className="border border-divider bg-surface p-3">
         <h4 className="font-bold text-ink mb-2">Central Library today</h4>
         <div className="grid grid-cols-2 gap-2 text-graphite-mid text-[11px]">
-          <div className="border border-divider p-2 bg-paper-light">Lecture room</div>
-          <div className="border border-divider p-2 bg-paper-light">Children's fiction books (Storytelling events, Sofa)</div>
-          <div className="border border-divider p-2 bg-paper-light">Adult fiction books (Sofa)</div>
-          <div className="border border-divider p-2 bg-paper-light">All reference books</div>
-          <div className="border border-divider p-2 bg-paper-light">Computer room</div>
-          <div className="border border-divider p-2 bg-paper-light">Café</div>
+          <div className="border border-divider p-2 bg-paper">Lecture room</div>
+          <div className="border border-divider p-2 bg-paper">Children's fiction books (Storytelling events, Sofa)</div>
+          <div className="border border-divider p-2 bg-paper">Adult fiction books (Sofa)</div>
+          <div className="border border-divider p-2 bg-paper">All reference books</div>
+          <div className="border border-divider p-2 bg-paper">Computer room</div>
+          <div className="border border-divider p-2 bg-paper">Café</div>
           <div className="col-span-2 border border-divider p-2 bg-paper-dark text-center font-semibold">Information desk · Self-service machines · Entrance</div>
         </div>
       </div>
@@ -1568,7 +1573,7 @@ function WritingExam({ answers, setAnswers, currentTask, setCurrentTask, timeLef
       <header className="flex min-h-14 items-center justify-between border-b border-divider bg-surface px-4">
         <div className="flex items-center gap-5">
           <div className="border-r border-divider pr-5 font-plex text-2xl font-bold tracking-tight text-accent">IELTS</div>
-          <div><div className="font-plex text-xs font-semibold text-ink">Test taker ID</div><div className="font-plex text-xs text-graphite-mid">Academic Writing · Test {selectedTestNumber}{part ? ` · Task ${part}` : ''}</div></div>
+          <div><div className="font-plex text-xs font-semibold text-ink">Test taker ID</div><div className="font-plex text-xs text-graphite-mid">Academic Writing · Test {displayTestNumber(selectedTestNumber)}{part ? ` · Task ${part}` : ''}</div></div>
         </div>
         <div className="flex items-center gap-3 sm:gap-5">
           <div className="text-right"><div className={`font-mono text-sm font-semibold ${timeLeft < 300 ? 'text-accent' : 'text-ink'}`}>{formatTime(timeLeft)}</div><div className="font-mono text-xs uppercase text-graphite-light">Time left</div></div>
@@ -1590,7 +1595,7 @@ function WritingExam({ answers, setAnswers, currentTask, setCurrentTask, timeLef
           className={`flex-1 py-1.5 px-3 rounded text-xs font-mono font-semibold transition-colors ${mobileWritingView === 'prompt' ? 'bg-electric text-white' : 'bg-surface-2 text-graphite hover:text-ink'
             }`}
         >
-          📋 Task Instructions
+          <Icon name="clipboard" /> Task Instructions
         </button>
         <button
           type="button"
@@ -1598,7 +1603,7 @@ function WritingExam({ answers, setAnswers, currentTask, setCurrentTask, timeLef
           className={`flex-1 py-1.5 px-3 rounded text-xs font-mono font-semibold transition-colors ${mobileWritingView === 'editor' ? 'bg-electric text-white' : 'bg-surface-2 text-graphite hover:text-ink'
             }`}
         >
-          ✍️ Your Essay ({wordCount} words)
+          <Icon name="pen" /> Your Essay ({wordCount} words)
         </button>
       </div>
 
@@ -1606,7 +1611,25 @@ function WritingExam({ answers, setAnswers, currentTask, setCurrentTask, timeLef
         <article className={`overflow-y-auto border-b border-divider p-4 sm:p-5 md:border-b-0 md:border-r md:p-7 ${mobileWritingView === 'editor' ? 'hidden md:block' : 'block'}`}>
           <div className="mx-auto max-w-3xl font-plex text-sm leading-7 text-ink">
             {task === 1 ? (
-              selectedTestNumber === 2 ? (
+              selectedTestNumber === 20 ? (
+                <>
+                  <p className="font-semibold">The tables below give information about the population of New York City and its districts in 1800, 1900 and 2000.</p>
+                  <p className="mt-4 font-semibold">Summarise the information by selecting and reporting the main features, and make comparisons where relevant.</p>
+                  <WritingTableNY20 />
+                </>
+              ) : selectedTestNumber === 4 ? (
+                <>
+                  <p className="font-semibold">The data below shows the average monthly change in the prices of copper, nickel and zinc during 2014.</p>
+                  <p className="mt-4 font-semibold">Summarise the information by selecting and reporting the main features, and make comparisons where relevant.</p>
+                  <WritingMetalsChart4 />
+                </>
+              ) : selectedTestNumber === 3 ? (
+                <>
+                  <p className="font-semibold">The diagram below shows the floor plan of a public library 20 years ago and how it looks now.</p>
+                  <p className="mt-4 font-semibold">Summarise the information by selecting and reporting the main features, and make comparisons where relevant.</p>
+                  <WritingFloorPlan3 />
+                </>
+              ) : selectedTestNumber === 2 ? (
                 <>
                   <p className="font-semibold">The chart below shows the number of households in the US by their annual income in 2007, 2011 and 2015.</p>
                   <p className="mt-4 font-semibold">Summarise the information by selecting and reporting the main features, and make comparisons where relevant.</p>
@@ -1669,7 +1692,7 @@ function WritingExam({ answers, setAnswers, currentTask, setCurrentTask, timeLef
           ))}
         </div>
         <div className="flex gap-2">
-          <button aria-label="Previous writing task" disabled={task === 1 || part !== undefined} onClick={() => setCurrentTask(1)} className="h-11 w-11 rounded-sm bg-divider font-plex text-xl font-bold text-white disabled:cursor-not-allowed disabled:opacity-40">←</button>
+          <button aria-label="Previous writing task" disabled={task === 1 || part !== undefined} onClick={() => setCurrentTask(1)} className="h-11 w-11 rounded-sm border border-line-strong bg-surface-3 font-plex text-xl font-bold text-ink disabled:cursor-not-allowed disabled:opacity-40">←</button>
           <button aria-label="Next writing task" disabled={task === 2 || part !== undefined} onClick={() => setCurrentTask(2)} className="h-11 w-11 rounded-sm bg-navy font-plex text-xl font-bold text-white disabled:cursor-not-allowed disabled:opacity-40">→</button>
         </div>
       </footer>
@@ -2014,9 +2037,18 @@ const SPEAKING_CONTENT: Record<number, SpeakingContentItem> = {
   },
 }
 
+// One lookup for the exam screen and the evaluator, so both always use the same test's prompts
+const speakingContentFor = (testNumber?: number): Record<number, SpeakingContentItem> =>
+  testNumber === 21 ? SPEAKING_CONTENT_21
+    : testNumber === 20 ? SPEAKING_CONTENT_20
+      : testNumber === 4 ? SPEAKING_CONTENT_4
+        : testNumber === 3 ? SPEAKING_CONTENT_3
+          : testNumber === 2 ? SPEAKING_CONTENT_2
+            : SPEAKING_CONTENT
+
 function SpeakingExam({ currentPart, setCurrentPart, timeLeft, part, onRecording, onFinishSpeaking, onFinish, selectedTestNumber = 1 }: SpeakingExamProps) {
   const activePart = part ?? currentPart
-  const activeContent = selectedTestNumber === 21 ? SPEAKING_CONTENT_21 : selectedTestNumber === 20 ? SPEAKING_CONTENT_20 : selectedTestNumber === 4 ? SPEAKING_CONTENT_4 : selectedTestNumber === 3 ? SPEAKING_CONTENT_3 : selectedTestNumber === 2 ? SPEAKING_CONTENT_2 : SPEAKING_CONTENT
+  const activeContent = speakingContentFor(selectedTestNumber)
   const content = activeContent[activePart] ?? activeContent[1]
   const recorderRef = useRef<MediaRecorder | null>(null)
   const streamRef = useRef<MediaStream | null>(null)
@@ -2247,7 +2279,7 @@ function SpeakingExam({ currentPart, setCurrentPart, timeLeft, part, onRecording
       <header className="flex min-h-14 items-center justify-between border-b border-divider bg-surface px-4">
         <div className="flex items-center gap-5">
           <div className="border-r border-divider pr-5 font-plex text-2xl font-bold tracking-tight text-accent">IELTS</div>
-          <div><div className="font-plex text-xs font-semibold text-ink">Test taker ID</div><div className="font-plex text-xs text-graphite-mid">Speaking · Test {selectedTestNumber}{part ? ` · Part ${part}` : ''}</div></div>
+          <div><div className="font-plex text-xs font-semibold text-ink">Test taker ID</div><div className="font-plex text-xs text-graphite-mid">Speaking · Test {displayTestNumber(selectedTestNumber)}{part ? ` · Part ${part}` : ''}</div></div>
         </div>
         <div className="flex items-center gap-3 sm:gap-5">
           <div className="text-right"><div className={`font-mono text-sm font-semibold ${timeLeft < 60 ? 'text-accent' : 'text-ink'}`}>{formatTime(timeLeft)}</div><div className="font-mono text-xs uppercase text-graphite-light">Time left</div></div>
@@ -2270,7 +2302,7 @@ function SpeakingExam({ currentPart, setCurrentPart, timeLeft, part, onRecording
           {content.topics ? (
             <div className="mt-6 space-y-6">
               {content.topics.map((topicGroup, topicIdx) => (
-                <div key={topicGroup.title} className="rounded-sm border border-divider bg-paper-light/60 p-4">
+                <div key={topicGroup.title} className="rounded-sm border border-divider bg-paper/60 p-4">
                   <h3 className="font-plex text-sm font-bold text-ink">{topicGroup.title}</h3>
                   <div className="mt-1 font-plex text-xs italic text-graphite-mid">Example questions:</div>
                   <ul className="mt-3 space-y-2.5">
@@ -2325,7 +2357,7 @@ function SpeakingExam({ currentPart, setCurrentPart, timeLeft, part, onRecording
             <div className="mt-2 font-mono text-3xl font-bold">{formatTime(recording ? recordingSeconds : (durations[activePart] || 0))}</div>
 
             {recording ? (
-              <button onClick={stopRecording} className="mt-4 w-full rounded-sm bg-danger px-4 py-2.5 font-plex text-xs font-bold uppercase tracking-wider text-white hover:bg-danger/90">■ Stop recording</button>
+              <button onClick={stopRecording} className="mt-4 w-full rounded-sm bg-danger px-4 py-2.5 font-plex text-xs font-bold uppercase tracking-wider text-white hover:bg-danger/90"><Icon name="stop" fill="currentColor" /> Stop recording</button>
             ) : (
               <button onClick={startRecording} className="mt-4 w-full rounded-sm bg-electric px-4 py-2.5 font-plex text-xs font-bold uppercase tracking-wider text-white hover:bg-electric/90">● Start recording</button>
             )}
@@ -2405,7 +2437,7 @@ function SpeakingExam({ currentPart, setCurrentPart, timeLeft, part, onRecording
           ))}
         </div>
         <div className="flex gap-2">
-          <button aria-label="Previous speaking part" disabled={activePart === 1 || part !== undefined} onClick={() => changePart(activePart - 1)} className="h-11 w-11 rounded-sm bg-divider font-plex text-xl font-bold text-white disabled:cursor-not-allowed disabled:opacity-40">←</button>
+          <button aria-label="Previous speaking part" disabled={activePart === 1 || part !== undefined} onClick={() => changePart(activePart - 1)} className="h-11 w-11 rounded-sm border border-line-strong bg-surface-3 font-plex text-xl font-bold text-ink disabled:cursor-not-allowed disabled:opacity-40">←</button>
           <button aria-label="Next speaking part" disabled={activePart === 3 || part !== undefined} onClick={() => changePart(activePart + 1)} className="h-11 w-11 rounded-sm bg-navy font-plex text-xl font-bold text-white disabled:cursor-not-allowed disabled:opacity-40">→</button>
         </div>
       </footer>
@@ -2648,7 +2680,7 @@ export default function PracticeTest() {
       ? 'Review incorrect answers by section and practise predicting the required answer type before listening.'
       : selectedTest.type === 'Reading'
         ? 'Review passage evidence for missed questions and track which question types cause the most difficulty.'
-        : 'Writing response submitted. Connect the Gemini evaluation endpoint for criterion-level comments and a band estimate.'
+        : 'Writing response saved. Paste it into the AI Writing page for criterion-level feedback and a band estimate.'
 
     // The listening audio source can switch the test, so record the one that was actually taken
     const takenTestNumber = selectedTest.type === 'Listening' ? selectedTestNum : selectedTest.testNumber
@@ -2674,8 +2706,8 @@ export default function PracticeTest() {
       source: (isObjective ? 'Automatic' : 'Pending AI') as any,
     }
 
+    // saveExamResult caches locally and syncs to Supabase, so it must only be called once per attempt
     saveExamResult(resultRecord as any, user?.email)
-    saveExamResultApi(resultRecord as any).catch(() => { })
   }, [listeningScore, readingScore, selectedTest, selectedTestNum, selectedBook, stage, timeLeft, user, answers])
 
   const handleFinishSpeaking = async (data: {
@@ -2703,7 +2735,7 @@ export default function PracticeTest() {
     const combinedTranscript = transcriptSegments.join('\n\n')
     const totalDuration = partsToInclude.reduce((sum, p) => sum + (data.durations[p] || 0), 0) || 60
 
-    const speakingContent = selectedTest.testNumber === 2 ? SPEAKING_CONTENT_2 : SPEAKING_CONTENT
+    const speakingContent = speakingContentFor(selectedTest.testNumber)
     const allQuestions = partsToInclude.flatMap(p => {
       const item = speakingContent[p]
       return item?.topics ? item.topics.flatMap(topic => topic.questions) : item?.questions || []
@@ -2738,7 +2770,6 @@ export default function PracticeTest() {
         source: (evalRes.source?.toLowerCase().includes('puku') ? 'AI' : 'Automatic') as any,
       }
       saveExamResult(record as any, user?.email)
-      saveExamResultApi(record as any).catch(() => { })
     } catch (err: any) {
       setSpeakingError(err?.message || 'Failed to complete Speaking evaluation.')
     } finally {
@@ -2846,6 +2877,7 @@ export default function PracticeTest() {
           readingAnswers={fullAttempt.reading}
           writingAnswers={fullAttempt.writing}
           speakingRecordings={fullAttempt.speaking}
+          testTitle={selectedTest.title}
           onExit={resetTest}
           onRetake={() => goToStage('instructions')}
         />
@@ -2955,7 +2987,7 @@ export default function PracticeTest() {
                 </div>
 
                 {/* Summary */}
-                <div className="mt-6 rounded border border-divider bg-paper-light/50 p-4">
+                <div className="mt-6 rounded border border-divider bg-paper/50 p-4">
                   <div className="font-mono text-xs uppercase tracking-wider text-accent mb-1">Examiner Assessment Summary</div>
                   <p className="font-plex text-sm leading-6 text-graphite">{speakingEval.summary}</p>
                 </div>
@@ -3073,7 +3105,7 @@ export default function PracticeTest() {
                   </div>
                   <div className="space-y-4">
                     {(selectedTest.part ? [selectedTest.part] : [1, 2, 3]).map(p => (
-                      <div key={p} className="border border-divider bg-paper-light/50 p-4 rounded">
+                      <div key={p} className="border border-divider bg-paper/50 p-4 rounded">
                         <div className="flex flex-wrap items-center justify-between gap-3 mb-2">
                           <span className="font-plex text-xs font-bold text-ink">Speaking Part {p}</span>
                           {speakingData.recordings[p] && (
@@ -3290,7 +3322,7 @@ export default function PracticeTest() {
                   onClick={() => setResultFilter('incorrect')}
                   className={`rounded-sm border px-3 py-1.5 font-mono text-xs font-semibold transition-colors ${resultFilter === 'incorrect'
                     ? 'border-rose-600 bg-rose-600 text-white'
-                    : 'border-rose-200 bg-rose-50 text-rose-700 hover:border-rose-300'
+                    : 'border-rose-200 bg-rose-50 text-rose-800 hover:border-rose-300'
                     }`}
                 >
                   Mistakes ({reviewItems.filter(item => !item.correct).length})
@@ -3300,7 +3332,7 @@ export default function PracticeTest() {
                   onClick={() => setResultFilter('correct')}
                   className={`rounded-sm border px-3 py-1.5 font-mono text-xs font-semibold transition-colors ${resultFilter === 'correct'
                     ? 'border-emerald-600 bg-emerald-600 text-white'
-                    : 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:border-emerald-300'
+                    : 'border-emerald-200 bg-emerald-50 text-emerald-800 hover:border-emerald-300'
                     }`}
                 >
                   Correct ({reviewItems.filter(item => item.correct).length})
@@ -3311,7 +3343,7 @@ export default function PracticeTest() {
             <div className="mt-6 space-y-6">
               {filteredReviewItems.length === 0 ? (
                 <div className="py-12 text-center text-sm text-graphite-mid">
-                  {resultFilter === 'incorrect' ? '🎉 Great job! You have no incorrect answers.' : 'No questions match this filter.'}
+                  {resultFilter === 'incorrect' ? 'Great job! You have no incorrect answers.' : 'No questions match this filter.'}
                 </div>
               ) : (
                 filteredReviewItems.map(item => (
@@ -3335,10 +3367,10 @@ export default function PracticeTest() {
                       </div>
                       <span
                         className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-mono text-xs font-semibold ${item.correct
-                          ? 'border border-emerald-200 bg-emerald-50 text-emerald-700'
+                          ? 'border border-emerald-200 bg-emerald-50 text-emerald-800'
                           : item.unanswered
-                            ? 'border border-amber-200 bg-amber-50 text-amber-700'
-                            : 'border border-rose-200 bg-rose-50 text-rose-700'
+                            ? 'border border-amber-200 bg-amber-50 text-amber-800'
+                            : 'border border-rose-200 bg-rose-50 text-rose-800'
                           }`}
                       >
                         {item.correct ? '✓ Correct' : item.unanswered ? '○ Unanswered' : '✕ Incorrect'}
@@ -3356,7 +3388,7 @@ export default function PracticeTest() {
                       >
                         <div className="font-mono text-[11px] uppercase tracking-wider text-graphite-light">Your Response</div>
                         <div
-                          className={`mt-1 font-mono text-sm font-bold ${item.correct ? 'text-emerald-700' : 'text-rose-600'
+                          className={`mt-1 font-mono text-sm font-bold ${item.correct ? 'text-emerald-800' : 'text-rose-600'
                             }`}
                         >
                           {item.userAns || <span className="font-normal italic text-graphite-light">(No answer given)</span>}
@@ -3374,7 +3406,7 @@ export default function PracticeTest() {
                     {item.explanation && (
                       <div className="mt-4 rounded-sm border border-divider bg-surface-2 p-4">
                         <div className="flex items-center gap-1.5 font-mono text-xs font-bold uppercase tracking-wider text-ink">
-                          <span>💡 Why wrong / right</span>
+                          <span><Icon name="lightbulb" /> Why wrong / right</span>
                         </div>
                         <p className="mt-1.5 font-plex text-sm leading-6 text-graphite">
                           {item.explanation}
@@ -3385,7 +3417,7 @@ export default function PracticeTest() {
                     {item.passageReference && (
                       <div className="mt-3 rounded-sm border border-sky-100 bg-sky-50/40 p-4">
                         <div className="flex items-center gap-1.5 font-mono text-xs font-bold uppercase tracking-wider text-sky-800">
-                          <span>📖 Part of the passage taken from</span>
+                          <span><Icon name="book-open" /> Part of the passage taken from</span>
                         </div>
                         <blockquote className="mt-1.5 border-l-2 border-sky-400 pl-3 font-plex text-sm italic leading-6 text-sky-950">
                           {item.passageReference}
@@ -3573,13 +3605,13 @@ export default function PracticeTest() {
               <div className="mt-7 rounded-sm border border-divider bg-surface-2 p-5">
                 <div className="flex items-center justify-between pb-3 border-b border-divider">
                   <div className="flex items-center gap-2">
-                    <span className={`h-2.5 w-2.5 rounded-full ${backendHealth.connected ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`} />
+                    <span className={`h-2.5 w-2.5 rounded-full ${backendHealth.connected ? 'bg-emerald-500 animate-pulse' : 'bg-amber-400'}`} />
                     <span className="font-plex text-sm font-bold text-ink">
-                      {backendHealth.connected ? 'Local Backend Audio Connected' : 'Local Backend Offline'}
+                      {backendHealth.connected ? 'Local Backend Audio Connected' : 'Streaming Audio Online'}
                     </span>
                   </div>
                   <span className="font-mono text-xs text-graphite-mid">
-                    {backendHealth.connected ? `${backendHealth.totalAudioFiles} Tracks in Database` : 'Port 5001'}
+                    {backendHealth.connected ? `${backendHealth.totalAudioFiles ?? 0} Tracks in Database` : 'SharePoint source'}
                   </span>
                 </div>
 
@@ -3599,7 +3631,8 @@ export default function PracticeTest() {
                           setAudioUrl(getStreamUrl(b, num, 1))
                           setAudioName(`IELTS ${b} · Test ${num} · Part 1`)
                         }
-                        const matched = TESTS.find(test => test.type === selectedTest.type && test.book === b && test.testNumber === num)
+                        // Keep the chosen part: without it "Test 1 · Part 3" jumped to the full 40-question Test 2
+                        const matched = TESTS.find(test => test.type === selectedTest.type && test.book === b && test.testNumber === num && test.part === selectedTest.part)
                         if (matched) setSelectedTest(matched)
                       }}
                       className="w-full rounded border border-graphite-light/40 bg-surface px-3 py-2 font-plex text-xs text-ink focus:outline-none focus:ring-1 focus:ring-electric"
@@ -3658,14 +3691,14 @@ export default function PracticeTest() {
                         }`}
                     >
                       {soundTestPlaying ? (
-                        <><span>■ Stop Preview</span> <span className="animate-pulse">🔊 Playing sound check...</span></>
+                        <><span><Icon name="stop" fill="currentColor" /> Stop Preview</span> <span className="animate-pulse"><Icon name="volume" /> Playing sound check...</span></>
                       ) : (
-                        <><span>▶ Play 5s Sound Check</span></>
+                        <><span><Icon name="play" fill="currentColor" /> Play 5s Sound Check</span></>
                       )}
                     </button>
                     {soundTestError && (
                       <p className="mt-1.5 text-[11px] leading-tight text-danger font-plex">
-                        ⚠️ Audio stream could not play. If testing SharePoint on Vercel, Microsoft 365 sign-in or a local MP3 is needed.
+                        <Icon name="alert" /> Audio stream could not play. Sign in to Microsoft 365 in this browser, or upload the MP3 file below.
                       </p>
                     )}
                   </div>

@@ -3,7 +3,6 @@ import { READING_ANSWERS } from '../data/readingTest1'
 import { LISTENING_ANSWERS } from '../data/listeningTest1'
 import { LISTENING_ANSWERS_2 } from '../data/listeningTest2'
 import { saveExamResult } from '../lib/results'
-import { saveExamResultApi } from '../lib/api'
 import { useAuth } from '../lib/authContext'
 import { listeningPairs, markAnswers, readingPairs } from '../lib/scoring'
 
@@ -37,6 +36,7 @@ type FullTestResultProps = {
   readingAnswers: Record<number, string>
   writingAnswers: Record<number, string>
   speakingRecordings: Record<number, Blob>
+  testTitle?: string
   onExit: () => void
   onRetake: () => void
 }
@@ -101,7 +101,7 @@ function descriptorForBand(band: number) {
   return 'Did not attempt / Non User'
 }
 
-export default function FullTestResult({ listeningAnswers, listeningTestNumber = 1, readingAnswers, writingAnswers, speakingRecordings, onExit, onRetake }: FullTestResultProps) {
+export default function FullTestResult({ listeningAnswers, listeningTestNumber = 1, readingAnswers, writingAnswers, speakingRecordings, testTitle = 'IELTS 18 — Complete Academic Test 1', onExit, onRetake }: FullTestResultProps) {
   const { user } = useAuth()
   const [report, setReport] = useState<AIReport | null>(null)
   const [analysisState, setAnalysisState] = useState<'analysing' | 'complete' | 'fallback'>('analysing')
@@ -160,7 +160,7 @@ export default function FullTestResult({ listeningAnswers, listeningTestNumber =
       },
       writing: {
         band: fallbackWritingBand,
-        summary: 'A provisional score was generated from completion data. Connect the secure Gemini endpoint for criterion-level language analysis.',
+        summary: 'A provisional score was estimated from your word counts. Submit each task on the AI Writing page for criterion-level analysis.',
         strengths: task1Words >= 150 && task2Words >= 250 ? ['Both tasks reached the required word count'] : ['A response was submitted'],
         improvements: ['State a clear overview in Task 1', 'Develop each Task 2 main idea with a specific explanation and example'],
         criteria: { 'Task Achievement': fallbackWritingBand, 'Coherence & Cohesion': fallbackWritingBand, 'Lexical Resource': fallbackWritingBand, 'Grammar': fallbackWritingBand },
@@ -168,7 +168,7 @@ export default function FullTestResult({ listeningAnswers, listeningTestNumber =
       },
       speaking: {
         band: fallbackSpeakingBand,
-        summary: 'A provisional score was generated from recording completion. Connect Gemini audio evaluation for transcript and pronunciation feedback.',
+        summary: 'A provisional score was estimated from the parts you recorded. Take a Speaking practice test for transcript-based feedback.',
         strengths: Object.keys(speakingRecordings).length >= 3 ? ['Responses were recorded for all three speaking parts'] : ['At least one spoken response was recorded'],
         improvements: ['Extend answers with reasons and examples', 'Reduce hesitation by grouping ideas before speaking'],
         criteria: { 'Fluency & Coherence': fallbackSpeakingBand, 'Lexical Resource': fallbackSpeakingBand, 'Grammar': fallbackSpeakingBand, 'Pronunciation': fallbackSpeakingBand },
@@ -186,7 +186,7 @@ export default function FullTestResult({ listeningAnswers, listeningTestNumber =
     const evaluate = async () => {
       try {
         const payload = {
-          test: 'IELTS 21 Academic Test 1',
+          test: testTitle,
           listening: { answers: listeningAnswers, rawScore: listeningRaw, band: listeningBand },
           reading: { answers: readingAnswers, rawScore: readingRaw, band: readingBand },
           writing: writingAnswers,
@@ -210,7 +210,7 @@ export default function FullTestResult({ listeningAnswers, listeningTestNumber =
     }
     evaluate()
     return () => { cancelled = true }
-  }, [listeningAnswers, listeningBand, listeningRaw, readingAnswers, readingBand, readingRaw, speakingRecordings, writingAnswers])
+  }, [listeningAnswers, listeningBand, listeningRaw, readingAnswers, readingBand, readingRaw, speakingRecordings, writingAnswers, testTitle])
 
   useEffect(() => {
     if (!report || analysisState === 'analysing' || resultSaved.current) return
@@ -220,7 +220,7 @@ export default function FullTestResult({ listeningAnswers, listeningTestNumber =
       userId: user?.id || '',
       userName: user?.name || 'Student',
       userEmail: user?.email || '',
-      testTitle: 'IELTS 21 — Complete Academic Test 1',
+      testTitle,
       testType: 'Full Test' as const,
       completedAt: new Date().toISOString(),
       overallBand: report.overallBand,
@@ -233,9 +233,9 @@ export default function FullTestResult({ listeningAnswers, listeningTestNumber =
       comment: report.overallComment,
       source: (analysisState === 'complete' ? 'AI' : 'Automatic') as any,
     }
+    // saveExamResult already syncs to Supabase; a second direct call created a duplicate row
     saveExamResult(resultObj, user?.email)
-    saveExamResultApi(resultObj).catch(() => {})
-  }, [analysisState, report, user])
+  }, [analysisState, report, user, testTitle])
 
   if (!report || analysisState === 'analysing') {
     return (

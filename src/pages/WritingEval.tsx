@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import Icon from '../components/Icon'
 import { evaluateEssayApi, saveExamResultApi, type WritingEvaluationResult } from '../lib/api'
 import { useAuth } from '../lib/authContext'
 
@@ -114,7 +115,7 @@ export default function WritingEval() {
     <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-8">
       <div className="label-tag mb-1">AI WRITING EVALUATION · IELTS ACADEMIC</div>
       <h1 className="text-2xl font-bold text-ink plex tracking-tight mb-1">Live Essay Evaluation & Scoring</h1>
-      <p className="text-sm text-muted mb-6" style={{ fontFamily: 'Inter, sans-serif' }}>
+      <p className="text-sm text-muted mb-6">
         Submit any IELTS essay for real-time lexical analysis, grammatical diagnostic feedback, and official band score prediction.
       </p>
 
@@ -178,7 +179,6 @@ export default function WritingEval() {
                   : "Type or paste your IELTS Task 1 chart/graph description or question here (e.g. 'The chart below shows the percentage of households in owned and rented accommodation... Summarise the main features...')..."
               }
               className="w-full p-3 text-[13px] text-graphite leading-relaxed outline-none resize-y bg-surface-2 border border-divider rounded-xs focus:border-electric transition-colors"
-              style={{ fontFamily: 'Inter, sans-serif' }}
             />
           </div>
 
@@ -226,14 +226,14 @@ export default function WritingEval() {
                 setSaved(false)
               }}
               className="w-full p-4 text-[13px] text-graphite leading-[1.8] outline-none resize-none bg-transparent"
-              style={{ fontFamily: 'Inter, sans-serif', minHeight: 400 }}
+              style={{ minHeight: 400 }}
               placeholder={`Write or paste your IELTS Task ${task} essay response here... Minimum ${minWords} words required.`}
             />
           </div>
 
           {error && (
             <div className="p-3 bg-rose-50 border border-rose-200 text-xs text-rose-800 rounded">
-              ⚠️ {error}
+              <Icon name="alert" /> {error}
             </div>
           )}
 
@@ -251,7 +251,7 @@ export default function WritingEval() {
                 Analyzing Essay with Linguistic Engine...
               </span>
             ) : (
-              '⚡ Evaluate Essay with AI'
+              <><Icon name="zap" /> Evaluate Essay with AI</>
             )}
           </button>
         </div>
@@ -263,7 +263,7 @@ export default function WritingEval() {
               <span className="text-accent text-2xl">✦</span>
             </div>
             <div className="text-sm font-semibold text-ink plex mb-2">Dynamic AI Evaluation Ready</div>
-            <p className="text-[12px] text-muted leading-relaxed" style={{ fontFamily: 'Inter, sans-serif' }}>
+            <p className="text-[12px] text-muted leading-relaxed">
               Press <strong>"Evaluate Essay with AI"</strong> to compute real Task Achievement, Coherence & Cohesion, Lexical Resource, and Grammatical Accuracy band scores.
             </p>
           </div>
@@ -281,7 +281,7 @@ export default function WritingEval() {
                       </span>
                     ) : feedback.aiEngine ? (
                       <span className="text-[10px] font-mono font-semibold bg-rose-50 text-accent border border-rose-200 px-2 py-0.5 rounded">
-                        ⚡ {feedback.aiEngine}
+                        <Icon name="zap" /> {feedback.aiEngine}
                       </span>
                     ) : null}
                   </div>
@@ -343,7 +343,7 @@ export default function WritingEval() {
                     onClick={handleSaveResult}
                     className="w-full py-2 px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded transition-colors"
                   >
-                    💾 Save this Score to My Practice Records
+                    <Icon name="save" /> Save this Score to My Practice Records
                   </button>
                 )}
               </div>
