@@ -2137,7 +2137,8 @@ export async function createForumThreadApi(data: {
     } catch {}
 
     try {
-      const voteKey = getVoteStorageKey(authorName)
+      // Same identifier the forum page uses to read votes back (email, then id, then name)
+      const voteKey = getVoteStorageKey(data.authorEmail || data.authorId || authorName)
       const rawVotes = window.localStorage.getItem(voteKey)
       const votes = rawVotes ? JSON.parse(rawVotes) : {}
       votes[newThread.id] = 'up'
