@@ -227,7 +227,7 @@ export default function Dashboard() {
             </div>
             <span className="mono text-[10px] text-subtle">{examResults.length} test records evaluated</span>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-0 divide-x divide-y divide-divider-soft">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-divider-soft">
             {skillScores.map(s => {
               const hasScore = s.hasAttempts && typeof s.score === 'number' && s.score > 0
               const scoreVal = hasScore ? (s.score as number) : 0
@@ -241,7 +241,7 @@ export default function Dashboard() {
                                : 'Take speaking interview →'
 
               return (
-                <div key={s.skill} className="p-6 flex flex-col justify-between">
+                <div key={s.skill} className="bg-surface p-6 flex flex-col justify-between">
                   <div>
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-2">
