@@ -2876,6 +2876,7 @@ export default function PracticeTest() {
           readingAnswers={fullAttempt.reading}
           writingAnswers={fullAttempt.writing}
           speakingRecordings={fullAttempt.speaking}
+          testTitle={selectedTest.title}
           onExit={resetTest}
           onRetake={() => goToStage('instructions')}
         />

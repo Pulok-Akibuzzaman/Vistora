@@ -36,6 +36,7 @@ type FullTestResultProps = {
   readingAnswers: Record<number, string>
   writingAnswers: Record<number, string>
   speakingRecordings: Record<number, Blob>
+  testTitle?: string
   onExit: () => void
   onRetake: () => void
 }
@@ -100,7 +101,7 @@ function descriptorForBand(band: number) {
   return 'Did not attempt / Non User'
 }
 
-export default function FullTestResult({ listeningAnswers, listeningTestNumber = 1, readingAnswers, writingAnswers, speakingRecordings, onExit, onRetake }: FullTestResultProps) {
+export default function FullTestResult({ listeningAnswers, listeningTestNumber = 1, readingAnswers, writingAnswers, speakingRecordings, testTitle = 'IELTS 18 — Complete Academic Test 1', onExit, onRetake }: FullTestResultProps) {
   const { user } = useAuth()
   const [report, setReport] = useState<AIReport | null>(null)
   const [analysisState, setAnalysisState] = useState<'analysing' | 'complete' | 'fallback'>('analysing')
@@ -185,7 +186,7 @@ export default function FullTestResult({ listeningAnswers, listeningTestNumber =
     const evaluate = async () => {
       try {
         const payload = {
-          test: 'IELTS 21 Academic Test 1',
+          test: testTitle,
           listening: { answers: listeningAnswers, rawScore: listeningRaw, band: listeningBand },
           reading: { answers: readingAnswers, rawScore: readingRaw, band: readingBand },
           writing: writingAnswers,
@@ -209,7 +210,7 @@ export default function FullTestResult({ listeningAnswers, listeningTestNumber =
     }
     evaluate()
     return () => { cancelled = true }
-  }, [listeningAnswers, listeningBand, listeningRaw, readingAnswers, readingBand, readingRaw, speakingRecordings, writingAnswers])
+  }, [listeningAnswers, listeningBand, listeningRaw, readingAnswers, readingBand, readingRaw, speakingRecordings, writingAnswers, testTitle])
 
   useEffect(() => {
     if (!report || analysisState === 'analysing' || resultSaved.current) return
@@ -219,7 +220,7 @@ export default function FullTestResult({ listeningAnswers, listeningTestNumber =
       userId: user?.id || '',
       userName: user?.name || 'Student',
       userEmail: user?.email || '',
-      testTitle: 'IELTS 21 — Complete Academic Test 1',
+      testTitle,
       testType: 'Full Test' as const,
       completedAt: new Date().toISOString(),
       overallBand: report.overallBand,
@@ -234,7 +235,7 @@ export default function FullTestResult({ listeningAnswers, listeningTestNumber =
     }
     // saveExamResult already syncs to Supabase; a second direct call created a duplicate row
     saveExamResult(resultObj, user?.email)
-  }, [analysisState, report, user])
+  }, [analysisState, report, user, testTitle])
 
   if (!report || analysisState === 'analysing') {
     return (
