@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import Icon from '../components/Icon'
 import { evaluateEssayApi, saveExamResultApi, type WritingEvaluationResult } from '../lib/api'
 import { useAuth } from '../lib/authContext'
 
@@ -233,7 +234,7 @@ export default function WritingEval() {
 
           {error && (
             <div className="p-3 bg-rose-50 border border-rose-200 text-xs text-rose-800 rounded">
-              ⚠️ {error}
+              <Icon name="alert" /> {error}
             </div>
           )}
 
@@ -251,7 +252,7 @@ export default function WritingEval() {
                 Analyzing Essay with Linguistic Engine...
               </span>
             ) : (
-              '⚡ Evaluate Essay with AI'
+              <><Icon name="zap" /> Evaluate Essay with AI</>
             )}
           </button>
         </div>
@@ -281,7 +282,7 @@ export default function WritingEval() {
                       </span>
                     ) : feedback.aiEngine ? (
                       <span className="text-[10px] font-mono font-semibold bg-rose-50 text-accent border border-rose-200 px-2 py-0.5 rounded">
-                        ⚡ {feedback.aiEngine}
+                        <Icon name="zap" /> {feedback.aiEngine}
                       </span>
                     ) : null}
                   </div>
@@ -343,7 +344,7 @@ export default function WritingEval() {
                     onClick={handleSaveResult}
                     className="w-full py-2 px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded transition-colors"
                   >
-                    💾 Save this Score to My Practice Records
+                    <Icon name="save" /> Save this Score to My Practice Records
                   </button>
                 )}
               </div>
