@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import Icon from '../components/Icon'
 import { generateDocumentApi, saveApplicationDocumentApi } from '../lib/api'
 import { useAuth } from '../lib/authContext'
 import { themeText } from '../lib/theme'
@@ -766,7 +767,7 @@ export default function DocGenerator() {
                   Generating Document...
                 </span>
               ) : (
-                `⚡ Generate Document`
+                <><Icon name="zap" /> Generate Document</>
               )}
             </button>
             <p className="text-[10px] leading-relaxed text-subtle">
@@ -798,7 +799,7 @@ export default function DocGenerator() {
 
             <div className="flex items-center gap-2">
               <span className="mono text-[9px] px-2 py-1 bg-surface-2 text-ink border border-divider rounded">
-                ⚡ {isGenerated ? docSource : 'AWAITING GENERATION'}
+                <Icon name="zap" /> {isGenerated ? docSource : 'AWAITING GENERATION'}
               </span>
               {isGenerated && (
                 <button
@@ -848,14 +849,14 @@ export default function DocGenerator() {
               {!isGenerated || !generatedText ? (
                 <div className="flex-1 flex flex-col items-center justify-center text-center py-16 px-4">
                   <div className="w-14 h-14 rounded-full bg-surface-2 border border-divider flex items-center justify-center text-2xl mb-3 text-subtle">
-                    📄
+                    <Icon name="file" />
                   </div>
                   <div className="text-base font-semibold text-ink plex mb-1">
                     {isFormProperlyFilled ? 'Ready to Generate' : 'Input Details to Begin'}
                   </div>
                   <p className="text-xs text-subtle max-w-md leading-relaxed" style={{ fontFamily: 'Inter, sans-serif' }}>
                     {isFormProperlyFilled
-                      ? `Your details are ready. Click the "⚡ Generate Document" button on the left to generate your custom ${DOC_TYPES.find(d => d.id === docType)?.label}.`
+                      ? `Your details are ready. Click the "Generate Document" button on the left to generate your custom ${DOC_TYPES.find(d => d.id === docType)?.label}.`
                       : `Enter your details in the form on the left. The document will only be generated once you click the Generate button.`}
                   </p>
                 </div>
