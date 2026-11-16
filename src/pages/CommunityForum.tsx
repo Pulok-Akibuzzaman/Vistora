@@ -284,7 +284,7 @@ export default function CommunityForum() {
                   className={`mono text-[10px] px-2.5 py-0.5 rounded transition-all flex items-center gap-1 font-semibold cursor-pointer border ${
                     activeThread.adminPinned || activeThread.pinned
                       ? 'bg-amber-100 text-amber-900 border-amber-300 hover:bg-amber-200'
-                      : 'text-amber-700 bg-amber-50 border-amber-200 hover:bg-amber-100'
+                      : 'text-amber-800 bg-amber-50 border-amber-200 hover:bg-amber-100'
                   }`}
                   title="Admin action: Pin or unpin this thread"
                 >
@@ -318,7 +318,7 @@ export default function CommunityForum() {
                 ▲ Upvote ({activeThread.upvotes || 0})
               </button>
               <span className="h-4 w-px bg-divider mx-1" />
-              <span className={`font-mono text-xs font-extrabold px-1.5 ${netScore > 0 ? 'text-emerald-700' : netScore < 0 ? 'text-rose-600' : 'text-ink'}`}>
+              <span className={`font-mono text-xs font-extrabold px-1.5 ${netScore > 0 ? 'text-emerald-800' : netScore < 0 ? 'text-rose-600' : 'text-ink'}`}>
                 {netScore > 0 ? `+${netScore}` : netScore}
               </span>
               <span className="h-4 w-px bg-divider mx-1" />
@@ -634,7 +634,7 @@ export default function CommunityForum() {
                         className={`mono text-[10px] px-2 py-0.5 rounded transition-all flex items-center gap-1 font-semibold cursor-pointer border ml-auto sm:ml-2 shadow-xs ${
                           thread.adminPinned || thread.pinned
                             ? 'bg-amber-100 text-amber-900 border-amber-300 hover:bg-amber-200'
-                            : 'text-amber-700 bg-amber-50 border-amber-200 hover:bg-amber-100'
+                            : 'text-amber-800 bg-amber-50 border-amber-200 hover:bg-amber-100'
                         }`}
                         title="Admin action: Pin or unpin this thread"
                       >
@@ -672,7 +672,7 @@ export default function CommunityForum() {
                     >
                       ▲ {thread.upvotes || 0}
                     </button>
-                    <span className={`font-mono text-xs font-extrabold px-1.5 ${netScore > 0 ? 'text-emerald-700' : netScore < 0 ? 'text-rose-600' : 'text-ink'}`}>
+                    <span className={`font-mono text-xs font-extrabold px-1.5 ${netScore > 0 ? 'text-emerald-800' : netScore < 0 ? 'text-rose-600' : 'text-ink'}`}>
                       {netScore > 0 ? `+${netScore}` : netScore}
                     </span>
                     <button

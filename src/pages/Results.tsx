@@ -55,13 +55,13 @@ function getResultTest(result: StoredExamResult) {
 function getTestTypeBadge(testType: string) {
   switch (testType) {
     case 'Speaking':
-      return { label: 'Speaking', bg: 'bg-purple-50 text-purple-700 border-purple-200' }
+      return { label: 'Speaking', bg: 'bg-purple-50 text-purple-800 border-purple-200' }
     case 'Reading':
-      return { label: 'Reading', bg: 'bg-sky-50 text-sky-700 border-sky-200' }
+      return { label: 'Reading', bg: 'bg-sky-50 text-sky-800 border-sky-200' }
     case 'Listening':
-      return { label: 'Listening', bg: 'bg-emerald-50 text-emerald-700 border-emerald-200' }
+      return { label: 'Listening', bg: 'bg-emerald-50 text-emerald-800 border-emerald-200' }
     case 'Writing':
-      return { label: 'Writing', bg: 'bg-amber-50 text-amber-700 border-amber-200' }
+      return { label: 'Writing', bg: 'bg-amber-50 text-amber-800 border-amber-200' }
     default:
       return { label: 'Full Test', bg: 'bg-slate-100 text-slate-700 border-slate-300' }
   }
@@ -241,7 +241,7 @@ function ResultDetail({ result, userName }: { result: StoredExamResult; userName
         {/* Examiner Commentary */}
         {result.comment && (
           <div className="mt-6 rounded-sm border-l-4 border-rose-500 bg-rose-50/50 p-5 text-sm leading-relaxed text-ink">
-            <div className="flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-wider text-rose-700">
+            <div className="flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-wider text-rose-800">
               <span><Icon name="mic" /> Examiner Assessment & Commentary</span>
             </div>
             <p className="mt-2 font-plex text-sm text-graphite">{result.comment}</p>
@@ -425,7 +425,7 @@ function ResultDetail({ result, userName }: { result: StoredExamResult; userName
                 className={`rounded-sm border px-3 py-1.5 font-mono text-xs font-semibold transition-colors ${
                   filterType === 'incorrect'
                     ? 'border-rose-600 bg-rose-600 text-white'
-                    : 'border-rose-200 bg-rose-50 text-rose-700 hover:border-rose-300'
+                    : 'border-rose-200 bg-rose-50 text-rose-800 hover:border-rose-300'
                 }`}
               >
                 Mistakes ({readingReviewItems.filter(item => !item.correct).length})
@@ -436,7 +436,7 @@ function ResultDetail({ result, userName }: { result: StoredExamResult; userName
                 className={`rounded-sm border px-3 py-1.5 font-mono text-xs font-semibold transition-colors ${
                   filterType === 'correct'
                     ? 'border-emerald-600 bg-emerald-600 text-white'
-                    : 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:border-emerald-300'
+                    : 'border-emerald-200 bg-emerald-50 text-emerald-800 hover:border-emerald-300'
                 }`}
               >
                 Correct ({readingReviewItems.filter(item => item.correct).length})
@@ -473,10 +473,10 @@ function ResultDetail({ result, userName }: { result: StoredExamResult; userName
                     <span
                       className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-mono text-xs font-semibold ${
                         item.correct
-                          ? 'border border-emerald-200 bg-emerald-50 text-emerald-700'
+                          ? 'border border-emerald-200 bg-emerald-50 text-emerald-800'
                           : item.unanswered
-                            ? 'border border-amber-200 bg-amber-50 text-amber-700'
-                            : 'border border-rose-200 bg-rose-50 text-rose-700'
+                            ? 'border border-amber-200 bg-amber-50 text-amber-800'
+                            : 'border border-rose-200 bg-rose-50 text-rose-800'
                       }`}
                     >
                       {item.correct ? '✓ Correct' : item.unanswered ? '○ Unanswered' : '✕ Incorrect'}
@@ -498,7 +498,7 @@ function ResultDetail({ result, userName }: { result: StoredExamResult; userName
                       <div className="font-mono text-[11px] uppercase tracking-wider text-graphite-light">Your Response</div>
                       <div
                         className={`mt-1 font-mono text-sm font-bold ${
-                          item.correct ? 'text-emerald-700' : 'text-rose-600'
+                          item.correct ? 'text-emerald-800' : 'text-rose-600'
                         }`}
                       >
                         {item.userAns || <span className="font-normal italic text-graphite-light">(No answer given)</span>}
@@ -572,7 +572,7 @@ function ResultDetail({ result, userName }: { result: StoredExamResult; userName
                 className={`rounded-sm border px-3 py-1.5 font-mono text-xs font-semibold transition-colors ${
                   filterType === 'incorrect'
                     ? 'border-rose-600 bg-rose-600 text-white'
-                    : 'border-rose-200 bg-rose-50 text-rose-700 hover:border-rose-300'
+                    : 'border-rose-200 bg-rose-50 text-rose-800 hover:border-rose-300'
                 }`}
               >
                 Mistakes ({listeningReviewItems.filter(item => !item.correct).length})
@@ -583,7 +583,7 @@ function ResultDetail({ result, userName }: { result: StoredExamResult; userName
                 className={`rounded-sm border px-3 py-1.5 font-mono text-xs font-semibold transition-colors ${
                   filterType === 'correct'
                     ? 'border-emerald-600 bg-emerald-600 text-white'
-                    : 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:border-emerald-300'
+                    : 'border-emerald-200 bg-emerald-50 text-emerald-800 hover:border-emerald-300'
                 }`}
               >
                 Correct ({listeningReviewItems.filter(item => item.correct).length})
@@ -615,10 +615,10 @@ function ResultDetail({ result, userName }: { result: StoredExamResult; userName
                   <span
                     className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 font-mono text-xs font-semibold ${
                       item.correct
-                        ? 'border border-emerald-200 bg-emerald-50 text-emerald-700'
+                        ? 'border border-emerald-200 bg-emerald-50 text-emerald-800'
                         : item.unanswered
-                          ? 'border border-amber-200 bg-amber-50 text-amber-700'
-                          : 'border border-rose-200 bg-rose-50 text-rose-700'
+                          ? 'border border-amber-200 bg-amber-50 text-amber-800'
+                          : 'border border-rose-200 bg-rose-50 text-rose-800'
                     }`}
                   >
                     {item.correct ? '✓ Correct' : item.unanswered ? '○ Unanswered' : '✕ Incorrect'}
@@ -634,7 +634,7 @@ function ResultDetail({ result, userName }: { result: StoredExamResult; userName
                 <div className="mt-3 grid gap-3 sm:grid-cols-2">
                   <div className="rounded-sm border border-divider p-2.5">
                     <div className="font-mono text-[10px] uppercase text-graphite-light">Your Response</div>
-                    <div className={`mt-0.5 font-mono text-sm font-bold ${item.correct ? 'text-emerald-700' : 'text-rose-600'}`}>
+                    <div className={`mt-0.5 font-mono text-sm font-bold ${item.correct ? 'text-emerald-800' : 'text-rose-600'}`}>
                       {item.userAns || <span className="font-normal italic text-graphite-light">(No answer)</span>}
                     </div>
                   </div>

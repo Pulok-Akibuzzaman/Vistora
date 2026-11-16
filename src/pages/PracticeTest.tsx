@@ -3322,7 +3322,7 @@ export default function PracticeTest() {
                   onClick={() => setResultFilter('incorrect')}
                   className={`rounded-sm border px-3 py-1.5 font-mono text-xs font-semibold transition-colors ${resultFilter === 'incorrect'
                     ? 'border-rose-600 bg-rose-600 text-white'
-                    : 'border-rose-200 bg-rose-50 text-rose-700 hover:border-rose-300'
+                    : 'border-rose-200 bg-rose-50 text-rose-800 hover:border-rose-300'
                     }`}
                 >
                   Mistakes ({reviewItems.filter(item => !item.correct).length})
@@ -3332,7 +3332,7 @@ export default function PracticeTest() {
                   onClick={() => setResultFilter('correct')}
                   className={`rounded-sm border px-3 py-1.5 font-mono text-xs font-semibold transition-colors ${resultFilter === 'correct'
                     ? 'border-emerald-600 bg-emerald-600 text-white'
-                    : 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:border-emerald-300'
+                    : 'border-emerald-200 bg-emerald-50 text-emerald-800 hover:border-emerald-300'
                     }`}
                 >
                   Correct ({reviewItems.filter(item => item.correct).length})
@@ -3367,10 +3367,10 @@ export default function PracticeTest() {
                       </div>
                       <span
                         className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-mono text-xs font-semibold ${item.correct
-                          ? 'border border-emerald-200 bg-emerald-50 text-emerald-700'
+                          ? 'border border-emerald-200 bg-emerald-50 text-emerald-800'
                           : item.unanswered
-                            ? 'border border-amber-200 bg-amber-50 text-amber-700'
-                            : 'border border-rose-200 bg-rose-50 text-rose-700'
+                            ? 'border border-amber-200 bg-amber-50 text-amber-800'
+                            : 'border border-rose-200 bg-rose-50 text-rose-800'
                           }`}
                       >
                         {item.correct ? '✓ Correct' : item.unanswered ? '○ Unanswered' : '✕ Incorrect'}
@@ -3388,7 +3388,7 @@ export default function PracticeTest() {
                       >
                         <div className="font-mono text-[11px] uppercase tracking-wider text-graphite-light">Your Response</div>
                         <div
-                          className={`mt-1 font-mono text-sm font-bold ${item.correct ? 'text-emerald-700' : 'text-rose-600'
+                          className={`mt-1 font-mono text-sm font-bold ${item.correct ? 'text-emerald-800' : 'text-rose-600'
                             }`}
                         >
                           {item.userAns || <span className="font-normal italic text-graphite-light">(No answer given)</span>}

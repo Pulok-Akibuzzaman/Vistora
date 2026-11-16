@@ -675,7 +675,7 @@ export default function AdminDashboard() {
                           <div key={q.id} className="p-3 bg-surface border border-divider rounded">
                             <div className="flex items-center justify-between">
                               <span className="font-mono text-xs font-bold text-ink">Q{q.id} ({q.kind})</span>
-                              <span className="font-mono text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                              <span className="font-mono text-[10px] text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
                                 Key: {Array.isArray(scannedAnswers[q.id]) ? scannedAnswers[q.id].join(' / ') : String(scannedAnswers[q.id] || '—')}
                               </span>
                             </div>

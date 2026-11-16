@@ -787,7 +787,7 @@ export default function DocGenerator() {
                   ● GENERATED
                 </span>
               ) : isFormProperlyFilled ? (
-                <span className="mono text-[9px] px-2 py-0.5 bg-blue-50 text-blue-700 border border-blue-200 rounded font-semibold">
+                <span className="mono text-[9px] px-2 py-0.5 bg-blue-50 text-blue-800 border border-blue-200 rounded font-semibold">
                   READY TO GENERATE
                 </span>
               ) : (
