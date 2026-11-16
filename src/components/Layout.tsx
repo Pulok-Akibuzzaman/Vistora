@@ -240,7 +240,7 @@ export default function Layout() {
             {FOOTER_LINKS.map(col => (
               <div key={col.title}>
                 <div className="mono text-[10px] text-ink-4 tracking-widest mb-3">{col.title.toUpperCase()}</div>
-                {col.links.map(link => <NavLink key={link.to} to={link.to} className="block text-muted text-[11px] hover:text-subtle transition-colors mb-1.5" style={{ fontFamily: 'Inter, sans-serif' }}>{link.label}</NavLink>)}
+                {col.links.map(link => <NavLink key={link.to} to={link.to} className="block text-muted text-[11px] hover:text-subtle transition-colors mb-1.5">{link.label}</NavLink>)}
               </div>
             ))}
           </div>

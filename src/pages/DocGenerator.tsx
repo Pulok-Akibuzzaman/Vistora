@@ -645,7 +645,7 @@ export default function DocGenerator() {
     <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-8">
       <div className="label-tag mb-1 no-print">AI DOCUMENT GENERATOR · VISTORA</div>
       <h1 className="text-2xl font-bold text-ink plex tracking-tight mb-1 no-print">Application Document Generator</h1>
-      <p className="text-sm text-muted mb-6 no-print" style={{ fontFamily: 'Inter, sans-serif' }}>
+      <p className="text-sm text-muted mb-6 no-print">
         Generate custom, professionally structured academic and career documents tailored to your profile.
       </p>
 
@@ -691,7 +691,7 @@ export default function DocGenerator() {
                 </div>
               </div>
             </div>
-            <div className="mt-4 text-xs leading-5 text-subtle" style={{ fontFamily: 'Inter, sans-serif' }}>
+            <div className="mt-4 text-xs leading-5 text-subtle">
               {d.desc}
             </div>
             <div className={`mt-auto pt-5 text-[11px] font-semibold transition-colors ${
@@ -723,14 +723,14 @@ export default function DocGenerator() {
                     onChange={e => handleFieldChange(f.key, e.target.value)}
                     placeholder={`Enter your ${f.label.toLowerCase()}...`}
                     className="w-full border border-divider focus:border-[#DC2626] px-3 py-2 text-[12px] text-graphite outline-none resize-none transition-colors bg-paper"
-                    style={{ borderRadius: 3, fontFamily: 'Inter, sans-serif', minHeight: 72 }}
+                    style={{ borderRadius: 3, minHeight: 72 }}
                   />
                 ) : f.type === 'select' ? (
                   <select
                     value={form[f.key] || ''}
                     onChange={e => handleFieldChange(f.key, e.target.value)}
                     className="w-full border border-divider focus:border-[#DC2626] px-3 py-2 text-[12px] text-graphite outline-none bg-paper"
-                    style={{ borderRadius: 3, fontFamily: 'Inter, sans-serif' }}
+                    style={{ borderRadius: 3 }}
                   >
                     <option value="">Select...</option>
                     {f.options?.map(o => (
@@ -746,7 +746,7 @@ export default function DocGenerator() {
                     onChange={e => handleFieldChange(f.key, e.target.value)}
                     placeholder={f.key === 'name' ? (user?.name ? `e.g. ${user.name}` : 'Enter your full name...') : `Enter ${f.label.toLowerCase()}...`}
                     className="w-full border border-divider focus:border-[#DC2626] px-3 py-2 text-[12px] text-graphite outline-none bg-paper transition-colors"
-                    style={{ borderRadius: 3, fontFamily: 'Inter, sans-serif' }}
+                    style={{ borderRadius: 3 }}
                   />
                 )}
               </div>
@@ -854,7 +854,7 @@ export default function DocGenerator() {
                   <div className="text-base font-semibold text-ink plex mb-1">
                     {isFormProperlyFilled ? 'Ready to Generate' : 'Input Details to Begin'}
                   </div>
-                  <p className="text-xs text-subtle max-w-md leading-relaxed" style={{ fontFamily: 'Inter, sans-serif' }}>
+                  <p className="text-xs text-subtle max-w-md leading-relaxed">
                     {isFormProperlyFilled
                       ? `Your details are ready. Click the "Generate Document" button on the left to generate your custom ${DOC_TYPES.find(d => d.id === docType)?.label}.`
                       : `Enter your details in the form on the left. The document will only be generated once you click the Generate button.`}
@@ -866,7 +866,7 @@ export default function DocGenerator() {
                     value={generatedText}
                     onChange={e => setGeneratedText(e.target.value)}
                     className="w-full text-[13px] text-graphite leading-[1.85] outline-none border-none resize-y bg-transparent flex-1 print:hidden"
-                    style={{ fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', minHeight: 520 }}
+                    style={{ fontFamily: 'Manrope, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', minHeight: 520 }}
                     placeholder="Your generated document will appear here..."
                   />
                   <div className="hidden print:block text-ink whitespace-pre-wrap font-serif text-[11pt] leading-[1.6]">

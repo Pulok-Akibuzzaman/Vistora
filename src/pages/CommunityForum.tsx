@@ -349,7 +349,7 @@ export default function CommunityForum() {
               </span>
             </div>
           </div>
-          <p className="text-[13px] text-graphite leading-[1.8] whitespace-pre-line" style={{ fontFamily: 'Inter, sans-serif' }}>
+          <p className="text-[13px] text-graphite leading-[1.8] whitespace-pre-line">
             {activeThread.content || activeThread.preview}
           </p>
           <div className="flex items-center gap-2 mt-4">
@@ -384,7 +384,7 @@ export default function CommunityForum() {
                       <span className="text-xs font-medium text-ink plex">{rep.author}</span>
                       <span className="mono text-[10px] text-subtle">{rep.time}</span>
                     </div>
-                    <p className="text-[12px] text-graphite leading-relaxed whitespace-pre-line" style={{ fontFamily: 'Inter, sans-serif' }}>
+                    <p className="text-[12px] text-graphite leading-relaxed whitespace-pre-line">
                       {rep.content}
                     </p>
                   </div>
@@ -414,7 +414,7 @@ export default function CommunityForum() {
               onChange={e => setReplyText(e.target.value)}
               placeholder={`Write a helpful reply as ${user?.name || 'Student Candidate'}...`}
               className="w-full border border-divider focus:border-[#DC2626] px-4 py-3 text-[12px] outline-none resize-none bg-surface rounded"
-              style={{ fontFamily: 'Inter, sans-serif', minHeight: 90 }}
+              style={{ minHeight: 90 }}
               required
             />
             <div className="flex justify-between items-center mt-2">
@@ -442,7 +442,7 @@ export default function CommunityForum() {
         <div>
           <div className="label-tag mb-1">COMMUNITY FORUM · LIVE PEER LEARNING</div>
           <h1 className="text-2xl font-bold text-ink plex tracking-tight">IELTS Discussion Forum</h1>
-          <p className="text-sm text-muted mt-0.5" style={{ fontFamily: 'Inter, sans-serif' }}>
+          <p className="text-sm text-muted mt-0.5">
             Open community discussions: ask questions, share preparation strategies, upvote or downvote helpful insights, and reply to fellow candidates.
           </p>
         </div>

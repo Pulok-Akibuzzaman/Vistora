@@ -48,7 +48,7 @@ function BandArc({ score, target }: { score: number | null; target: number }) {
       <text x={cx} y={cy + 10} textAnchor="middle" fontSize="7" className="fill-subtle" fontFamily="Roboto Mono">
         {score !== null ? '/ 9.0' : 'No Attempts'}
       </text>
-      <text x={cx} y={cy + 22} textAnchor="middle" fontSize="6.5" className="fill-muted" fontFamily="Inter, sans-serif">
+      <text x={cx} y={cy + 22} textAnchor="middle" fontSize="6.5" className="fill-muted" fontFamily="Manrope, sans-serif">
         {score !== null ? 'Overall' : 'Diagnostic Pending'}
       </text>
     </svg>
@@ -150,7 +150,7 @@ export default function Dashboard() {
         <div>
           <div className="label-tag mb-1">STUDENT DASHBOARD · ACADEMIC PREPARATION</div>
           <h1 className="text-2xl font-bold text-ink plex tracking-tight">Welcome back, {firstName}</h1>
-          <p className="text-sm text-muted mt-0.5" style={{ fontFamily: 'Inter, sans-serif' }}>
+          <p className="text-sm text-muted mt-0.5">
             Current Overall Band:{' '}
             <span className="mono text-accent font-semibold">
               {overallBand !== null ? overallBand.toFixed(1) : '— (No attempts yet)'}
@@ -192,7 +192,7 @@ export default function Dashboard() {
           <div className="flex flex-col items-center">
             <BandArc score={overallBand} target={targetBand} />
             <div className="mt-3 text-center">
-              <div className="text-[11px] text-subtle" style={{ fontFamily: 'Inter, sans-serif' }}>
+              <div className="text-[11px] text-subtle">
                 Target: <span className="mono text-accent font-medium">{targetBand.toFixed(1)}</span>
               </div>
               <div className="text-[11px] text-subtle mt-0.5">
@@ -287,7 +287,7 @@ export default function Dashboard() {
                           }}
                         />
                       </div>
-                      <span className="text-[10px] text-subtle" style={{ fontFamily: 'Inter, sans-serif' }}>
+                      <span className="text-[10px] text-subtle">
                         {hasScore ? (
                           scoreVal < s.target
                             ? `+${(s.target - scoreVal).toFixed(1)} needed`
@@ -316,7 +316,7 @@ export default function Dashboard() {
               <span className="w-1 h-4 bg-[#BE123C]" style={{ borderRadius: 1 }} />
               <span className="text-sm font-semibold text-ink plex">Recent Activity & Submissions</span>
             </div>
-            <NavLink to="/results" className="text-[11px] text-accent hover:underline" style={{ fontFamily: 'Inter, sans-serif' }}>
+            <NavLink to="/results" className="text-[11px] text-accent hover:underline">
               View full report →
             </NavLink>
           </div>
@@ -457,7 +457,7 @@ export default function Dashboard() {
               placeholder="e.g. Listen to Cambridge 18 Test 2 Part 3"
               rows={3}
               className="mt-3 w-full resize-none border border-divider bg-surface-2 px-3 py-2.5 text-[12px] leading-relaxed text-ink outline-none focus:border-[#DC2626]"
-              style={{ borderRadius: 3, fontFamily: 'Inter, sans-serif' }}
+              style={{ borderRadius: 3 }}
             />
             <button
               type="submit"

@@ -80,7 +80,7 @@ export default function UserProfile() {
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <h1 className="text-xl font-bold text-ink plex">{user?.name}</h1>
-                <div className="text-sm text-muted mt-0.5" style={{ fontFamily: 'Inter, sans-serif' }}>{user?.email}</div>
+                <div className="text-sm text-muted mt-0.5">{user?.email}</div>
                 <div className="flex flex-wrap items-center gap-2 mt-2">
                   <span className="mono text-[10px] text-muted border border-divider px-2 py-0.5" style={{ borderRadius: 2 }}>{user?.country || 'Bangladesh'}</span>
                   <span className="mono text-[10px] text-muted border border-divider px-2 py-0.5" style={{ borderRadius: 2 }}>{user?.institution || 'East West University'}</span>

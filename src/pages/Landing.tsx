@@ -252,7 +252,7 @@ export default function Landing() {
             </span>
           </h1>
 
-          <p className="hero-in text-subtle text-lg leading-relaxed max-w-2xl mx-auto mb-10" style={cssVars({ '--delay': '400ms', fontFamily: 'Inter, sans-serif' })}>
+          <p className="hero-in text-subtle text-lg leading-relaxed max-w-2xl mx-auto mb-10" style={cssVars({ '--delay': '400ms' })}>
             {isAuthenticated ? (
               <>
                 Welcome back to your personalized IELTS workspace, <span className="text-white font-medium">{user?.name || 'Candidate'}</span>. Continue your preparation, review AI writing feedback, or take full timed mock tests targeting <strong className="text-white font-semibold">Band {user?.targetBand ?? 7.5}</strong>.
@@ -300,7 +300,7 @@ export default function Landing() {
             {platformStats.map((s, i) => (
               <div key={s.label} className="hero-in text-center" style={cssVars({ '--delay': `${680 + i * 90}ms` })}>
                 <div className="mono text-2xl font-semibold text-white tabular-nums"><CountUp value={s.val} delay={700 + i * 90} /></div>
-                <div className="text-[11px] text-muted mt-0.5" style={{ fontFamily: 'Inter, sans-serif' }}>{s.label}</div>
+                <div className="text-[11px] text-muted mt-0.5">{s.label}</div>
               </div>
             ))}
           </div>
@@ -331,7 +331,7 @@ export default function Landing() {
           <h2 className="text-3xl font-bold text-ink tracking-tight" style={{ fontFamily: 'IBM Plex Sans, sans-serif' }}>
             Everything You Need to Achieve Band 8+
           </h2>
-          <p className="text-muted mt-3 max-w-xl mx-auto text-sm" style={{ fontFamily: 'Inter, sans-serif' }}>
+          <p className="text-muted mt-3 max-w-xl mx-auto text-sm">
             A complete IELTS preparation ecosystem, from first diagnostic to day-of exam confidence.
           </p>
         </Reveal>
@@ -356,7 +356,7 @@ export default function Landing() {
                       <span className="mono text-[9px] tracking-widest" style={{ color: themeText(f.color) }}>{f.tag}</span>
                     </div>
                     <h3 className="text-[15px] font-semibold text-ink mb-2" style={{ fontFamily: 'IBM Plex Sans, sans-serif' }}>{f.title}</h3>
-                    <p className="text-[12px] text-muted leading-relaxed" style={{ fontFamily: 'Inter, sans-serif' }}>{f.desc}</p>
+                    <p className="text-[12px] text-muted leading-relaxed">{f.desc}</p>
                   </div>
                   <span className="absolute bottom-0 left-0 h-[2px] w-full origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-500" style={{ background: f.color }} />
                 </div>
@@ -403,7 +403,7 @@ export default function Landing() {
                   >
                     <div className={`mono text-3xl font-semibold mb-3 transition-colors duration-300 ${active ? 'text-accent' : passed ? 'text-[#FCA5A5]' : 'text-faint-2'}`}>{s.num}</div>
                     <h3 className="text-[14px] font-semibold text-ink mb-2" style={{ fontFamily: 'IBM Plex Sans, sans-serif' }}>{s.title}</h3>
-                    <p className="text-[12px] text-muted leading-relaxed" style={{ fontFamily: 'Inter, sans-serif' }}>{s.desc}</p>
+                    <p className="text-[12px] text-muted leading-relaxed">{s.desc}</p>
                     {active && autoAdvance && (
                       <span key={activeStep} className="step-timer absolute bottom-0 left-0 h-[2px] w-full bg-[#DC2626]" style={cssVars({ '--duration': `${STEP_INTERVAL}ms` })} />
                     )}
@@ -439,7 +439,7 @@ export default function Landing() {
                   </div>
                   <div className="flex-1">
                     <div className="text-sm font-semibold text-ink plex">{t.name}</div>
-                    <div className="text-[11px] text-subtle" style={{ fontFamily: 'Inter, sans-serif' }}>{t.country}</div>
+                    <div className="text-[11px] text-subtle">{t.country}</div>
                   </div>
                   <div className="text-right">
                     <div className="mono text-xs text-subtle line-through">{t.prev}</div>
@@ -448,7 +448,7 @@ export default function Landing() {
                     </div>
                   </div>
                 </div>
-                <p className="text-[12px] text-graphite leading-relaxed mb-3" style={{ fontFamily: 'Inter, sans-serif' }}>"{t.text}"</p>
+                <p className="text-[12px] text-graphite leading-relaxed mb-3">"{t.text}"</p>
                 <div className="mono text-[10px] text-subtle tracking-wide">{t.program}</div>
               </div>
             </Reveal>
@@ -467,7 +467,7 @@ export default function Landing() {
           <h2 className="text-3xl font-bold text-white mb-4 tracking-tight" style={{ fontFamily: 'IBM Plex Sans, sans-serif' }}>
             {isAuthenticated ? `Keep Pushing Toward Band ${user?.targetBand ?? 7.5}` : 'Your Target Band Score Is Within Reach'}
           </h2>
-          <p className="text-muted text-sm mb-8" style={{ fontFamily: 'Inter, sans-serif' }}>
+          <p className="text-muted text-sm mb-8">
             {isAuthenticated
               ? 'Jump back into your diagnostics, timed mock tests, AI writing evaluations, and official exam dates.'
               : 'Join ambitious candidates preparing for their IELTS Academic and General Training goals with Vistora AI.'}

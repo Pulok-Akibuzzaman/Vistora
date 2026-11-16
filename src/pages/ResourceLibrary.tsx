@@ -156,7 +156,7 @@ export default function ResourceLibrary() {
         <div>
           <div className="label-tag mb-1">RESOURCE LIBRARY · CONNECTED TO LOCAL DATABASE & OFFICIAL SOURCES</div>
           <h1 className="text-2xl font-bold text-ink plex tracking-tight">Study Materials & Official Books</h1>
-          <p className="text-sm text-muted mt-0.5" style={{ fontFamily: 'Inter, sans-serif' }}>
+          <p className="text-sm text-muted mt-0.5">
             Official Cambridge past papers (streamed from Database), authentic study guides, band descriptors, and examiner templates.
           </p>
         </div>
@@ -210,14 +210,14 @@ export default function ResourceLibrary() {
             value={search}
             onChange={e => setSearch(e.target.value)}
             className="w-full border border-divider focus:border-[#DC2626] pl-8 pr-4 py-2.5 text-[13px] text-graphite outline-none bg-surface transition-colors"
-            style={{ borderRadius: 4, fontFamily: 'Inter, sans-serif' }}
+            style={{ borderRadius: 4 }}
           />
         </div>
         <select
           value={difficulty}
           onChange={e => setDifficulty(e.target.value)}
           className="border border-divider focus:border-[#DC2626] px-3 py-2.5 text-[12px] text-graphite outline-none bg-surface"
-          style={{ borderRadius: 4, fontFamily: 'Inter, sans-serif' }}
+          style={{ borderRadius: 4 }}
         >
           <option value="All">All Difficulty Levels</option>
           <option value="Official">Official Past Papers</option>
@@ -288,7 +288,6 @@ export default function ResourceLibrary() {
               </h3>
               <p
                 className="text-[11px] text-muted leading-relaxed mb-3"
-                style={{ fontFamily: 'Inter, sans-serif' }}
               >
                 {r.desc}
               </p>
@@ -400,7 +399,7 @@ export default function ResourceLibrary() {
             </div>
 
             {/* Modal Body */}
-            <div className="p-6 overflow-y-auto space-y-5 text-ink-3 text-sm leading-relaxed" style={{ fontFamily: 'Inter, sans-serif' }}>
+            <div className="p-6 overflow-y-auto space-y-5 text-ink-3 text-sm leading-relaxed">
               {/* Authenticity Verification Box */}
               <div className="p-3.5 bg-blue-50/70 border border-blue-200 rounded flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
                 <div>
