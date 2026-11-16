@@ -226,7 +226,8 @@ export default function ExamDates() {
       {dates.length > 0 ? (
         <section className="mt-4 grid gap-3.5">
           {dates.map(exam => {
-            const dateObj = new Date(exam.date)
+            // A bare YYYY-MM-DD string parses as UTC midnight, which is the previous day west of UTC
+            const dateObj = /^\d{4}-\d{2}-\d{2}$/.test(exam.date) ? new Date(`${exam.date}T00:00:00`) : new Date(exam.date)
             const monthStr = dateObj.toLocaleDateString('en-GB', { month: 'short' })
             const dayNum = dateObj.getDate()
             const yearNum = dateObj.getFullYear()
