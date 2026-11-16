@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import Icon from '../components/Icon'
 import { NavLink } from 'react-router'
 import { useAuth } from '../lib/authContext'
 import { fetchResults, type StoredExamResult } from '../lib/api'
@@ -94,7 +95,7 @@ export default function UserProfile() {
                 className="border border-divider text-ink font-semibold text-xs px-4 py-2 hover:bg-surface-2 transition-colors shadow-sm"
                 style={{ borderRadius: 3, fontFamily: 'IBM Plex Sans, sans-serif' }}
               >
-                ✏️ Edit Profile
+                <Icon name="pen" /> Edit Profile
               </button>
             </div>
 
@@ -247,7 +248,7 @@ export default function UserProfile() {
                 { title: 'Band 8 Target Club', desc: `Targeting Band ${(user?.targetBand || 8.0).toFixed(1)} for international graduate entry`, earned: true },
               ].map(ach => (
                 <div key={ach.title} className={`p-3 border rounded-sm flex items-start gap-3 ${ach.earned ? 'border-emerald-300/80 bg-emerald-50/70' : 'border-divider bg-surface-2'}`}>
-                  <span className="text-lg">{ach.earned ? '🏆' : '🔒'}</span>
+                  <span className="text-lg"><Icon name={ach.earned ? 'trophy' : 'lock'} /></span>
                   <div>
                     <div className={`text-xs font-semibold ${ach.earned ? 'text-ink' : 'text-ink-2'}`}>{ach.title}</div>
                     <div className={`text-[11px] mt-0.5 ${ach.earned ? 'text-muted' : 'text-ink-4'}`}>{ach.desc}</div>
@@ -294,13 +295,13 @@ export default function UserProfile() {
           <div className="bg-surface border border-divider p-5 space-y-2.5" style={{ borderRadius: 4 }}>
             <div className="label-tag mb-2">QUICK ACTIONS</div>
             <NavLink to="/practice" className="block w-full py-2.5 px-3 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold text-center rounded transition-colors">
-              🎧 Start Cambridge Listening Test
+              <Icon name="headphones" /> Start Cambridge Listening Test
             </NavLink>
             <NavLink to="/writing" className="block w-full py-2.5 px-3 bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold text-center rounded transition-colors">
-              ✍️ AI Writing Evaluation
+              <Icon name="pen" /> AI Writing Evaluation
             </NavLink>
             <NavLink to="/documents" className="block w-full py-2.5 px-3 border border-divider hover:bg-surface-2 text-ink text-xs font-semibold text-center rounded transition-colors">
-              📄 Generate SOP / CV
+              <Icon name="file" /> Generate SOP / CV
             </NavLink>
           </div>
         </div>
