@@ -3630,7 +3630,8 @@ export default function PracticeTest() {
                           setAudioUrl(getStreamUrl(b, num, 1))
                           setAudioName(`IELTS ${b} · Test ${num} · Part 1`)
                         }
-                        const matched = TESTS.find(test => test.type === selectedTest.type && test.book === b && test.testNumber === num)
+                        // Keep the chosen part: without it "Test 1 · Part 3" jumped to the full 40-question Test 2
+                        const matched = TESTS.find(test => test.type === selectedTest.type && test.book === b && test.testNumber === num && test.part === selectedTest.part)
                         if (matched) setSelectedTest(matched)
                       }}
                       className="w-full rounded border border-graphite-light/40 bg-surface px-3 py-2 font-plex text-xs text-ink focus:outline-none focus:ring-1 focus:ring-electric"
