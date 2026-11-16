@@ -41,7 +41,10 @@ function BandArc({ score, target }: { score: number | null; target: number }) {
       {score !== null && score > 0 && (
         <path d={arcPath(startAngle, scoreAngle, r)} fill="none" stroke="#DC2626" strokeWidth="7" strokeLinecap="round" />
       )}
-      <path d={arcPath(scoreAngle, targetAngle, r)} fill="none" className="stroke-electric-dim" strokeWidth="3" strokeLinecap="round" strokeDasharray="2 3" />
+      {/* Remaining gap to the target; skipped once the score has reached it, otherwise the arc would be drawn backwards */}
+      {targetAngle > scoreAngle && (
+        <path d={arcPath(scoreAngle, targetAngle, r)} fill="none" className="stroke-electric-dim" strokeWidth="3" strokeLinecap="round" strokeDasharray="2 3" />
+      )}
       <text x={cx} y={cy - 4} textAnchor="middle" fontSize={score !== null ? 18 : 16} fontWeight="700" className="fill-ink" fontFamily="Roboto Mono">
         {score !== null ? score.toFixed(1) : '—'}
       </text>
