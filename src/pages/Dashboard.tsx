@@ -187,7 +187,7 @@ export default function Dashboard() {
       {/* Top row: band + skills */}
       <div className="grid grid-cols-1 lg:grid-cols-[auto_1fr] gap-4 mb-4">
         {/* Overall Band card */}
-        <div className="bg-surface border border-divider p-6 w-64 corner-mark" style={{ borderRadius: 4 }}>
+        <div className="bg-surface border border-divider p-6 w-full lg:w-64 corner-mark" style={{ borderRadius: 4 }}>
           <div className="label-tag mb-4">OVERALL BAND SCORE</div>
           <div className="flex flex-col items-center">
             <BandArc score={overallBand} target={targetBand} />
