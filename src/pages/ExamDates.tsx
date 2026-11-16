@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from 'react'
+import Icon from '../components/Icon'
 import {
   BRITISH_COUNCIL_BANGLADESH_BOOKING_URL,
   ExamDateFilters,
@@ -178,7 +179,7 @@ export default function ExamDates() {
                   : 'border border-divider bg-surface-2 text-graphite hover:border-graphite-light'
               }`}
             >
-              📍 {city}
+              <Icon name="map-pin" /> {city}
             </button>
           ))}
           <div className="h-4 w-px bg-divider mx-1" />
@@ -191,7 +192,7 @@ export default function ExamDates() {
                 : 'border border-divider bg-surface-2 text-graphite hover:border-graphite-light'
             }`}
           >
-            💻 Computer-delivered
+            <Icon name="monitor" /> Computer-delivered
           </button>
           <button
             type="button"
@@ -202,7 +203,7 @@ export default function ExamDates() {
                 : 'border border-divider bg-surface-2 text-graphite hover:border-graphite-light'
             }`}
           >
-            📝 Paper-based
+            <Icon name="file" /> Paper-based
           </button>
         </div>
       </section>
@@ -218,7 +219,7 @@ export default function ExamDates() {
           rel="noreferrer"
           className="font-mono text-xs font-semibold text-accent hover:underline flex items-center gap-1"
         >
-          Open official booking website ↗
+          Open official booking website <Icon name="external" />
         </a>
       </div>
 
@@ -266,7 +267,7 @@ export default function ExamDates() {
                       </div>
 
                       <p className="mt-1.5 text-sm text-graphite-mid flex items-center gap-1.5">
-                        <span className="text-accent font-bold">📍</span>
+                        <span className="text-accent font-bold"><Icon name="map-pin" /></span>
                         <span className="font-medium text-ink">{exam.venue}</span>
                         <span className="text-graphite-light">({exam.city})</span>
                       </p>
@@ -274,7 +275,7 @@ export default function ExamDates() {
                       <div className="mt-3 flex flex-wrap items-center gap-2">
                         {exam.time && (
                           <span className="rounded-sm border border-divider bg-surface-2 px-2.5 py-1 font-mono text-xs text-graphite">
-                            ⏰ {exam.time}
+                            <Icon name="clock" /> {exam.time}
                           </span>
                         )}
                         <span
@@ -305,7 +306,7 @@ export default function ExamDates() {
                       className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-card bg-electric px-6 py-3 text-center font-plex text-sm font-semibold text-white shadow-xs transition-colors hover:bg-electric-hover active:scale-[0.98]"
                     >
                       Register on British Council
-                      <span>↗</span>
+                      <Icon name="external" />
                     </a>
                   </div>
                 </div>
@@ -317,7 +318,7 @@ export default function ExamDates() {
         /* Empty Filter State (Never a blank screen) */
         <section className="mt-4 border border-divider bg-surface p-10 text-center">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-surface-2 text-2xl">
-            📅
+            <Icon name="calendar" />
           </div>
           <h2 className="mt-3 font-plex text-lg font-bold text-ink">
             No exam sessions match your selected filter
@@ -342,15 +343,15 @@ export default function ExamDates() {
         </h3>
         <div className="mt-4 grid gap-4 sm:grid-cols-3 text-xs leading-5 text-graphite-mid">
           <div className="border border-divider-soft bg-surface-2 p-3.5 rounded-sm">
-            <div className="font-mono text-ink font-semibold uppercase tracking-wider mb-1">🏛️ Dhaka Centres</div>
+            <div className="font-mono text-ink font-semibold uppercase tracking-wider mb-1"><Icon name="landmark" /> Dhaka Centres</div>
             <p>Fuller Road (Dhaka University Campus), Banani Road 11, Dhanmondi Road 27, and Uttara Sector 7 partner venues.</p>
           </div>
           <div className="border border-divider-soft bg-surface-2 p-3.5 rounded-sm">
-            <div className="font-mono text-ink font-semibold uppercase tracking-wider mb-1">🌊 Chattogram Centres</div>
+            <div className="font-mono text-ink font-semibold uppercase tracking-wider mb-1"><Icon name="landmark" /> Chattogram Centres</div>
             <p>Agrabad Commercial Area Centre and GEC Circle Examination Centre with state-of-the-art computer labs.</p>
           </div>
           <div className="border border-divider-soft bg-surface-2 p-3.5 rounded-sm">
-            <div className="font-mono text-ink font-semibold uppercase tracking-wider mb-1">🌲 Sylhet Centres</div>
+            <div className="font-mono text-ink font-semibold uppercase tracking-wider mb-1"><Icon name="landmark" /> Sylhet Centres</div>
             <p>Zindabazar Testing Facility and Subidbazar Examination Hall providing weekly computer and paper sessions.</p>
           </div>
         </div>
