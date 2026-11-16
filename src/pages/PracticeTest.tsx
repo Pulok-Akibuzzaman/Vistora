@@ -2679,7 +2679,7 @@ export default function PracticeTest() {
       ? 'Review incorrect answers by section and practise predicting the required answer type before listening.'
       : selectedTest.type === 'Reading'
         ? 'Review passage evidence for missed questions and track which question types cause the most difficulty.'
-        : 'Writing response submitted. Connect the Gemini evaluation endpoint for criterion-level comments and a band estimate.'
+        : 'Writing response saved. Paste it into the AI Writing page for criterion-level feedback and a band estimate.'
 
     // The listening audio source can switch the test, so record the one that was actually taken
     const takenTestNumber = selectedTest.type === 'Listening' ? selectedTestNum : selectedTest.testNumber
