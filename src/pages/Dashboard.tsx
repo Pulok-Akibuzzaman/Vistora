@@ -1,4 +1,5 @@
 import { NavLink } from 'react-router'
+import Icon from '../components/Icon'
 import { FormEvent, useEffect, useState } from 'react'
 import { useAuth } from '../lib/authContext'
 import {
@@ -164,21 +165,21 @@ export default function Dashboard() {
             className="bg-[#DC2626] text-white text-xs font-semibold px-4 py-2.5 hover:bg-[#B91C1C] transition-colors shadow-sm"
             style={{ fontFamily: 'IBM Plex Sans, sans-serif', borderRadius: 4 }}
           >
-            🎧 Start Listening Practice
+            <Icon name="headphones" /> Start Listening Practice
           </NavLink>
           <NavLink
             to="/writing"
             className="bg-navy text-white text-xs font-semibold px-4 py-2.5 hover:bg-navy-mid transition-colors shadow-sm"
             style={{ fontFamily: 'IBM Plex Sans, sans-serif', borderRadius: 4 }}
           >
-            ✍️ AI Essay Evaluation
+            <Icon name="pen" /> AI Essay Evaluation
           </NavLink>
           <NavLink
             to="/documents"
             className="border border-divider bg-surface text-ink text-xs font-semibold px-4 py-2.5 hover:border-line-strong hover:bg-surface-2 transition-colors shadow-sm"
             style={{ fontFamily: 'IBM Plex Sans, sans-serif', borderRadius: 4 }}
           >
-            📄 AI Doc Generator
+            <Icon name="file" /> AI Doc Generator
           </NavLink>
         </div>
       </div>
