@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import Icon from '../components/Icon'
 import { NavLink } from 'react-router'
 import { fetchResults, deleteExamResultApi, type StoredExamResult } from '../lib/api'
 import { useAuth } from '../lib/authContext'
@@ -241,7 +242,7 @@ function ResultDetail({ result, userName }: { result: StoredExamResult; userName
         {result.comment && (
           <div className="mt-6 rounded-sm border-l-4 border-rose-500 bg-rose-50/50 p-5 text-sm leading-relaxed text-ink">
             <div className="flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-wider text-rose-700">
-              <span>🎙️ Examiner Assessment & Commentary</span>
+              <span><Icon name="mic" /> Examiner Assessment & Commentary</span>
             </div>
             <p className="mt-2 font-plex text-sm text-graphite-dark">{result.comment}</p>
           </div>
@@ -317,7 +318,7 @@ function ResultDetail({ result, userName }: { result: StoredExamResult; userName
                   onClick={handleCopyTranscript}
                   className="inline-flex items-center gap-2 self-start rounded-sm border border-divider bg-surface-2 px-3 py-1.5 font-mono text-xs font-semibold text-ink transition-colors hover:border-graphite"
                 >
-                  {copiedTranscript ? '✓ Copied!' : '📋 Copy Transcript'}
+                  <Icon name={copiedTranscript ? 'check-circle' : 'clipboard'} /> {copiedTranscript ? 'Copied!' : 'Copy Transcript'}
                 </button>
               )}
             </div>
@@ -446,7 +447,7 @@ function ResultDetail({ result, userName }: { result: StoredExamResult; userName
           <div className="mt-6 space-y-5">
             {filteredItems.length === 0 ? (
               <div className="py-8 text-center text-sm text-graphite-mid">
-                {filterType === 'incorrect' ? '🎉 Great job! You have no incorrect answers.' : 'No questions match this filter.'}
+                {filterType === 'incorrect' ? 'Great job! You have no incorrect answers.' : 'No questions match this filter.'}
               </div>
             ) : (
               (filteredItems as typeof readingReviewItems).map(item => (
@@ -515,7 +516,7 @@ function ResultDetail({ result, userName }: { result: StoredExamResult; userName
                   {item.explanation && (
                     <div className="mt-4 rounded-sm border border-divider bg-surface-2 p-4">
                       <div className="flex items-center gap-1.5 font-mono text-xs font-bold uppercase tracking-wider text-ink">
-                        <span>💡 Explanation</span>
+                        <span><Icon name="lightbulb" /> Explanation</span>
                       </div>
                       <p className="mt-1.5 font-plex text-sm leading-6 text-graphite">
                         {item.explanation}
@@ -526,7 +527,7 @@ function ResultDetail({ result, userName }: { result: StoredExamResult; userName
                   {item.passageReference && (
                     <div className="mt-3 rounded-sm border border-sky-100 bg-sky-50/40 p-4">
                       <div className="flex items-center gap-1.5 font-mono text-xs font-bold uppercase tracking-wider text-sky-800">
-                        <span>📖 Passage Evidence Excerpt</span>
+                        <span><Icon name="book-open" /> Passage Evidence Excerpt</span>
                       </div>
                       <blockquote className="mt-1.5 border-l-2 border-sky-400 pl-3 font-plex text-sm italic leading-6 text-sky-950">
                         {item.passageReference}
@@ -648,7 +649,7 @@ function ResultDetail({ result, userName }: { result: StoredExamResult; userName
                 {item.explanation && (
                   <div className="mt-4 rounded-sm border border-divider bg-surface-2 p-4">
                     <div className="flex items-center gap-1.5 font-mono text-xs font-bold uppercase tracking-wider text-ink">
-                      <span>💡 Why wrong / right & Audio Context</span>
+                      <span><Icon name="lightbulb" /> Why wrong / right & Audio Context</span>
                     </div>
                     <p className="mt-1.5 font-plex text-sm leading-6 text-graphite">
                       {item.explanation}
