@@ -1610,7 +1610,25 @@ function WritingExam({ answers, setAnswers, currentTask, setCurrentTask, timeLef
         <article className={`overflow-y-auto border-b border-divider p-4 sm:p-5 md:border-b-0 md:border-r md:p-7 ${mobileWritingView === 'editor' ? 'hidden md:block' : 'block'}`}>
           <div className="mx-auto max-w-3xl font-plex text-sm leading-7 text-ink">
             {task === 1 ? (
-              selectedTestNumber === 2 ? (
+              selectedTestNumber === 20 ? (
+                <>
+                  <p className="font-semibold">The tables below give information about the population of New York City and its districts in 1800, 1900 and 2000.</p>
+                  <p className="mt-4 font-semibold">Summarise the information by selecting and reporting the main features, and make comparisons where relevant.</p>
+                  <WritingTableNY20 />
+                </>
+              ) : selectedTestNumber === 4 ? (
+                <>
+                  <p className="font-semibold">The data below shows the average monthly change in the prices of copper, nickel and zinc during 2014.</p>
+                  <p className="mt-4 font-semibold">Summarise the information by selecting and reporting the main features, and make comparisons where relevant.</p>
+                  <WritingMetalsChart4 />
+                </>
+              ) : selectedTestNumber === 3 ? (
+                <>
+                  <p className="font-semibold">The diagram below shows the floor plan of a public library 20 years ago and how it looks now.</p>
+                  <p className="mt-4 font-semibold">Summarise the information by selecting and reporting the main features, and make comparisons where relevant.</p>
+                  <WritingFloorPlan3 />
+                </>
+              ) : selectedTestNumber === 2 ? (
                 <>
                   <p className="font-semibold">The chart below shows the number of households in the US by their annual income in 2007, 2011 and 2015.</p>
                   <p className="mt-4 font-semibold">Summarise the information by selecting and reporting the main features, and make comparisons where relevant.</p>
