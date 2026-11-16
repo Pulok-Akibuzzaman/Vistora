@@ -401,7 +401,7 @@ export default function Auth({ mode }: { mode: AuthMode }) {
             </NavLink>
           </div>
           <p className="mt-5 text-center font-mono text-xs leading-5 text-graphite-light">
-            Full-stack account authentication connected to your local backend server.
+            Your account keeps your scores, essays and study tasks together in one place.
           </p>
         </div>
       </section>
