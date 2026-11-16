@@ -159,6 +159,12 @@
   --color-purple-800: #D8B4FE;
   --color-purple-900: #E9D5FF;
   --color-purple-950: #F3E8FF;
+  --color-sky-50: rgba(14, 165, 233, 0.10);
+  --color-sky-100: rgba(14, 165, 233, 0.16);
+  --color-sky-200: rgba(14, 165, 233, 0.32);
+  --color-sky-800: #7DD3FC;
+  --color-sky-900: #BAE6FD;
+  --color-sky-950: #E0F2FE;
 }
 
 /* Always-dark areas (hero, footer, exam chrome) keep their light text colors in both modes */
