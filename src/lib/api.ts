@@ -783,7 +783,7 @@ export async function deleteExamResultApi(id: string, userEmail?: string): Promi
   }
 }
 
-export async function fetchDashboardStats(email?: string): Promise<DashboardStats | null> {
+export async function fetchDashboardStats(email?: string, targetBand?: number): Promise<DashboardStats | null> {
   try {
     const url = email ? `${API_BASE}/dashboard/stats?email=${encodeURIComponent(email)}` : `${API_BASE}/dashboard/stats`
     const res = await fetch(url, { signal: AbortSignal.timeout(1200) })
@@ -799,7 +799,7 @@ export async function fetchDashboardStats(email?: string): Promise<DashboardStat
         ? Number((scored.reduce((acc, r) => acc + (r.overallBand || 0), 0) / scored.length).toFixed(1))
         : 0
 
-      const skillTarget = 7.5
+      const skillTarget = typeof targetBand === 'number' && targetBand > 0 ? targetBand : 7.5
       const bandsBySkill: Record<string, number[]> = { Reading: [], Listening: [], Writing: [], Speaking: [] }
       for (const r of results) {
         if (r.skillBands) {

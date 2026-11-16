@@ -72,7 +72,7 @@ export default function Dashboard() {
   // Load live data from backend
   useEffect(() => {
     const loadData = () => {
-      fetchDashboardStats(user?.email).then(data => {
+      fetchDashboardStats(user?.email, user?.targetBand).then(data => {
         if (data) setStats(data)
       }).catch(() => {})
 
@@ -93,7 +93,7 @@ export default function Dashboard() {
       window.removeEventListener('vistora:result-saved', loadData)
       window.removeEventListener('storage', loadData)
     }
-  }, [user?.email, user?.id])
+  }, [user?.email, user?.id, user?.targetBand])
 
   const addTask = async (event: FormEvent) => {
     event.preventDefault()
@@ -133,7 +133,7 @@ export default function Dashboard() {
       ? scoredAttempts.reduce((s, r) => s + (r.overallBand || 0), 0) / scoredAttempts.length
       : null
   const targetBand = stats?.targetBand ?? (user?.targetBand || 8.0)
-  const skillScores = stats?.skillScores ?? DEFAULT_SKILLS
+  const skillScores = stats?.skillScores ?? DEFAULT_SKILLS.map(skill => ({ ...skill, target: targetBand }))
   const activities = stats?.recentActivities ?? []
   const weeklyProgress = stats?.weeklyProgress ?? [
     { day: 'Mon', mins: 65 }, { day: 'Tue', mins: 90 }, { day: 'Wed', mins: 45 },
