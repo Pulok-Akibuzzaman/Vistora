@@ -244,7 +244,7 @@ function ResultDetail({ result, userName }: { result: StoredExamResult; userName
             <div className="flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-wider text-rose-700">
               <span><Icon name="mic" /> Examiner Assessment & Commentary</span>
             </div>
-            <p className="mt-2 font-plex text-sm text-graphite-dark">{result.comment}</p>
+            <p className="mt-2 font-plex text-sm text-graphite">{result.comment}</p>
           </div>
         )}
       </section>
@@ -868,7 +868,7 @@ export default function Results() {
                         </span>
                       </div>
                       <div className="mt-2 flex items-center justify-between font-mono text-[11px]">
-                        <span className={`inline-block rounded-xs border px-1.5 py-0.2 ${badge.bg}`}>
+                        <span className={`inline-block rounded-xs border px-1.5 py-0.5 ${badge.bg}`}>
                           {badge.label}
                         </span>
                         <span className="text-graphite-light">
