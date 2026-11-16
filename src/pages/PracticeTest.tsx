@@ -1500,24 +1500,24 @@ function WritingFloorPlan3() {
       <div className="border border-divider bg-surface p-3">
         <h4 className="font-bold text-ink mb-2">Central Library 20 years ago</h4>
         <div className="grid grid-cols-2 gap-2 text-graphite-mid text-[11px]">
-          <div className="border border-divider p-2 bg-paper-light">CDs, videos, computer games</div>
-          <div className="border border-divider p-2 bg-paper-light">Children's books</div>
-          <div className="border border-divider p-2 bg-paper-light">Adult fiction books</div>
-          <div className="border border-divider p-2 bg-paper-light">Adult non-fiction books</div>
-          <div className="border border-divider p-2 bg-paper-light">Tables & chairs</div>
-          <div className="border border-divider p-2 bg-paper-light">Reading room (newspapers & magazines)</div>
+          <div className="border border-divider p-2 bg-paper">CDs, videos, computer games</div>
+          <div className="border border-divider p-2 bg-paper">Children's books</div>
+          <div className="border border-divider p-2 bg-paper">Adult fiction books</div>
+          <div className="border border-divider p-2 bg-paper">Adult non-fiction books</div>
+          <div className="border border-divider p-2 bg-paper">Tables & chairs</div>
+          <div className="border border-divider p-2 bg-paper">Reading room (newspapers & magazines)</div>
           <div className="col-span-2 border border-divider p-2 bg-paper-dark text-center font-semibold">Enquiry desk (tickets, book returns, etc.) · Entrance</div>
         </div>
       </div>
       <div className="border border-divider bg-surface p-3">
         <h4 className="font-bold text-ink mb-2">Central Library today</h4>
         <div className="grid grid-cols-2 gap-2 text-graphite-mid text-[11px]">
-          <div className="border border-divider p-2 bg-paper-light">Lecture room</div>
-          <div className="border border-divider p-2 bg-paper-light">Children's fiction books (Storytelling events, Sofa)</div>
-          <div className="border border-divider p-2 bg-paper-light">Adult fiction books (Sofa)</div>
-          <div className="border border-divider p-2 bg-paper-light">All reference books</div>
-          <div className="border border-divider p-2 bg-paper-light">Computer room</div>
-          <div className="border border-divider p-2 bg-paper-light">Café</div>
+          <div className="border border-divider p-2 bg-paper">Lecture room</div>
+          <div className="border border-divider p-2 bg-paper">Children's fiction books (Storytelling events, Sofa)</div>
+          <div className="border border-divider p-2 bg-paper">Adult fiction books (Sofa)</div>
+          <div className="border border-divider p-2 bg-paper">All reference books</div>
+          <div className="border border-divider p-2 bg-paper">Computer room</div>
+          <div className="border border-divider p-2 bg-paper">Café</div>
           <div className="col-span-2 border border-divider p-2 bg-paper-dark text-center font-semibold">Information desk · Self-service machines · Entrance</div>
         </div>
       </div>
@@ -2302,7 +2302,7 @@ function SpeakingExam({ currentPart, setCurrentPart, timeLeft, part, onRecording
           {content.topics ? (
             <div className="mt-6 space-y-6">
               {content.topics.map((topicGroup, topicIdx) => (
-                <div key={topicGroup.title} className="rounded-sm border border-divider bg-paper-light/60 p-4">
+                <div key={topicGroup.title} className="rounded-sm border border-divider bg-paper/60 p-4">
                   <h3 className="font-plex text-sm font-bold text-ink">{topicGroup.title}</h3>
                   <div className="mt-1 font-plex text-xs italic text-graphite-mid">Example questions:</div>
                   <ul className="mt-3 space-y-2.5">
@@ -2987,7 +2987,7 @@ export default function PracticeTest() {
                 </div>
 
                 {/* Summary */}
-                <div className="mt-6 rounded border border-divider bg-paper-light/50 p-4">
+                <div className="mt-6 rounded border border-divider bg-paper/50 p-4">
                   <div className="font-mono text-xs uppercase tracking-wider text-accent mb-1">Examiner Assessment Summary</div>
                   <p className="font-plex text-sm leading-6 text-graphite">{speakingEval.summary}</p>
                 </div>
@@ -3105,7 +3105,7 @@ export default function PracticeTest() {
                   </div>
                   <div className="space-y-4">
                     {(selectedTest.part ? [selectedTest.part] : [1, 2, 3]).map(p => (
-                      <div key={p} className="border border-divider bg-paper-light/50 p-4 rounded">
+                      <div key={p} className="border border-divider bg-paper/50 p-4 rounded">
                         <div className="flex flex-wrap items-center justify-between gap-3 mb-2">
                           <span className="font-plex text-xs font-bold text-ink">Speaking Part {p}</span>
                           {speakingData.recordings[p] && (
