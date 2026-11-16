@@ -11,7 +11,7 @@ import { LISTENING_ANSWERS, LISTENING_PARTS_1 } from '../data/listeningTest1'
 import { LISTENING_ANSWERS_2, LISTENING_PARTS_2 } from '../data/listeningTest2'
 import FullTestResult from '../components/FullTestResult'
 import { saveExamResult } from '../lib/results'
-import { checkBackendHealth, getStreamUrl, getSharepointAudioUrl, saveExamResultApi, fetchResults, evaluateSpeakingApi, type BackendHealth, type SpeakingEvaluationResult } from '../lib/api'
+import { checkBackendHealth, getStreamUrl, getSharepointAudioUrl, fetchResults, evaluateSpeakingApi, type BackendHealth, type SpeakingEvaluationResult } from '../lib/api'
 import { useAuth } from '../lib/authContext'
 import { countCorrect, listeningPairs, markAnswers, readingPairs } from '../lib/scoring'
 import { themeText, ThemeToggle } from '../lib/theme'
@@ -2705,8 +2705,8 @@ export default function PracticeTest() {
       source: (isObjective ? 'Automatic' : 'Pending AI') as any,
     }
 
+    // saveExamResult caches locally and syncs to Supabase, so it must only be called once per attempt
     saveExamResult(resultRecord as any, user?.email)
-    saveExamResultApi(resultRecord as any).catch(() => { })
   }, [listeningScore, readingScore, selectedTest, selectedTestNum, selectedBook, stage, timeLeft, user, answers])
 
   const handleFinishSpeaking = async (data: {
@@ -2769,7 +2769,6 @@ export default function PracticeTest() {
         source: (evalRes.source?.toLowerCase().includes('puku') ? 'AI' : 'Automatic') as any,
       }
       saveExamResult(record as any, user?.email)
-      saveExamResultApi(record as any).catch(() => { })
     } catch (err: any) {
       setSpeakingError(err?.message || 'Failed to complete Speaking evaluation.')
     } finally {

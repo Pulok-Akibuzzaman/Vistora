@@ -3,7 +3,6 @@ import { READING_ANSWERS } from '../data/readingTest1'
 import { LISTENING_ANSWERS } from '../data/listeningTest1'
 import { LISTENING_ANSWERS_2 } from '../data/listeningTest2'
 import { saveExamResult } from '../lib/results'
-import { saveExamResultApi } from '../lib/api'
 import { useAuth } from '../lib/authContext'
 import { listeningPairs, markAnswers, readingPairs } from '../lib/scoring'
 
@@ -233,8 +232,8 @@ export default function FullTestResult({ listeningAnswers, listeningTestNumber =
       comment: report.overallComment,
       source: (analysisState === 'complete' ? 'AI' : 'Automatic') as any,
     }
+    // saveExamResult already syncs to Supabase; a second direct call created a duplicate row
     saveExamResult(resultObj, user?.email)
-    saveExamResultApi(resultObj).catch(() => {})
   }, [analysisState, report, user])
 
   if (!report || analysisState === 'analysing') {
