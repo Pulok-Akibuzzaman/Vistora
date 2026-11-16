@@ -159,6 +159,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const payload: RegisterPayload = typeof payloadOrName === 'object'
       ? payloadOrName
       : { name: payloadOrName, email: email || '', password: password || '', role, country }
+    let rejected: Error | null = null
 
     try {
       // 1. Try Supabase Auth
@@ -187,8 +188,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setIsLoading(false)
         return
       }
+      // Supabase was reached and refused the signup (email already registered, weak password, ...)
+      if (error && typeof error.status === 'number' && error.status >= 400 && error.status < 500) {
+        rejected = new Error(error.message || 'Could not create the account.')
+      }
     } catch (e) {
       console.warn('Supabase signup attempt:', e)
+    }
+
+    if (rejected) {
+      setIsLoading(false)
+      throw rejected
     }
 
     try {
