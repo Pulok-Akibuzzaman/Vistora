@@ -3698,7 +3698,7 @@ export default function PracticeTest() {
                     </button>
                     {soundTestError && (
                       <p className="mt-1.5 text-[11px] leading-tight text-danger font-plex">
-                        <Icon name="alert" /> Audio stream could not play. If testing SharePoint on Vercel, Microsoft 365 sign-in or a local MP3 is needed.
+                        <Icon name="alert" /> Audio stream could not play. Sign in to Microsoft 365 in this browser, or upload the MP3 file below.
                       </p>
                     )}
                   </div>
