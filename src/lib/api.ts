@@ -1995,6 +1995,28 @@ export async function replyToForumThreadApi(
 
   let updatedThread: ForumThread | null = null
 
+  // Persist through the forum API (it writes forum_replies.author_id) and keep the database id,
+  // so the reply survives a reload and can be deleted later
+  try {
+    const res = await fetch(`${API_BASE}/forum`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'reply',
+        threadId,
+        content: content.trim(),
+        authorId: isValidUUID(authorId) ? authorId : undefined,
+      }),
+      signal: AbortSignal.timeout(4000),
+    })
+    if (res.ok) {
+      const json = await res.json()
+      if (json.success && json.reply?.id) reply.id = String(json.reply.id)
+    }
+  } catch (err) {
+    console.warn('Live forum reply error, kept locally:', err)
+  }
+
   // Save to persistent community threads in localStorage
   try {
     const raw = window.localStorage.getItem(FORUM_STORAGE_KEY)
@@ -2012,16 +2034,6 @@ export async function replyToForumThreadApi(
       return t
     })
     window.localStorage.setItem(FORUM_STORAGE_KEY, JSON.stringify(threads))
-  } catch { }
-
-  // Try updating Supabase
-  try {
-    const { data: { session } } = await supabase.auth.getSession()
-    await supabase.from('forum_replies').insert({
-      thread_id: threadId,
-      user_id: session?.user?.id || authorId || null,
-      content: content.trim(),
-    })
   } catch { }
 
   if (!updatedThread) {
