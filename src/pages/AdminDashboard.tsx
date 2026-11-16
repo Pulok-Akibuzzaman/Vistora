@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import Icon from '../components/Icon'
 import {
   fetchAllUsers,
   inviteUser,
@@ -331,7 +332,7 @@ export default function AdminDashboard() {
             activeTab === 'users' ? 'bg-electric text-white font-bold' : 'bg-surface border border-divider text-graphite hover:text-ink'
           }`}
         >
-          👥 Platform Users & Staff ({users.length})
+          <Icon name="users" /> Platform Users & Staff ({users.length})
         </button>
         <button
           onClick={() => setActiveTab('pdf-scanner')}
@@ -339,7 +340,7 @@ export default function AdminDashboard() {
             activeTab === 'pdf-scanner' ? 'bg-electric text-white font-bold' : 'bg-surface border border-divider text-graphite hover:text-ink'
           }`}
         >
-          📚 IELTS PDF Exam Scanner & Importer ({publishedTests.length} published)
+          <Icon name="books" /> IELTS PDF Exam Scanner & Importer ({publishedTests.length} published)
         </button>
         <button
           onClick={() => setActiveTab('sharepoint-audio')}
@@ -347,7 +348,7 @@ export default function AdminDashboard() {
             activeTab === 'sharepoint-audio' ? 'bg-electric text-white font-bold' : 'bg-surface border border-divider text-graphite hover:text-ink'
           }`}
         >
-          🎧 SharePoint Audio Links & Streaming ({totalAudioTracks} tracks)
+          <Icon name="headphones" /> SharePoint Audio Links & Streaming ({totalAudioTracks} tracks)
         </button>
       </div>
 
@@ -567,7 +568,7 @@ export default function AdminDashboard() {
                 className="hidden"
               />
               <label htmlFor="pdf-upload" className="cursor-pointer">
-                <div className="text-3xl mb-2">📄</div>
+                <div className="text-3xl mb-2"><Icon name="file" /></div>
                 <div className="font-plex text-sm font-semibold text-ink">
                   {pdfFile ? pdfFile.name : 'Click to Upload British Council / Cambridge IELTS PDF Book'}
                 </div>
@@ -603,7 +604,7 @@ export default function AdminDashboard() {
             )}
             {publishSuccessMsg && (
               <div className="mt-4 p-3 bg-blue-50 border border-blue-200 text-xs text-blue-900 rounded font-mono">
-                🎉 {publishSuccessMsg}
+                <Icon name="check-circle" /> {publishSuccessMsg}
               </div>
             )}
 
@@ -614,7 +615,7 @@ export default function AdminDashboard() {
                 disabled={isScanning || !rawText.trim()}
                 className="rounded bg-electric px-6 py-2.5 text-xs font-semibold text-white hover:bg-electric-light transition-colors disabled:opacity-50 flex items-center gap-2"
               >
-                {isScanning ? '⚡ Puku AI Scanning Exam...' : '⚡ Scan & Extract Questions with Puku AI'}
+                <Icon name="zap" /> {isScanning ? 'Puku AI Scanning Exam...' : 'Scan & Extract Questions with Puku AI'}
               </button>
               {scannedPassages.length > 0 && (
                 <>
@@ -622,13 +623,13 @@ export default function AdminDashboard() {
                     onClick={handlePublishCustomTest}
                     className="rounded bg-emerald-600 px-6 py-2.5 text-xs font-semibold text-white hover:bg-emerald-700 transition-colors"
                   >
-                    🚀 Publish Test to Exam Simulator
+                    <Icon name="upload" /> Publish Test to Exam Simulator
                   </button>
                   <button
                     onClick={handleDownloadDataset}
                     className="rounded border border-divider bg-surface px-5 py-2.5 text-xs font-semibold text-ink hover:bg-surface-2 transition-colors font-mono"
                   >
-                    💾 Download TypeScript (.ts) Dataset
+                    <Icon name="download" /> Download TypeScript (.ts) Dataset
                   </button>
                   <NavLink
                     to="/practice"
@@ -812,7 +813,7 @@ export default function AdminDashboard() {
                       disabled={!sharepointUrl.trim()}
                       className="flex-1 sm:flex-none rounded border border-divider bg-surface px-4 py-2 text-xs font-mono text-ink hover:bg-surface-2 disabled:opacity-50"
                     >
-                      ▶ Test Audio
+                      <Icon name="play" /> Test Audio
                     </button>
                     <button
                       type="submit"
@@ -883,7 +884,7 @@ export default function AdminDashboard() {
                           onClick={() => handleTestAudioPlayback(track.url)}
                           className="text-electric hover:underline text-[11px]"
                         >
-                          ▶ Test Play
+                          <Icon name="play" /> Test Play
                         </button>
                         <a
                           href={track.url}
