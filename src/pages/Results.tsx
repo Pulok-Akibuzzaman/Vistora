@@ -63,7 +63,7 @@ function getTestTypeBadge(testType: string) {
     case 'Writing':
       return { label: 'Writing', bg: 'bg-amber-50 text-amber-800 border-amber-200' }
     default:
-      return { label: 'Full Test', bg: 'bg-slate-100 text-slate-700 border-slate-300' }
+      return { label: 'Full Test', bg: 'bg-surface-3 text-ink-2 border-line-strong' }
   }
 }
 
