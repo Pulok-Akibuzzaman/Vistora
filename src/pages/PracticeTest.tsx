@@ -3605,13 +3605,13 @@ export default function PracticeTest() {
               <div className="mt-7 rounded-sm border border-divider bg-surface-2 p-5">
                 <div className="flex items-center justify-between pb-3 border-b border-divider">
                   <div className="flex items-center gap-2">
-                    <span className={`h-2.5 w-2.5 rounded-full ${backendHealth.connected ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`} />
+                    <span className={`h-2.5 w-2.5 rounded-full ${backendHealth.connected ? 'bg-emerald-500 animate-pulse' : 'bg-amber-400'}`} />
                     <span className="font-plex text-sm font-bold text-ink">
-                      {backendHealth.connected ? 'Local Backend Audio Connected' : 'Local Backend Offline'}
+                      {backendHealth.connected ? 'Local Backend Audio Connected' : 'Streaming Audio Online'}
                     </span>
                   </div>
                   <span className="font-mono text-xs text-graphite-mid">
-                    {backendHealth.connected ? `${backendHealth.totalAudioFiles} Tracks in Database` : 'Port 5001'}
+                    {backendHealth.connected ? `${backendHealth.totalAudioFiles ?? 0} Tracks in Database` : 'SharePoint source'}
                   </span>
                 </div>
 
