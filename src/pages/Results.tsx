@@ -29,8 +29,10 @@ const READING_TESTS: Record<number, { passages: typeof READING_PASSAGES; answers
 
 // Older results don't store testNumber/part, so fall back to the title, e.g. "IELTS 18 — Reading Test 3 · Part 1"
 function getResultTest(result: StoredExamResult) {
-  const isBook19 = /IELTS\s*19/i.test(result.testTitle)
-  const isBook21 = /IELTS\s*21/i.test(result.testTitle)
+  // Only Reading uses the internal book ids (19, 192, 21, 22); Listening keeps the plain test number
+  const isReading = result.testType === 'Reading'
+  const isBook19 = isReading && /IELTS\s*19/i.test(result.testTitle)
+  const isBook21 = isReading && /IELTS\s*21/i.test(result.testTitle)
   const titleTest = result.testTitle.match(/Test (\d+)/)
   const titlePart = result.testTitle.match(/Part (\d+)/)
   let testNum = result.testNumber ?? (titleTest ? Number(titleTest[1]) : 1)
