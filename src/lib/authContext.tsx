@@ -174,6 +174,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       })
       if (!error && data?.user) {
+        // The signup trigger creates the profile row with the default 7.5 target, and that row wins
+        // on the next session restore, so write the chosen goal to it while we have a session
+        if (data.session) {
+          try {
+            await supabase
+              .from('profiles')
+              .update({
+                target_band: payload.targetBand || 7.5,
+                ...(payload.country ? { country: payload.country } : {}),
+                updated_at: new Date().toISOString(),
+              })
+              .eq('id', data.user.id)
+          } catch (e) {
+            console.warn('Supabase profile goal sync:', e)
+          }
+        }
+
         const profile: UserProfile = {
           ...DEFAULT_USER,
           id: data.user.id,
