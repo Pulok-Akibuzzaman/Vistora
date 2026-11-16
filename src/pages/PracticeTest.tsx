@@ -137,6 +137,10 @@ type FullTestAttempt = {
 
 const emptyFullAttempt = (): FullTestAttempt => ({ listening: {}, reading: {}, writing: {}, speaking: {} })
 
+// Books after IELTS 18 use internal test ids (19, 192, 20, 21, 22), so map them back to the printed test number
+const displayTestNumber = (testNumber: number) =>
+  testNumber === 192 || testNumber === 22 ? 2 : testNumber >= 19 ? 1 : testNumber
+
 const PART_1_PROMPTS = [
   { id: 1, prefix: 'Postcode:', suffix: '' },
   { id: 2, prefix: 'Date of bus journey:', suffix: '' },
@@ -1097,7 +1101,7 @@ function ReadingExam({ answers, setAnswers, currentQ, setCurrentQ, timeLeft, par
           <div className="border-r border-divider pr-5 font-plex text-2xl font-bold tracking-tight text-accent">IELTS</div>
           <div>
             <div className="font-plex text-xs font-semibold text-ink">Test taker ID</div>
-            <div className="font-plex text-xs text-graphite-mid">Academic Reading · Test {selectedTestNumber}{part ? ` · Passage ${part}` : ''}</div>
+            <div className="font-plex text-xs text-graphite-mid">Academic Reading · Test {displayTestNumber(selectedTestNumber)}{part ? ` · Passage ${part}` : ''}</div>
           </div>
         </div>
         <div className="hidden sm:flex flex-col items-center gap-1 min-w-[200px]">
@@ -1568,7 +1572,7 @@ function WritingExam({ answers, setAnswers, currentTask, setCurrentTask, timeLef
       <header className="flex min-h-14 items-center justify-between border-b border-divider bg-surface px-4">
         <div className="flex items-center gap-5">
           <div className="border-r border-divider pr-5 font-plex text-2xl font-bold tracking-tight text-accent">IELTS</div>
-          <div><div className="font-plex text-xs font-semibold text-ink">Test taker ID</div><div className="font-plex text-xs text-graphite-mid">Academic Writing · Test {selectedTestNumber}{part ? ` · Task ${part}` : ''}</div></div>
+          <div><div className="font-plex text-xs font-semibold text-ink">Test taker ID</div><div className="font-plex text-xs text-graphite-mid">Academic Writing · Test {displayTestNumber(selectedTestNumber)}{part ? ` · Task ${part}` : ''}</div></div>
         </div>
         <div className="flex items-center gap-3 sm:gap-5">
           <div className="text-right"><div className={`font-mono text-sm font-semibold ${timeLeft < 300 ? 'text-accent' : 'text-ink'}`}>{formatTime(timeLeft)}</div><div className="font-mono text-xs uppercase text-graphite-light">Time left</div></div>
@@ -2247,7 +2251,7 @@ function SpeakingExam({ currentPart, setCurrentPart, timeLeft, part, onRecording
       <header className="flex min-h-14 items-center justify-between border-b border-divider bg-surface px-4">
         <div className="flex items-center gap-5">
           <div className="border-r border-divider pr-5 font-plex text-2xl font-bold tracking-tight text-accent">IELTS</div>
-          <div><div className="font-plex text-xs font-semibold text-ink">Test taker ID</div><div className="font-plex text-xs text-graphite-mid">Speaking · Test {selectedTestNumber}{part ? ` · Part ${part}` : ''}</div></div>
+          <div><div className="font-plex text-xs font-semibold text-ink">Test taker ID</div><div className="font-plex text-xs text-graphite-mid">Speaking · Test {displayTestNumber(selectedTestNumber)}{part ? ` · Part ${part}` : ''}</div></div>
         </div>
         <div className="flex items-center gap-3 sm:gap-5">
           <div className="text-right"><div className={`font-mono text-sm font-semibold ${timeLeft < 60 ? 'text-accent' : 'text-ink'}`}>{formatTime(timeLeft)}</div><div className="font-mono text-xs uppercase text-graphite-light">Time left</div></div>
