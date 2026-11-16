@@ -565,6 +565,8 @@ export async function fetchResults(email?: string, userId?: string): Promise<Sto
         .order('created_at', { ascending: false })
 
       if (!error && data) {
+        // overall_band is NOT NULL, so a Writing attempt that is still awaiting evaluation is stored as 0
+        const isPendingWriting = (row: any) => row.test_type === 'Writing' && Number(row.overall_band) === 0
         supabaseResults = data.map((row: any) => ({
           id: row.id,
           userId: row.user_id,
@@ -573,13 +575,15 @@ export async function fetchResults(email?: string, userId?: string): Promise<Sto
           testTitle: row.test_title,
           testType: row.test_type,
           completedAt: row.created_at,
-          overallBand: row.overall_band !== null ? Number(row.overall_band) : null,
+          overallBand: row.overall_band !== null && !isPendingWriting(row) ? Number(row.overall_band) : null,
           skillBands: row.skill_bands || {},
           correctAnswers: row.correct_answers,
           totalQuestions: row.total_questions,
           userAnswers: row.user_answers || {},
           comment: row.feedback || '',
-          source: (row.feedback?.toLowerCase().includes('puku') || row.feedback?.toLowerCase().includes('ai')) ? 'AI' : 'Automatic',
+          source: isPendingWriting(row)
+            ? 'Pending AI'
+            : (row.feedback?.toLowerCase().includes('puku') || row.feedback?.toLowerCase().includes('ai')) ? 'AI' : 'Automatic',
         }))
       }
     }
