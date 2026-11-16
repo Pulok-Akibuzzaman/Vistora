@@ -647,7 +647,19 @@ export async function fetchResults(email?: string, userId?: string): Promise<Sto
   return combined
 }
 
-export async function saveExamResultApi(result: StoredExamResult): Promise<StoredExamResult> {
+// Saves that are still running, keyed by the result's local id, so the same attempt is never inserted twice
+const inFlightResultSaves = new Map<string, Promise<StoredExamResult>>()
+
+export function saveExamResultApi(result: StoredExamResult): Promise<StoredExamResult> {
+  const localId = result.id
+  const running = inFlightResultSaves.get(localId)
+  if (running) return running
+  const save = persistExamResult(result).finally(() => inFlightResultSaves.delete(localId))
+  inFlightResultSaves.set(localId, save)
+  return save
+}
+
+async function persistExamResult(result: StoredExamResult): Promise<StoredExamResult> {
   // 1. Immediately cache strictly in user-scoped localStorage
   if (result.userEmail) {
     try {
@@ -696,6 +708,8 @@ export async function saveExamResultApi(result: StoredExamResult): Promise<Store
         .single()
 
       if (!supabaseError && savedRow) {
+        // Remember the local id before swapping in the Supabase UUID, so the cached copy can be replaced
+        const localId = result.id
         result.id = savedRow.id
         result.userId = savedRow.user_id
 
@@ -705,7 +719,7 @@ export async function saveExamResultApi(result: StoredExamResult): Promise<Store
           const raw = window.localStorage.getItem(userKey)
           if (raw) {
             const list: StoredExamResult[] = JSON.parse(raw)
-            const updated = [result, ...list.filter(r => r.id !== result.id && r.id !== savedRow.id)].slice(0, 50)
+            const updated = [result, ...list.filter(r => r.id !== localId && r.id !== savedRow.id)].slice(0, 50)
             window.localStorage.setItem(userKey, JSON.stringify(updated))
           }
         }
