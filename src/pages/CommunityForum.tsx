@@ -457,8 +457,8 @@ export default function CommunityForum() {
 
       {/* New Thread Modal / Form */}
       {newPostOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs">
-          <div className="w-full max-w-xl rounded-sm border border-divider bg-surface p-6 shadow-2xl">
+        <div onClick={() => setNewPostOpen(false)} className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs">
+          <div onClick={event => event.stopPropagation()} className="max-h-[calc(100dvh-2rem)] w-full max-w-xl overflow-y-auto rounded-sm border border-divider bg-surface p-6 shadow-2xl">
             <div className="flex items-center justify-between border-b border-divider pb-3">
               <h2 className="font-plex text-lg font-bold text-ink">Start a Community Discussion Thread</h2>
               <button onClick={() => setNewPostOpen(false)} className="text-graphite hover:text-ink text-sm font-mono cursor-pointer">✕</button>
