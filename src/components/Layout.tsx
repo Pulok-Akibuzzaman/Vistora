@@ -1,5 +1,5 @@
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useAuth } from '../lib/authContext'
 import { ThemeToggle } from '../lib/theme'
 
@@ -53,6 +53,7 @@ export default function Layout() {
   const showGuestLandingNav = isLanding && !isAuthenticated
   const [mobileOpen, setMobileOpen] = useState(false)
   const [accountOpen, setAccountOpen] = useState(false)
+  const accountRef = useRef<HTMLDivElement>(null)
 
   const initials = user?.name
     ? user.name.split(' ').filter(Boolean).map(n => n[0]).join('').toUpperCase().slice(0, 2)
@@ -63,6 +64,23 @@ export default function Layout() {
     setAccountOpen(false)
     window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
   }, [location.pathname, location.search])
+
+  // Close the account menu on an outside click or Escape, like any other dropdown
+  useEffect(() => {
+    if (!accountOpen) return
+    const onPointerDown = (event: MouseEvent) => {
+      if (!accountRef.current?.contains(event.target as Node)) setAccountOpen(false)
+    }
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setAccountOpen(false)
+    }
+    document.addEventListener('mousedown', onPointerDown)
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.removeEventListener('mousedown', onPointerDown)
+      document.removeEventListener('keydown', onKeyDown)
+    }
+  }, [accountOpen])
 
   const signOut = () => {
     logout()
@@ -130,7 +148,7 @@ export default function Layout() {
               ) : (
                 <>
                   <div className="w-px h-5 bg-divider" />
-                  <div className="relative">
+                  <div className="relative" ref={accountRef}>
                     <button
                       type="button"
                       aria-label="Open account options"
@@ -149,7 +167,7 @@ export default function Layout() {
                       <span className={`mono text-[9px] ${isDarkHeader ? 'text-slate-400' : 'text-subtle'}`}>⌄</span>
                     </button>
                     {accountOpen && (
-                      <div className="absolute right-0 top-full mt-2 w-64 border border-divider bg-surface p-2 shadow-xl z-50" style={{ borderRadius: 4 }}>
+                      <div onClick={() => setAccountOpen(false)} className="absolute right-0 top-full mt-2 w-64 border border-divider bg-surface p-2 shadow-xl z-50" style={{ borderRadius: 4 }}>
                         <div className="border-b border-divider-soft px-3 py-2">
                           <div className="text-xs font-semibold text-ink">{user?.name}</div>
                           <div className="mt-0.5 text-[10px] text-subtle truncate">{user?.email}</div>
