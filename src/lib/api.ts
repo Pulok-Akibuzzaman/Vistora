@@ -1957,14 +1957,17 @@ export async function voteForumThreadApi(
     window.localStorage.setItem(FORUM_STORAGE_KEY, JSON.stringify(threads))
   } catch { }
 
-  // Also try updating backend / Supabase
+  // Sync with the forum API, which stores one upvote per signed-in user ("down" or no vote removes it)
   try {
-    await fetch(`${API_BASE}/forum/threads/${threadId}/vote`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ direction: newVote }),
-      signal: AbortSignal.timeout(800),
-    })
+    const { data: { session } } = await supabase.auth.getSession()
+    if (session?.user?.id) {
+      await fetch(`${API_BASE}/forum`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'vote', threadId, userId: session.user.id, direction: newVote }),
+        signal: AbortSignal.timeout(2500),
+      })
+    }
   } catch { }
 
   return { upvotes: finalUp, downvotes: finalDown, score: finalUp - finalDown, userVote: newVote }
