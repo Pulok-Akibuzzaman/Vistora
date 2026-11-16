@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import Icon from '../components/Icon'
 import { fetchPdfResources, fetchUserBookmarks, saveUserBookmarks } from '../lib/api'
 import { useAuth } from '../lib/authContext'
 import { themeBg, themeText } from '../lib/theme'
@@ -195,7 +196,7 @@ export default function ResourceLibrary() {
           rel="noopener noreferrer"
           className="mono text-[10px] bg-emerald-600 text-white px-3 py-1 rounded font-semibold hover:bg-emerald-700 transition-colors whitespace-nowrap self-end md:self-auto"
         >
-          Cambridge Assessment ↗
+          Cambridge Assessment <Icon name="external" />
         </a>
       </div>
 
@@ -315,7 +316,7 @@ export default function ResourceLibrary() {
                   title={`Redirect to authentic ${r.sourceOrg} page`}
                   className="mono text-[10px] text-muted hover:text-ink border border-divider px-2 py-1 rounded bg-surface hover:bg-surface-2 transition-colors"
                 >
-                  Official Source ↗
+                  Official Source <Icon name="external" />
                 </button>
 
                 {/* Primary Action Button */}
@@ -325,7 +326,7 @@ export default function ResourceLibrary() {
                     onClick={e => handleOpenPdf(r, e)}
                     className="mono text-[10px] font-semibold text-white bg-[#DC2626] hover:bg-[#B91C1C] px-2.5 py-1 rounded transition-colors"
                   >
-                    Open PDF ↗
+                    Open PDF <Icon name="external" />
                   </button>
                 ) : (
                   <button
@@ -404,7 +405,7 @@ export default function ResourceLibrary() {
               <div className="p-3.5 bg-blue-50/70 border border-blue-200 rounded flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
                 <div>
                   <div className="font-semibold text-blue-950 flex items-center gap-1.5">
-                    <span className="text-blue-600">🏛</span> Source & Official Alignment:
+                    <span className="text-blue-600"><Icon name="landmark" /></span> Source & Official Alignment:
                   </div>
                   <div className="text-blue-900 mt-0.5">{selectedResource.sourceOrg}</div>
                 </div>
@@ -413,7 +414,7 @@ export default function ResourceLibrary() {
                   onClick={e => handleOpenExternal(selectedResource.externalUrl, e)}
                   className="mono text-[10px] bg-blue-600 text-white px-3 py-1.5 rounded font-semibold hover:bg-blue-700 transition-colors whitespace-nowrap self-end sm:self-auto"
                 >
-                  Visit Official Source ↗
+                  Visit Official Source <Icon name="external" />
                 </button>
               </div>
 
@@ -426,7 +427,7 @@ export default function ResourceLibrary() {
               {selectedResource.keyTakeaways && selectedResource.keyTakeaways.length > 0 && (
                 <div className="bg-amber-50/70 border border-amber-200 rounded p-4">
                   <div className="mono text-[10px] font-bold text-amber-900 tracking-wider uppercase mb-2 flex items-center gap-1.5">
-                    <span>⚡</span> Key Examination Rules & Takeaways
+                    <Icon name="zap" /> Key Examination Rules & Takeaways
                   </div>
                   <ul className="space-y-1.5 text-xs text-amber-950">
                     {selectedResource.keyTakeaways.map((point, idx) => (
@@ -463,14 +464,14 @@ export default function ResourceLibrary() {
                   onClick={() => window.print()}
                   className="mono text-[10px] px-3 py-1.5 border border-line-strong rounded bg-surface text-ink-3 hover:bg-surface-3 transition-colors"
                 >
-                  Print / Save 🖨
+                  Print / Save <Icon name="printer" />
                 </button>
                 <button
                   type="button"
                   onClick={e => handleOpenExternal(selectedResource.externalUrl, e)}
                   className="mono text-[10px] px-3 py-1.5 bg-navy text-white rounded hover:bg-slate-800 transition-colors font-medium"
                 >
-                  Open Official External Page ↗
+                  Open Official External Page <Icon name="external" />
                 </button>
                 <button
                   type="button"
