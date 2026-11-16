@@ -83,6 +83,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (email: string, password: string) => {
     setIsLoading(true)
+    let rejected: Error | null = null
     try {
       // 1. Try Supabase Auth
       const { data, error } = await supabase.auth.signInWithPassword({ email, password })
@@ -114,8 +115,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setIsLoading(false)
         return
       }
+      // A 4xx means Supabase was reached and refused these credentials (wrong password, unknown
+      // account, unconfirmed email). Only an unreachable Supabase may use the offline fallback.
+      if (error && typeof error.status === 'number' && error.status >= 400 && error.status < 500) {
+        rejected = new Error(error.message || 'Invalid email or password.')
+      }
     } catch (e) {
       console.warn('Supabase auth attempt:', e)
+    }
+
+    if (rejected) {
+      setIsLoading(false)
+      throw rejected
     }
 
     try {
