@@ -303,7 +303,7 @@ export default function ExamDates() {
                       href={exam.registrationUrl || BRITISH_COUNCIL_BANGLADESH_BOOKING_URL}
                       target="_blank"
                       rel="noreferrer"
-                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-card bg-electric px-6 py-3 text-center font-plex text-sm font-semibold text-white shadow-xs transition-colors hover:bg-electric-hover active:scale-[0.98]"
+                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-card bg-electric px-6 py-3 text-center font-plex text-sm font-semibold text-white shadow-xs transition-colors hover:bg-electric-light active:scale-[0.98]"
                     >
                       Register on British Council
                       <Icon name="external" />
@@ -329,7 +329,7 @@ export default function ExamDates() {
           <button
             type="button"
             onClick={resetFilters}
-            className="mt-5 inline-block rounded-card bg-electric px-6 py-2.5 font-plex text-sm font-semibold text-white cursor-pointer hover:bg-electric-hover"
+            className="mt-5 inline-block rounded-card bg-electric px-6 py-2.5 font-plex text-sm font-semibold text-white cursor-pointer hover:bg-electric-light"
           >
             Show All Upcoming Bangladesh Dates
           </button>
