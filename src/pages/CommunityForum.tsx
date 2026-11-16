@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import Icon from '../components/Icon'
 import {
   fetchForumThreads,
   createForumThreadApi,
@@ -251,21 +252,21 @@ export default function CommunityForum() {
                 if (isAdminPinned) {
                   return (
                     <span className="mono text-[9px] px-2 py-0.5 bg-amber-50 text-amber-800 border border-amber-200 rounded font-bold">
-                      ADMIN PINNED 📌
+                      ADMIN PINNED <Icon name="pin" />
                     </span>
                   )
                 }
                 if (isTopVoted) {
                   return (
                     <span className="mono text-[9px] px-2 py-0.5 bg-rose-50 text-rose-800 border border-rose-200 rounded font-bold">
-                      TOP VOTED 📌
+                      TOP VOTED <Icon name="pin" />
                     </span>
                   )
                 }
                 if (activeThread.pinned) {
                   return (
                     <span className="mono text-[9px] px-2 py-0.5 bg-amber-50 text-amber-800 border border-amber-200 rounded font-bold">
-                      PINNED 📌
+                      PINNED <Icon name="pin" />
                     </span>
                   )
                 }
@@ -287,7 +288,7 @@ export default function CommunityForum() {
                   }`}
                   title="Admin action: Pin or unpin this thread"
                 >
-                  📌 {activeThread.adminPinned || activeThread.pinned ? 'Unpin Thread' : 'Pin Thread'}
+                  <Icon name="pin" /> {activeThread.adminPinned || activeThread.pinned ? 'Unpin Thread' : 'Pin Thread'}
                 </button>
               )}
               {canDeleteForumItem(activeThread, user) && (
@@ -297,7 +298,7 @@ export default function CommunityForum() {
                   className="mono text-[10px] text-rose-600 hover:text-white hover:bg-rose-600 border border-rose-300 px-2.5 py-0.5 rounded transition-all flex items-center gap-1 font-semibold cursor-pointer shadow-xs ml-1"
                   title={user?.role?.toLowerCase() === 'admin' ? 'Admin: Delete this thread' : 'Delete your thread'}
                 >
-                  🗑️ Delete Thread
+                  <Icon name="trash" /> Delete Thread
                 </button>
               )}
             </div>
@@ -394,7 +395,7 @@ export default function CommunityForum() {
                       className="mono text-[10px] text-rose-600 hover:text-rose-800 hover:bg-rose-50 border border-rose-200 px-2 py-0.5 rounded transition-colors cursor-pointer flex-shrink-0 flex items-center gap-1"
                       title={user?.role?.toLowerCase() === 'admin' ? 'Admin: Delete this reply' : 'Delete your reply'}
                     >
-                      🗑️ Delete
+                      <Icon name="trash" /> Delete
                     </button>
                   )}
                 </div>
@@ -584,21 +585,21 @@ export default function CommunityForum() {
                       if (isAdminPinned) {
                         return (
                           <span className="mono text-[9px] px-2 py-0.5 bg-amber-50 text-amber-800 border border-amber-200 rounded font-bold">
-                            ADMIN PINNED 📌
+                            ADMIN PINNED <Icon name="pin" />
                           </span>
                         )
                       }
                       if (isTopVoted) {
                         return (
                           <span className="mono text-[9px] px-2 py-0.5 bg-rose-50 text-rose-800 border border-rose-200 rounded font-bold">
-                            TOP VOTED 📌
+                            TOP VOTED <Icon name="pin" />
                           </span>
                         )
                       }
                       if (thread.pinned) {
                         return (
                           <span className="mono text-[9px] px-2 py-0.5 bg-amber-50 text-amber-800 border border-amber-200 rounded font-bold">
-                            PINNED 📌
+                            PINNED <Icon name="pin" />
                           </span>
                         )
                       }
@@ -637,7 +638,7 @@ export default function CommunityForum() {
                         }`}
                         title="Admin action: Pin or unpin this thread"
                       >
-                        📌 {thread.adminPinned || thread.pinned ? 'Unpin' : 'Pin'}
+                        <Icon name="pin" /> {thread.adminPinned || thread.pinned ? 'Unpin' : 'Pin'}
                       </button>
                     )}
                     {canDeleteForumItem(thread, user) && (
@@ -647,7 +648,7 @@ export default function CommunityForum() {
                         className="mono text-[10px] text-rose-600 hover:text-white hover:bg-rose-600 border border-rose-300 px-2 py-0.5 rounded transition-all flex items-center gap-1 font-semibold cursor-pointer ml-auto sm:ml-2 shadow-xs"
                         title={user?.role?.toLowerCase() === 'admin' ? 'Admin: Delete this thread' : 'Delete your thread'}
                       >
-                        🗑️ Delete
+                        <Icon name="trash" /> Delete
                       </button>
                     )}
                   </div>
@@ -689,7 +690,7 @@ export default function CommunityForum() {
                   </div>
 
                   <div className="mono text-xs text-muted flex items-center gap-1">
-                    💬 {thread.replies || thread.replyList?.length || 0} replies
+                    <Icon name="message" /> {thread.replies || thread.replyList?.length || 0} replies
                   </div>
                 </div>
               </div>
