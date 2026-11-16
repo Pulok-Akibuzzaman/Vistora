@@ -160,7 +160,7 @@ export default function FullTestResult({ listeningAnswers, listeningTestNumber =
       },
       writing: {
         band: fallbackWritingBand,
-        summary: 'A provisional score was generated from completion data. Connect the secure Gemini endpoint for criterion-level language analysis.',
+        summary: 'A provisional score was estimated from your word counts. Submit each task on the AI Writing page for criterion-level analysis.',
         strengths: task1Words >= 150 && task2Words >= 250 ? ['Both tasks reached the required word count'] : ['A response was submitted'],
         improvements: ['State a clear overview in Task 1', 'Develop each Task 2 main idea with a specific explanation and example'],
         criteria: { 'Task Achievement': fallbackWritingBand, 'Coherence & Cohesion': fallbackWritingBand, 'Lexical Resource': fallbackWritingBand, 'Grammar': fallbackWritingBand },
@@ -168,7 +168,7 @@ export default function FullTestResult({ listeningAnswers, listeningTestNumber =
       },
       speaking: {
         band: fallbackSpeakingBand,
-        summary: 'A provisional score was generated from recording completion. Connect Gemini audio evaluation for transcript and pronunciation feedback.',
+        summary: 'A provisional score was estimated from the parts you recorded. Take a Speaking practice test for transcript-based feedback.',
         strengths: Object.keys(speakingRecordings).length >= 3 ? ['Responses were recorded for all three speaking parts'] : ['At least one spoken response was recorded'],
         improvements: ['Extend answers with reasons and examples', 'Reduce hesitation by grouping ideas before speaking'],
         criteria: { 'Fluency & Coherence': fallbackSpeakingBand, 'Lexical Resource': fallbackSpeakingBand, 'Grammar': fallbackSpeakingBand, 'Pronunciation': fallbackSpeakingBand },
