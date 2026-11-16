@@ -531,7 +531,11 @@ export default function Dashboard() {
                     </div>
                   </div>
                   <span className="mono text-xs font-bold text-accent">
-                    {result.overallBand !== null ? `Band ${result.overallBand}` : `${result.correctAnswers}/${result.totalQuestions}`}
+                    {result.overallBand !== null
+                      ? `Band ${result.overallBand}`
+                      : result.correctAnswers !== undefined && result.totalQuestions
+                        ? `${result.correctAnswers}/${result.totalQuestions}`
+                        : 'Pending'}
                   </span>
                 </button>
               ))}
