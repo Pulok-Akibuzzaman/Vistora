@@ -261,7 +261,7 @@ export default function Auth({ mode }: { mode: AuthMode }) {
                       onClick={() => setForm(c => ({ ...c, examModule: m }))}
                       className={`rounded-sm border p-3 text-left transition-all ${
                         form.examModule === m
-                          ? 'border-electric bg-electric/10 text-electric-dark font-bold'
+                          ? 'border-electric bg-electric/10 text-accent-strong font-bold'
                           : 'border-divider bg-surface text-graphite hover:border-graphite-light'
                       }`}
                     >
