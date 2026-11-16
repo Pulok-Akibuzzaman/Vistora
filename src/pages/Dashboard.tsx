@@ -72,9 +72,8 @@ export default function Dashboard() {
   // Load live data from backend
   useEffect(() => {
     const loadData = () => {
-      fetchDashboardStats(user?.email, user?.targetBand).then(data => {
-        if (data) setStats(data)
-      }).catch(() => {})
+      // Always apply the response: null means there are no results left, so old stats must be cleared
+      fetchDashboardStats(user?.email, user?.targetBand).then(setStats).catch(() => {})
 
       fetchTasks(user?.id).then(setTasks).catch(() => {})
 
