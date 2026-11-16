@@ -278,7 +278,7 @@ function ResultDetail({ result, userName }: { result: StoredExamResult; userName
               <div className="border-l-2 border-purple-500 pl-3">
                 <div className="font-mono text-[11px] uppercase tracking-wider text-graphite-light">Duration</div>
                 <div className="mt-1 font-mono text-xl font-bold text-ink">
-                  {speakingDuration > 0 ? `${Math.floor(speakingDuration / 60)}m ${speakingDuration % 60}s` : 'Recorded'}
+                  {speakingDuration > 0 ? `${Math.floor(speakingDuration / 60)}m ${Math.round(speakingDuration % 60)}s` : 'Recorded'}
                 </div>
               </div>
               <div className="border-l-2 border-indigo-500 pl-3">
@@ -291,7 +291,7 @@ function ResultDetail({ result, userName }: { result: StoredExamResult; userName
                   {speakingWpm > 0 ? `${speakingWpm} WPM` : '—'}
                 </div>
                 <div className="mt-0.5 font-mono text-[10px] text-graphite-light">
-                  {speakingWpm < 70 ? 'Low pace / hesitation' : speakingWpm < 120 ? 'Controlled pace' : 'Natural flow'}
+                  {speakingWpm <= 0 ? 'Not measured' : speakingWpm < 70 ? 'Low pace / hesitation' : speakingWpm < 120 ? 'Controlled pace' : 'Natural flow'}
                 </div>
               </div>
               <div className="border-l-2 border-rose-500 pl-3">
