@@ -1320,7 +1320,7 @@ function ReadingExam({ answers, setAnswers, currentQ, setCurrentQ, timeLeft, par
             <span className="hidden whitespace-nowrap font-mono text-xs text-graphite-mid lg:inline">{answered}/{totalQuestions} answered</span>
           </div>
           <div className="flex items-center gap-2">
-            <button aria-label="Previous reading passage" disabled={passage.part === 1 || part !== undefined || !activePassages[passageIndex - 1]} onClick={() => setCurrentQ(activePassages[passageIndex - 1].range[0])} className="h-11 w-11 rounded-sm bg-divider font-plex text-xl font-bold text-white disabled:cursor-not-allowed disabled:opacity-40">←</button>
+            <button aria-label="Previous reading passage" disabled={passage.part === 1 || part !== undefined || !activePassages[passageIndex - 1]} onClick={() => setCurrentQ(activePassages[passageIndex - 1].range[0])} className="h-11 w-11 rounded-sm border border-line-strong bg-surface-3 font-plex text-xl font-bold text-ink disabled:cursor-not-allowed disabled:opacity-40">←</button>
             <button aria-label="Next reading passage" disabled={passage.part === activePassages.length || part !== undefined || !activePassages[passageIndex + 1]} onClick={() => setCurrentQ(activePassages[passageIndex + 1].range[0])} className="h-11 w-11 rounded-sm bg-navy font-plex text-xl font-bold text-white disabled:cursor-not-allowed disabled:opacity-40">→</button>
           </div>
         </div>
@@ -1692,7 +1692,7 @@ function WritingExam({ answers, setAnswers, currentTask, setCurrentTask, timeLef
           ))}
         </div>
         <div className="flex gap-2">
-          <button aria-label="Previous writing task" disabled={task === 1 || part !== undefined} onClick={() => setCurrentTask(1)} className="h-11 w-11 rounded-sm bg-divider font-plex text-xl font-bold text-white disabled:cursor-not-allowed disabled:opacity-40">←</button>
+          <button aria-label="Previous writing task" disabled={task === 1 || part !== undefined} onClick={() => setCurrentTask(1)} className="h-11 w-11 rounded-sm border border-line-strong bg-surface-3 font-plex text-xl font-bold text-ink disabled:cursor-not-allowed disabled:opacity-40">←</button>
           <button aria-label="Next writing task" disabled={task === 2 || part !== undefined} onClick={() => setCurrentTask(2)} className="h-11 w-11 rounded-sm bg-navy font-plex text-xl font-bold text-white disabled:cursor-not-allowed disabled:opacity-40">→</button>
         </div>
       </footer>
@@ -2437,7 +2437,7 @@ function SpeakingExam({ currentPart, setCurrentPart, timeLeft, part, onRecording
           ))}
         </div>
         <div className="flex gap-2">
-          <button aria-label="Previous speaking part" disabled={activePart === 1 || part !== undefined} onClick={() => changePart(activePart - 1)} className="h-11 w-11 rounded-sm bg-divider font-plex text-xl font-bold text-white disabled:cursor-not-allowed disabled:opacity-40">←</button>
+          <button aria-label="Previous speaking part" disabled={activePart === 1 || part !== undefined} onClick={() => changePart(activePart - 1)} className="h-11 w-11 rounded-sm border border-line-strong bg-surface-3 font-plex text-xl font-bold text-ink disabled:cursor-not-allowed disabled:opacity-40">←</button>
           <button aria-label="Next speaking part" disabled={activePart === 3 || part !== undefined} onClick={() => changePart(activePart + 1)} className="h-11 w-11 rounded-sm bg-navy font-plex text-xl font-bold text-white disabled:cursor-not-allowed disabled:opacity-40">→</button>
         </div>
       </footer>
