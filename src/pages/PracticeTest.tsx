@@ -2036,9 +2036,18 @@ const SPEAKING_CONTENT: Record<number, SpeakingContentItem> = {
   },
 }
 
+// One lookup for the exam screen and the evaluator, so both always use the same test's prompts
+const speakingContentFor = (testNumber?: number): Record<number, SpeakingContentItem> =>
+  testNumber === 21 ? SPEAKING_CONTENT_21
+    : testNumber === 20 ? SPEAKING_CONTENT_20
+      : testNumber === 4 ? SPEAKING_CONTENT_4
+        : testNumber === 3 ? SPEAKING_CONTENT_3
+          : testNumber === 2 ? SPEAKING_CONTENT_2
+            : SPEAKING_CONTENT
+
 function SpeakingExam({ currentPart, setCurrentPart, timeLeft, part, onRecording, onFinishSpeaking, onFinish, selectedTestNumber = 1 }: SpeakingExamProps) {
   const activePart = part ?? currentPart
-  const activeContent = selectedTestNumber === 21 ? SPEAKING_CONTENT_21 : selectedTestNumber === 20 ? SPEAKING_CONTENT_20 : selectedTestNumber === 4 ? SPEAKING_CONTENT_4 : selectedTestNumber === 3 ? SPEAKING_CONTENT_3 : selectedTestNumber === 2 ? SPEAKING_CONTENT_2 : SPEAKING_CONTENT
+  const activeContent = speakingContentFor(selectedTestNumber)
   const content = activeContent[activePart] ?? activeContent[1]
   const recorderRef = useRef<MediaRecorder | null>(null)
   const streamRef = useRef<MediaStream | null>(null)
@@ -2725,7 +2734,7 @@ export default function PracticeTest() {
     const combinedTranscript = transcriptSegments.join('\n\n')
     const totalDuration = partsToInclude.reduce((sum, p) => sum + (data.durations[p] || 0), 0) || 60
 
-    const speakingContent = selectedTest.testNumber === 2 ? SPEAKING_CONTENT_2 : SPEAKING_CONTENT
+    const speakingContent = speakingContentFor(selectedTest.testNumber)
     const allQuestions = partsToInclude.flatMap(p => {
       const item = speakingContent[p]
       return item?.topics ? item.topics.flatMap(topic => topic.questions) : item?.questions || []
