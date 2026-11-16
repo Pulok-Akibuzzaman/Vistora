@@ -797,28 +797,57 @@ export async function fetchDashboardStats(email?: string): Promise<DashboardStat
       const scored = results.filter(r => typeof r.overallBand === 'number' && r.overallBand > 0)
       const avgBand = scored.length > 0
         ? Number((scored.reduce((acc, r) => acc + (r.overallBand || 0), 0) / scored.length).toFixed(1))
-        : 7.0
+        : 0
 
-      const skillScores: Record<string, number[]> = { Listening: [], Reading: [], Writing: [], Speaking: [] }
+      const skillTarget = 7.5
+      const bandsBySkill: Record<string, number[]> = { Reading: [], Listening: [], Writing: [], Speaking: [] }
       for (const r of results) {
         if (r.skillBands) {
           for (const [skill, val] of Object.entries(r.skillBands)) {
-            if (typeof val === 'number' && val > 0 && skillScores[skill]) {
-              skillScores[skill].push(val)
+            if (typeof val === 'number' && val > 0 && bandsBySkill[skill]) {
+              bandsBySkill[skill].push(val)
             }
           }
         }
       }
 
-      const skillBreakdown = Object.entries(skillScores).map(([skill, scores]) => ({
+      const averageBand = (scores: number[]) => Number((scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1))
+
+      const skillBreakdown = Object.entries(bandsBySkill).map(([skill, scores]) => ({
         skill,
-        band: scores.length > 0 ? Number((scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1)) : 7.0,
+        band: scores.length > 0 ? averageBand(scores) : 0,
         testsCount: scores.length,
       }))
 
+      // The dashboard reads skillScores and recentActivities, so build them from the same results
+      const skillScores = Object.entries(bandsBySkill).map(([skill, scores]) => ({
+        skill,
+        score: scores.length > 0 ? averageBand(scores) : null,
+        hasAttempts: scores.length > 0,
+        attemptsCount: scores.length,
+        target: skillTarget,
+        color: scores.length > 0 ? '#DC2626' : '#94A3B8',
+        bg: scores.length > 0 ? '#FEE2E2' : '#F1F5F9',
+      }))
+
+      const recentActivities = results.slice(0, 5).map(r => ({
+        id: r.id,
+        type: r.testType,
+        title: r.testTitle,
+        score: typeof r.overallBand === 'number'
+          ? `Band ${r.overallBand.toFixed(1)}`
+          : r.correctAnswers !== undefined && r.totalQuestions
+            ? `${r.correctAnswers}/${r.totalQuestions}`
+            : '—',
+        time: new Date(r.completedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        status: typeof r.overallBand === 'number' ? 'Completed' : 'Pending',
+      }))
+
       return {
+        skillScores,
+        recentActivities,
         overallBand: avgBand,
-        targetBand: 7.5,
+        targetBand: skillTarget,
         targetExamDate: '2026-11-15',
         daysUntilExam: 15,
         totalHoursStudied: Math.round(results.length * 1.8),
