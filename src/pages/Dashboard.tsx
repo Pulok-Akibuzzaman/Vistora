@@ -234,7 +234,7 @@ export default function Dashboard() {
               const linkPath = s.skill === 'Listening' ? '/practice'
                              : s.skill === 'Reading' ? '/practice'
                              : s.skill === 'Writing' ? '/writing'
-                             : '/results'
+                             : '/practice'
               const linkAction = s.skill === 'Listening' ? 'Start listening test →'
                                : s.skill === 'Reading' ? 'Start reading test →'
                                : s.skill === 'Writing' ? 'Evaluate an essay →'
