@@ -96,6 +96,10 @@ function ResultDetail({ result, userName }: { result: StoredExamResult; userName
   // Writing Details
   // --------------------------------------------------------------------------
   const isWriting = result.testType === 'Writing'
+  // Practice Writing tests store their responses by task number ({ 1: '...', 2: '...' })
+  const practiceTasks = [1, 2]
+    .map(taskNumber => ({ taskNumber, text: result.userAnswers?.[taskNumber] }))
+    .filter((task): task is { taskNumber: number; text: string } => typeof task.text === 'string' && task.text.trim() !== '')
   const writingEssay: string =
     typeof result.userAnswers?.essay === 'string'
       ? result.userAnswers.essay
@@ -103,7 +107,9 @@ function ResultDetail({ result, userName }: { result: StoredExamResult; userName
         ? result.userAnswers.task2
         : typeof result.userAnswers?.task1 === 'string'
           ? result.userAnswers.task1
-          : ''
+          : practiceTasks
+              .map(task => (practiceTasks.length > 1 ? `Task ${task.taskNumber}\n${task.text.trim()}` : task.text.trim()))
+              .join('\n\n')
   const writingWords =
     result.userAnswers?.wordCount ||
     (writingEssay ? writingEssay.split(/\s+/).filter(Boolean).length : 0)
