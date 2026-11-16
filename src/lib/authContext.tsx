@@ -110,6 +110,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
         setUser(profile)
         window.localStorage.setItem('vistora-auth-user', JSON.stringify(profile))
+        // This early return skips the finally block below, so reset the flag here
+        setIsLoading(false)
         return
       }
     } catch (e) {
@@ -171,6 +173,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
         setUser(profile)
         window.localStorage.setItem('vistora-auth-user', JSON.stringify(profile))
+        setIsLoading(false)
         return
       }
     } catch (e) {
