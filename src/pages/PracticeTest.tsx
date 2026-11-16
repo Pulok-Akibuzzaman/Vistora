@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import Icon from '../components/Icon'
 import { READING_ANSWERS, READING_PASSAGES } from '../data/readingTest1'
 import { READING_ANSWERS_2, READING_PASSAGES_2 } from '../data/readingTest2'
 import { READING_ANSWERS_3, READING_PASSAGES_3 } from '../data/readingTest3'
@@ -524,7 +525,7 @@ function ListeningExam({
                   className="shrink-0 text-rose-400 hover:text-rose-300 underline"
                   title="Open direct file in SharePoint"
                 >
-                  SharePoint ↗
+                  SharePoint <Icon name="external" />
                 </a>
               )}
             </div>
@@ -536,7 +537,7 @@ function ListeningExam({
               <div className="flex items-center gap-1.5">
                 <button type="button" onClick={() => seekBy(-5)} aria-label="Rewind 5 seconds" title="Rewind 5 seconds" className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-800 text-xs text-slate-300 hover:bg-slate-700 hover:text-white">−5</button>
                 <button type="button" onClick={togglePlayPause} aria-label={audioPlaying ? 'Pause audio' : 'Play audio'} className="flex h-8 w-8 items-center justify-center rounded-full bg-[#FF334B] text-sm text-white shadow-md shadow-rose-900/50 transition hover:scale-105 hover:bg-rose-600">
-                  {audioPlaying ? 'Ⅱ' : '▶'}
+                  <Icon name={audioPlaying ? 'pause' : 'play'} fill={audioPlaying ? 'none' : 'currentColor'} />
                 </button>
                 <button type="button" onClick={() => seekBy(5)} aria-label="Forward 5 seconds" title="Forward 5 seconds" className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-800 text-xs text-slate-300 hover:bg-slate-700 hover:text-white">+5</button>
               </div>
@@ -552,7 +553,7 @@ function ListeningExam({
             {audioError && (
               <div role="alert" className="space-y-2 rounded-lg border border-rose-800/80 bg-rose-950/70 p-2.5 text-[11px] text-rose-200">
                 <div className="flex items-start justify-between gap-2">
-                  <span className="font-semibold text-rose-300">⚠️ Could not stream Part {currentPart} online</span>
+                  <span className="font-semibold text-rose-300"><Icon name="alert" /> Could not stream Part {currentPart} online</span>
                   <button
                     type="button"
                     onClick={() => {
@@ -577,11 +578,11 @@ function ListeningExam({
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-1 rounded bg-rose-600 px-2 py-1 text-[10px] font-bold text-white transition hover:bg-rose-500"
                     >
-                      <span>↗ Open in SharePoint / Download</span>
+                      <span><Icon name="external" /> Open in SharePoint / Download</span>
                     </a>
                   )}
                   <label className="inline-flex cursor-pointer items-center gap-1 rounded border border-slate-600 bg-slate-800 px-2 py-1 text-[10px] font-semibold text-slate-200 transition hover:border-slate-400 hover:text-white">
-                    <span>📁 Select Local MP3 from Database</span>
+                    <span><Icon name="folder" /> Select Local MP3 from Database</span>
                     <input
                       className="sr-only"
                       type="file"
@@ -1139,7 +1140,7 @@ function ReadingExam({ answers, setAnswers, currentQ, setCurrentQ, timeLeft, par
           className={`flex-1 py-1.5 px-3 rounded text-xs font-mono font-semibold transition-colors ${mobileView === 'passage' ? 'bg-electric text-white' : 'bg-surface-2 text-graphite hover:text-ink'
             }`}
         >
-          📖 Reading Passage
+          <Icon name="book-open" /> Reading Passage
         </button>
         <button
           type="button"
@@ -1147,7 +1148,7 @@ function ReadingExam({ answers, setAnswers, currentQ, setCurrentQ, timeLeft, par
           className={`flex-1 py-1.5 px-3 rounded text-xs font-mono font-semibold transition-colors ${mobileView === 'questions' ? 'bg-electric text-white' : 'bg-surface-2 text-graphite hover:text-ink'
             }`}
         >
-          ✍️ Questions ({answered}/{totalQuestions})
+          <Icon name="pen" /> Questions ({answered}/{totalQuestions})
         </button>
       </div>
 
@@ -1594,7 +1595,7 @@ function WritingExam({ answers, setAnswers, currentTask, setCurrentTask, timeLef
           className={`flex-1 py-1.5 px-3 rounded text-xs font-mono font-semibold transition-colors ${mobileWritingView === 'prompt' ? 'bg-electric text-white' : 'bg-surface-2 text-graphite hover:text-ink'
             }`}
         >
-          📋 Task Instructions
+          <Icon name="clipboard" /> Task Instructions
         </button>
         <button
           type="button"
@@ -1602,7 +1603,7 @@ function WritingExam({ answers, setAnswers, currentTask, setCurrentTask, timeLef
           className={`flex-1 py-1.5 px-3 rounded text-xs font-mono font-semibold transition-colors ${mobileWritingView === 'editor' ? 'bg-electric text-white' : 'bg-surface-2 text-graphite hover:text-ink'
             }`}
         >
-          ✍️ Your Essay ({wordCount} words)
+          <Icon name="pen" /> Your Essay ({wordCount} words)
         </button>
       </div>
 
@@ -2356,7 +2357,7 @@ function SpeakingExam({ currentPart, setCurrentPart, timeLeft, part, onRecording
             <div className="mt-2 font-mono text-3xl font-bold">{formatTime(recording ? recordingSeconds : (durations[activePart] || 0))}</div>
 
             {recording ? (
-              <button onClick={stopRecording} className="mt-4 w-full rounded-sm bg-danger px-4 py-2.5 font-plex text-xs font-bold uppercase tracking-wider text-white hover:bg-danger/90">■ Stop recording</button>
+              <button onClick={stopRecording} className="mt-4 w-full rounded-sm bg-danger px-4 py-2.5 font-plex text-xs font-bold uppercase tracking-wider text-white hover:bg-danger/90"><Icon name="stop" fill="currentColor" /> Stop recording</button>
             ) : (
               <button onClick={startRecording} className="mt-4 w-full rounded-sm bg-electric px-4 py-2.5 font-plex text-xs font-bold uppercase tracking-wider text-white hover:bg-electric/90">● Start recording</button>
             )}
@@ -3342,7 +3343,7 @@ export default function PracticeTest() {
             <div className="mt-6 space-y-6">
               {filteredReviewItems.length === 0 ? (
                 <div className="py-12 text-center text-sm text-graphite-mid">
-                  {resultFilter === 'incorrect' ? '🎉 Great job! You have no incorrect answers.' : 'No questions match this filter.'}
+                  {resultFilter === 'incorrect' ? 'Great job! You have no incorrect answers.' : 'No questions match this filter.'}
                 </div>
               ) : (
                 filteredReviewItems.map(item => (
@@ -3405,7 +3406,7 @@ export default function PracticeTest() {
                     {item.explanation && (
                       <div className="mt-4 rounded-sm border border-divider bg-surface-2 p-4">
                         <div className="flex items-center gap-1.5 font-mono text-xs font-bold uppercase tracking-wider text-ink">
-                          <span>💡 Why wrong / right</span>
+                          <span><Icon name="lightbulb" /> Why wrong / right</span>
                         </div>
                         <p className="mt-1.5 font-plex text-sm leading-6 text-graphite">
                           {item.explanation}
@@ -3416,7 +3417,7 @@ export default function PracticeTest() {
                     {item.passageReference && (
                       <div className="mt-3 rounded-sm border border-sky-100 bg-sky-50/40 p-4">
                         <div className="flex items-center gap-1.5 font-mono text-xs font-bold uppercase tracking-wider text-sky-800">
-                          <span>📖 Part of the passage taken from</span>
+                          <span><Icon name="book-open" /> Part of the passage taken from</span>
                         </div>
                         <blockquote className="mt-1.5 border-l-2 border-sky-400 pl-3 font-plex text-sm italic leading-6 text-sky-950">
                           {item.passageReference}
@@ -3690,14 +3691,14 @@ export default function PracticeTest() {
                         }`}
                     >
                       {soundTestPlaying ? (
-                        <><span>■ Stop Preview</span> <span className="animate-pulse">🔊 Playing sound check...</span></>
+                        <><span><Icon name="stop" fill="currentColor" /> Stop Preview</span> <span className="animate-pulse"><Icon name="volume" /> Playing sound check...</span></>
                       ) : (
-                        <><span>▶ Play 5s Sound Check</span></>
+                        <><span><Icon name="play" fill="currentColor" /> Play 5s Sound Check</span></>
                       )}
                     </button>
                     {soundTestError && (
                       <p className="mt-1.5 text-[11px] leading-tight text-danger font-plex">
-                        ⚠️ Audio stream could not play. If testing SharePoint on Vercel, Microsoft 365 sign-in or a local MP3 is needed.
+                        <Icon name="alert" /> Audio stream could not play. If testing SharePoint on Vercel, Microsoft 365 sign-in or a local MP3 is needed.
                       </p>
                     )}
                   </div>
