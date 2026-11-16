@@ -47,7 +47,8 @@ export default function Layout() {
   const navigate = useNavigate()
   const { user, isAuthenticated, logout } = useAuth()
   const isLanding = location.pathname === '/'
-  const isAuthPage = location.pathname === '/login' || location.pathname === '/signup'
+  // The router also serves the auth screens under /pages/*
+  const isAuthPage = ['/login', '/signup', '/pages/login', '/pages/signup'].includes(location.pathname)
   const isDarkHeader = isLanding || isAuthPage
   const showGuestLandingNav = isLanding && !isAuthenticated
   const [mobileOpen, setMobileOpen] = useState(false)
