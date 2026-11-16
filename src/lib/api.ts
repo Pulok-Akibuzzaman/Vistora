@@ -976,8 +976,8 @@ export async function fetchTasks(userId?: string): Promise<StudyTask[]> {
           id: Number(t.id),
           userId: t.user_id,
           title: t.title,
-          due: t.due || 'TODAY',
-          complete: Boolean(t.complete)
+          due: t.due_date ?? t.due ?? 'TODAY',
+          complete: Boolean(t.is_completed ?? t.complete)
         }))
         if (typeof window !== 'undefined') {
           window.localStorage.setItem(getTaskKey(targetUserId), JSON.stringify(mapped))
@@ -1014,10 +1014,11 @@ export async function createTask(title: string, due = 'TODAY', userId?: string):
       const { data, error } = await supabase
         .from('study_tasks')
         .insert({
+          // Column names follow supabase/schema.sql (due_date, is_completed)
           user_id: sessionUserId,
           title,
-          due,
-          complete: false,
+          due_date: due,
+          is_completed: false,
         })
         .select()
         .single()
@@ -1027,7 +1028,7 @@ export async function createTask(title: string, due = 'TODAY', userId?: string):
           id: Number(data.id),
           userId: data.user_id,
           title: data.title,
-          due: data.due || due,
+          due: data.due_date ?? data.due ?? due,
           complete: false,
         }
         try {
@@ -1056,7 +1057,7 @@ export async function createTask(title: string, due = 'TODAY', userId?: string):
 
 export async function toggleTaskComplete(id: number, complete: boolean, userId?: string): Promise<StudyTask> {
   try {
-    await supabase.from('study_tasks').update({ complete }).eq('id', id)
+    await supabase.from('study_tasks').update({ is_completed: complete }).eq('id', id)
   } catch { }
 
   try {
