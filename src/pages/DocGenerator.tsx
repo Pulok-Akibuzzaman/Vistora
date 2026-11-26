@@ -1,5 +1,11 @@
 import { useState } from 'react'
 import Icon from '../components/Icon'
+import {
+  CS_SOP_ARCHIVE_URL,
+  CS_SOP_NOTION_URL,
+  SOP_TEMPLATES,
+  type SopTemplate,
+} from '../data/sopTemplates'
 import { generateDocumentApi, saveApplicationDocumentApi } from '../lib/api'
 import { useAuth } from '../lib/authContext'
 import { themeText } from '../lib/theme'
@@ -513,6 +519,10 @@ function printFormattedDocument(rawContent: string, docTitle: string, docType: D
 
 export default function DocGenerator() {
   const { user } = useAuth()
+  const [activeTab, setActiveTab] = useState<'generator' | 'sop-templates'>('generator')
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>(SOP_TEMPLATES[0].id)
+  const [subfieldFilter, setSubfieldFilter] = useState<string>('All')
+  const [templateCopied, setTemplateCopied] = useState(false)
   const [docType, setDocType] = useState<DocType>('cv')
   const [forms, setForms] = useState<Record<DocType, Record<string, string>>>({
     cv: {},
@@ -527,6 +537,16 @@ export default function DocGenerator() {
   const [copied, setCopied] = useState(false)
   const [docSource, setDocSource] = useState('DOCUMENT PREVIEW')
   const [error, setError] = useState('')
+
+  const subfields = ['All', ...Array.from(new Set(SOP_TEMPLATES.map(t => t.subfield)))]
+  const filteredTemplates =
+    subfieldFilter === 'All'
+      ? SOP_TEMPLATES
+      : SOP_TEMPLATES.filter(t => t.subfield === subfieldFilter)
+  const selectedTemplate =
+    filteredTemplates.find(t => t.id === selectedTemplateId) ||
+    filteredTemplates[0] ||
+    SOP_TEMPLATES[0]
 
   const form = forms[docType] || {}
   const fields = FORM_FIELDS[docType]
@@ -641,19 +661,295 @@ export default function DocGenerator() {
     }
   }
 
+  const handleUseTemplateInForm = (tpl: SopTemplate) => {
+    const candidateName = forms.sop.name?.trim() || user?.name || ''
+    setForms(prev => ({
+      ...prev,
+      sop: {
+        ...tpl.prefill,
+        name: candidateName,
+      },
+    }))
+    setDocType('sop')
+    setIsGenerated(false)
+    setGeneratedText('')
+    setAiExpanded(false)
+    setDocSource('DOCUMENT PREVIEW')
+    setError('')
+    setActiveTab('generator')
+  }
+
+  const handleLoadTemplateDraft = (tpl: SopTemplate) => {
+    const candidateName = forms.sop.name?.trim() || user?.name || ''
+    const draft = candidateName
+      ? tpl.templateText.replace(/\[Your Full Name\]/g, candidateName)
+      : tpl.templateText
+    setForms(prev => ({
+      ...prev,
+      sop: {
+        ...tpl.prefill,
+        name: candidateName,
+      },
+    }))
+    setDocType('sop')
+    setGeneratedText(draft)
+    setDocSource(`SOP TEMPLATE · ${tpl.subfield.toUpperCase()}`)
+    setIsGenerated(true)
+    setAiExpanded(false)
+    setError('')
+    setActiveTab('generator')
+  }
+
+  const copyTemplateText = async (text: string) => {
+    await navigator.clipboard.writeText(text)
+    setTemplateCopied(true)
+    setTimeout(() => setTemplateCopied(false), 2000)
+  }
+
   return (
     <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-8">
       <div className="label-tag mb-1 no-print">AI DOCUMENT GENERATOR · VISTORA</div>
       <h1 className="text-2xl font-bold text-ink plex tracking-tight mb-1 no-print">Application Document Generator</h1>
-      <p className="text-sm text-muted mb-6 no-print">
-        Generate custom, professionally structured academic and career documents tailored to your profile.
+      <p className="text-sm text-muted mb-5 no-print">
+        Generate custom, professionally structured academic and career documents tailored to your profile, or browse CS-SOP reference templates.
       </p>
 
-      {/* Doc type selector */}
-      <div className="mb-3 no-print">
-        <div className="text-sm font-semibold text-ink plex">What would you like to create?</div>
-        <div className="mt-1 text-xs text-muted">Choose a document type to start with the right structure and prompts.</div>
+      {/* Top Navigation Tabs */}
+      <div
+        className="mb-6 flex flex-wrap gap-2 border-b border-divider pb-3 no-print"
+        role="tablist"
+        aria-label="Document Generator sections"
+      >
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeTab === 'generator'}
+          onClick={() => setActiveTab('generator')}
+          className={`px-4 py-2 text-xs font-mono uppercase tracking-wider rounded transition-colors cursor-pointer flex items-center gap-2 ${
+            activeTab === 'generator'
+              ? 'bg-electric text-white font-bold'
+              : 'bg-surface border border-divider text-graphite hover:text-ink'
+          }`}
+        >
+          <Icon name="pen" /> Document Generator
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeTab === 'sop-templates'}
+          onClick={() => setActiveTab('sop-templates')}
+          className={`px-4 py-2 text-xs font-mono uppercase tracking-wider rounded transition-colors cursor-pointer flex items-center gap-2 ${
+            activeTab === 'sop-templates'
+              ? 'bg-electric text-white font-bold'
+              : 'bg-surface border border-divider text-graphite hover:text-ink'
+          }`}
+        >
+          <Icon name="books" /> Templates for SOPs ({SOP_TEMPLATES.length})
+        </button>
       </div>
+
+      {activeTab === 'sop-templates' ? (
+        <div className="space-y-5 no-print">
+          {/* Reference Archive Banner */}
+          <section className="corner-mark border border-divider bg-surface p-5 sm:p-6" style={{ borderRadius: 4 }}>
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+              <div className="max-w-3xl">
+                <div className="label-tag mb-1.5">CS-SOP REFERENCE ARCHIVE · BLUEPRINTS &amp; REAL EXAMPLES</div>
+                <h2 className="text-lg font-bold text-ink plex">
+                  Computer Science &amp; Graduate Statement of Purpose Templates
+                </h2>
+                <p className="mt-1.5 text-xs leading-6 text-graphite-mid">
+                  Structured around patterns from successful admitted CS PhD &amp; Master’s Statements of Purpose in the crowdsourced{' '}
+                  <strong>CS-SOP Notion repository</strong>. Use these subfield blueprints to frame research hypotheses, concrete engineering or proof contributions, and specific faculty fit—then load any template straight into the generator.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2 shrink-0">
+                <a
+                  href={CS_SOP_NOTION_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 rounded bg-[#DC2626] px-4 py-2.5 text-xs font-semibold text-white hover:bg-[#B91C1C] transition-colors"
+                >
+                  Open CS-SOP Notion Archive <Icon name="external" />
+                </a>
+                <a
+                  href={CS_SOP_ARCHIVE_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 rounded border border-divider bg-surface-2 px-4 py-2.5 text-xs font-semibold text-ink hover:border-line-strong transition-colors"
+                >
+                  cs-sop.org Directory <Icon name="external" />
+                </a>
+              </div>
+            </div>
+          </section>
+
+          {/* Subfield Filters */}
+          <div className="flex flex-wrap items-center gap-1.5">
+            {subfields.map(sf => (
+              <button
+                key={sf}
+                type="button"
+                onClick={() => setSubfieldFilter(sf)}
+                className={`mono text-[11px] px-3 py-1.5 rounded border transition-colors cursor-pointer ${
+                  subfieldFilter === sf
+                    ? 'border-line-ink bg-navy text-white font-bold'
+                    : 'border-divider bg-surface text-graphite hover:border-line-strong'
+                }`}
+              >
+                {sf}
+              </button>
+            ))}
+          </div>
+
+          {/* 2-Column Template Browser & Preview */}
+          <div className="grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-4">
+            {/* Template List */}
+            <div className="space-y-2.5">
+              {filteredTemplates.map(tpl => {
+                const isSelected = tpl.id === selectedTemplate.id
+                return (
+                  <button
+                    key={tpl.id}
+                    type="button"
+                    onClick={() => {
+                      setSelectedTemplateId(tpl.id)
+                      setTemplateCopied(false)
+                    }}
+                    className={`w-full text-left p-4 border transition-all cursor-pointer ${
+                      isSelected
+                        ? 'border-[#DC2626] bg-electric-soft shadow-sm'
+                        : 'border-divider bg-surface hover:border-line-strong'
+                    }`}
+                    style={{ borderRadius: 4 }}
+                  >
+                    <div className="flex items-center justify-between gap-2 mb-1.5">
+                      <span className="mono text-[9px] px-2 py-0.5 bg-surface-2 border border-divider text-accent font-bold rounded">
+                        {tpl.tag}
+                      </span>
+                      <span className="mono text-[10px] text-subtle">{tpl.track}</span>
+                    </div>
+                    <div className="text-sm font-bold text-ink plex leading-snug">{tpl.title}</div>
+                    <p className="mt-1.5 text-[11px] leading-relaxed text-muted line-clamp-2">{tpl.summary}</p>
+                    <div className="mt-2.5 flex items-center justify-between text-[10px] mono text-subtle">
+                      <span>{tpl.subfield}</span>
+                      <span>{tpl.targetLength}</span>
+                    </div>
+                  </button>
+                )
+              })}
+            </div>
+
+            {/* Selected Template Detail & Draft */}
+            <div className="bg-surface border border-divider flex flex-col" style={{ borderRadius: 4 }}>
+              <div className="px-5 py-4 border-b border-divider-soft flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <div className="flex flex-wrap items-center gap-2 mb-1">
+                    <span className="mono text-[9px] px-2 py-0.5 bg-electric-dim text-accent-strong font-bold rounded">
+                      {selectedTemplate.track.toUpperCase()}
+                    </span>
+                    <span className="mono text-[10px] text-subtle">{selectedTemplate.targetLength}</span>
+                  </div>
+                  <h3 className="text-base font-bold text-ink plex">{selectedTemplate.title}</h3>
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleUseTemplateInForm(selectedTemplate)}
+                    className="mono text-[10px] text-white bg-[#DC2626] px-3 py-1.5 hover:bg-[#B91C1C] transition-colors rounded cursor-pointer inline-flex items-center gap-1"
+                  >
+                    <Icon name="zap" /> Customize with AI Form
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleLoadTemplateDraft(selectedTemplate)}
+                    className="mono text-[10px] text-white bg-navy px-3 py-1.5 hover:bg-navy-mid transition-colors rounded cursor-pointer inline-flex items-center gap-1"
+                  >
+                    <Icon name="pen" /> Open Draft in Editor
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => copyTemplateText(selectedTemplate.templateText)}
+                    className="mono text-[10px] text-muted border border-divider px-3 py-1.5 hover:border-line-strong hover:text-ink transition-colors rounded cursor-pointer"
+                  >
+                    {templateCopied ? '✓ Copied!' : 'Copy Template'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => printFormattedDocument(selectedTemplate.templateText, selectedTemplate.title, 'sop')}
+                    className="mono text-[10px] text-muted border border-divider px-3 py-1.5 hover:border-line-strong hover:text-ink transition-colors rounded cursor-pointer inline-flex items-center gap-1"
+                  >
+                    <Icon name="printer" /> Print / PDF
+                  </button>
+                </div>
+              </div>
+
+              <div className="p-5 sm:p-6 space-y-5 bg-paper flex-1">
+                {/* Structural Blueprint */}
+                <div>
+                  <div className="label-tag mb-2.5">PARAGRAPH-BY-PARAGRAPH BLUEPRINT</div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {selectedTemplate.structure.map(sec => (
+                      <div key={sec.step} className="border border-divider bg-surface p-3.5 rounded">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="mono text-[10px] font-bold text-accent">{sec.step}</span>
+                          <span className="text-xs font-bold text-ink plex">{sec.heading}</span>
+                        </div>
+                        <p className="text-[11px] leading-relaxed text-graphite-mid">{sec.guidance}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Subfield Tips */}
+                <div className="border border-divider bg-surface p-4 rounded">
+                  <div className="label-tag mb-2">
+                    <Icon name="lightbulb" /> KEY TIPS FOR {selectedTemplate.subfield.toUpperCase()}
+                  </div>
+                  <ul className="space-y-1.5">
+                    {selectedTemplate.keyTips.map(tip => (
+                      <li key={tip} className="flex items-start gap-2 text-xs text-graphite leading-relaxed">
+                        <span className="text-accent font-bold">•</span>
+                        <span>{tip}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* Full Template Text */}
+                <div className="bg-surface border border-divider rounded p-5 sm:p-6 shadow-xs">
+                  <div className="flex items-center justify-between border-b border-divider-soft pb-3 mb-4">
+                    <span className="mono text-[10px] text-subtle tracking-widest">
+                      FILLABLE SOP TEMPLATE (REPLACE [BRACKETED] SECTIONS)
+                    </span>
+                    <span className="mono text-[10px] text-accent">PLAIN-TEXT READY</span>
+                  </div>
+                  <pre className="whitespace-pre-wrap text-[12.5px] leading-[1.85] text-graphite font-sans">
+                    {selectedTemplate.templateText}
+                  </pre>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <>
+          {/* Doc type selector */}
+          <div className="mb-3 flex flex-wrap items-end justify-between gap-2 no-print">
+            <div>
+              <div className="text-sm font-semibold text-ink plex">What would you like to create?</div>
+              <div className="mt-1 text-xs text-muted">Choose a document type to start with the right structure and prompts.</div>
+            </div>
+            {docType === 'sop' && (
+              <button
+                type="button"
+                onClick={() => setActiveTab('sop-templates')}
+                className="mono text-[11px] text-accent hover:underline font-semibold cursor-pointer inline-flex items-center gap-1"
+              >
+                <Icon name="books" /> Browse CS-SOP Templates →
+              </button>
+            )}
+          </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6 no-print">
         {DOC_TYPES.map(d => (
           <button
@@ -878,6 +1174,8 @@ export default function DocGenerator() {
           </div>
         </div>
       </div>
+        </>
+      )}
     </div>
   )
 }
