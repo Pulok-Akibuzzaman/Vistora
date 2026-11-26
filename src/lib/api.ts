@@ -538,7 +538,7 @@ export async function fetchResults(email?: string, userId?: string): Promise<Sto
   let targetEmail = email ? email.toLowerCase().trim() : ''
   let targetUserId = userId && isValidUUID(userId) ? userId : null
 
-  if (!targetUserId && !targetEmail) {
+  if (!targetUserId && !targetEmail && isSupabaseConfigured()) {
     try {
       const { data: { session } } = await supabase.auth.getSession()
       if (session?.user?.id && isValidUUID(session.user.id)) {
@@ -556,39 +556,41 @@ export async function fetchResults(email?: string, userId?: string): Promise<Sto
   let supabaseResults: StoredExamResult[] = []
 
   // 1. Fetch live from Supabase strictly scoped to this authenticated user
-  try {
-    if (targetUserId) {
-      const { data, error } = await supabase
-        .from('exam_results')
-        .select('*')
-        .eq('user_id', targetUserId)
-        .order('created_at', { ascending: false })
+  if (isSupabaseConfigured()) {
+    try {
+      if (targetUserId) {
+        const { data, error } = await supabase
+          .from('exam_results')
+          .select('*')
+          .eq('user_id', targetUserId)
+          .order('created_at', { ascending: false })
 
-      if (!error && data) {
-        // overall_band is NOT NULL, so a Writing attempt that is still awaiting evaluation is stored as 0
-        const isPendingWriting = (row: any) => row.test_type === 'Writing' && Number(row.overall_band) === 0
-        supabaseResults = data.map((row: any) => ({
-          id: row.id,
-          userId: row.user_id,
-          userName: 'Candidate',
-          userEmail: targetEmail || '',
-          testTitle: row.test_title,
-          testType: row.test_type,
-          completedAt: row.created_at,
-          overallBand: row.overall_band !== null && !isPendingWriting(row) ? Number(row.overall_band) : null,
-          skillBands: row.skill_bands || {},
-          correctAnswers: row.correct_answers,
-          totalQuestions: row.total_questions,
-          userAnswers: row.user_answers || {},
-          comment: row.feedback || '',
-          source: isPendingWriting(row)
-            ? 'Pending AI'
-            : (row.feedback?.toLowerCase().includes('puku') || row.feedback?.toLowerCase().includes('ai')) ? 'AI' : 'Automatic',
-        }))
+        if (!error && data) {
+          // overall_band is NOT NULL, so a Writing attempt that is still awaiting evaluation is stored as 0
+          const isPendingWriting = (row: any) => row.test_type === 'Writing' && Number(row.overall_band) === 0
+          supabaseResults = data.map((row: any) => ({
+            id: row.id,
+            userId: row.user_id,
+            userName: 'Candidate',
+            userEmail: targetEmail || '',
+            testTitle: row.test_title,
+            testType: row.test_type,
+            completedAt: row.created_at,
+            overallBand: row.overall_band !== null && !isPendingWriting(row) ? Number(row.overall_band) : null,
+            skillBands: row.skill_bands || {},
+            correctAnswers: row.correct_answers,
+            totalQuestions: row.total_questions,
+            userAnswers: row.user_answers || {},
+            comment: row.feedback || '',
+            source: isPendingWriting(row)
+              ? 'Pending AI'
+              : (row.feedback?.toLowerCase().includes('puku') || row.feedback?.toLowerCase().includes('ai')) ? 'AI' : 'Automatic',
+          }))
+        }
       }
+    } catch (err) {
+      console.warn('[Supabase exam_results] Fetch error:', err)
     }
-  } catch (err) {
-    console.warn('[Supabase exam_results] Fetch error:', err)
   }
 
   // 2. Fetch user-scoped local storage cached results
@@ -678,61 +680,63 @@ async function persistExamResult(result: StoredExamResult): Promise<StoredExamRe
   }
 
   // 2. Direct Supabase insertion into public.exam_results
-  try {
-    const { data: { session } } = await supabase.auth.getSession()
-    const targetUserId = (session?.user?.id && isValidUUID(session.user.id))
-      ? session.user.id
-      : (result.userId && isValidUUID(result.userId) ? result.userId : null)
+  if (isSupabaseConfigured()) {
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const targetUserId = (session?.user?.id && isValidUUID(session.user.id))
+        ? session.user.id
+        : (result.userId && isValidUUID(result.userId) ? result.userId : null)
 
-    if (targetUserId) {
-      const payload: any = {
-        user_id: targetUserId,
-        test_title: result.testTitle || 'IELTS Practice Test',
-        test_type: result.testType || 'Reading',
-        overall_band: Math.max(0, Math.min(9, Number(result.overallBand) || 0)),
-        skill_bands: result.skillBands || {},
-        correct_answers: typeof result.correctAnswers === 'number' ? result.correctAnswers : 0,
-        total_questions: typeof result.totalQuestions === 'number' ? result.totalQuestions : 40,
-        user_answers: result.userAnswers || {},
-        feedback: result.comment || '',
-        duration_seconds: typeof result.userAnswers?.durationSeconds === 'number'
-          ? Math.round(result.userAnswers.durationSeconds)
-          : null,
-        created_at: result.completedAt || new Date().toISOString(),
-      }
-
-      if (isValidUUID(result.id)) {
-        payload.id = result.id
-      }
-
-      const { data: savedRow, error: supabaseError } = await supabase
-        .from('exam_results')
-        .upsert(payload)
-        .select()
-        .single()
-
-      if (!supabaseError && savedRow) {
-        // Remember the local id before swapping in the Supabase UUID, so the cached copy can be replaced
-        const localId = result.id
-        result.id = savedRow.id
-        result.userId = savedRow.user_id
-
-        // Synchronize updated Supabase UUID into localStorage cache
-        if (result.userEmail) {
-          const userKey = `vistora-exam-results_${result.userEmail}`
-          const raw = window.localStorage.getItem(userKey)
-          if (raw) {
-            const list: StoredExamResult[] = JSON.parse(raw)
-            const updated = [result, ...list.filter(r => r.id !== localId && r.id !== savedRow.id)].slice(0, 50)
-            window.localStorage.setItem(userKey, JSON.stringify(updated))
-          }
+      if (targetUserId) {
+        const payload: any = {
+          user_id: targetUserId,
+          test_title: result.testTitle || 'IELTS Practice Test',
+          test_type: result.testType || 'Reading',
+          overall_band: Math.max(0, Math.min(9, Number(result.overallBand) || 0)),
+          skill_bands: result.skillBands || {},
+          correct_answers: typeof result.correctAnswers === 'number' ? result.correctAnswers : 0,
+          total_questions: typeof result.totalQuestions === 'number' ? result.totalQuestions : 40,
+          user_answers: result.userAnswers || {},
+          feedback: result.comment || '',
+          duration_seconds: typeof result.userAnswers?.durationSeconds === 'number'
+            ? Math.round(result.userAnswers.durationSeconds)
+            : null,
+          created_at: result.completedAt || new Date().toISOString(),
         }
-      } else if (supabaseError) {
-        console.warn('[Supabase exam_results] Insert note:', supabaseError.message)
+
+        if (isValidUUID(result.id)) {
+          payload.id = result.id
+        }
+
+        const { data: savedRow, error: supabaseError } = await supabase
+          .from('exam_results')
+          .upsert(payload)
+          .select()
+          .single()
+
+        if (!supabaseError && savedRow) {
+          // Remember the local id before swapping in the Supabase UUID, so the cached copy can be replaced
+          const localId = result.id
+          result.id = savedRow.id
+          result.userId = savedRow.user_id
+
+          // Synchronize updated Supabase UUID into localStorage cache
+          if (result.userEmail) {
+            const userKey = `vistora-exam-results_${result.userEmail}`
+            const raw = window.localStorage.getItem(userKey)
+            if (raw) {
+              const list: StoredExamResult[] = JSON.parse(raw)
+              const updated = [result, ...list.filter(r => r.id !== localId && r.id !== savedRow.id)].slice(0, 50)
+              window.localStorage.setItem(userKey, JSON.stringify(updated))
+            }
+          }
+        } else if (supabaseError) {
+          console.warn('[Supabase exam_results] Insert note:', supabaseError.message)
+        }
       }
+    } catch (err: any) {
+      console.warn('[Supabase exam_results] Persistence deferred:', err?.message || err)
     }
-  } catch (err: any) {
-    console.warn('[Supabase exam_results] Persistence deferred:', err?.message || err)
   }
 
   // 3. Fallback POST to Express server if running
@@ -766,12 +770,14 @@ export async function deleteExamResultApi(id: string, userEmail?: string): Promi
   } catch { }
 
   // 2. Remove from Supabase if valid UUID
-  try {
-    if (isValidUUID(id)) {
-      await supabase.from('exam_results').delete().eq('id', id)
+  if (isSupabaseConfigured()) {
+    try {
+      if (isValidUUID(id)) {
+        await supabase.from('exam_results').delete().eq('id', id)
+      }
+    } catch (err) {
+      console.warn('[Supabase exam_results] Delete note:', err)
     }
-  } catch (err) {
-    console.warn('[Supabase exam_results] Delete note:', err)
   }
 
   // 3. Remove from backend server database if running
@@ -903,41 +909,43 @@ export async function fetchPlatformPublicStats(): Promise<PlatformPublicStats> {
   }
   const practiceModules = 49 + customCount
 
-  try {
-    const { count: profileCount, error: pErr } = await supabase
-      .from('profiles')
-      .select('*', { count: 'exact', head: true })
+  if (isSupabaseConfigured()) {
+    try {
+      const { count: profileCount, error: pErr } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true })
 
-    if (!pErr && typeof profileCount === 'number') {
-      activeLearners = profileCount
-    }
-
-    const { data: results, count: resCount, error: rErr } = await supabase
-      .from('exam_results')
-      .select('overall_band', { count: 'exact' })
-
-    if (!rErr && typeof resCount === 'number') {
-      evaluationsCount = resCount
-    }
-
-    if (results && results.length > 0) {
-      const scored = results.filter((r: any) => typeof r.overall_band === 'number' && r.overall_band > 0)
-      if (scored.length > 0) {
-        const avg = scored.reduce((sum: number, r: any) => sum + r.overall_band, 0) / scored.length
-        avgBandScore = avg.toFixed(1)
+      if (!pErr && typeof profileCount === 'number') {
+        activeLearners = profileCount
       }
-    } else {
-      const { data: profiles } = await supabase.from('profiles').select('target_band')
-      if (profiles && profiles.length > 0) {
-        const valid = profiles.filter((p: any) => typeof p.target_band === 'number' && p.target_band > 0)
-        if (valid.length > 0) {
-          const avg = valid.reduce((sum: number, p: any) => sum + p.target_band, 0) / valid.length
+
+      const { data: results, count: resCount, error: rErr } = await supabase
+        .from('exam_results')
+        .select('overall_band', { count: 'exact' })
+
+      if (!rErr && typeof resCount === 'number') {
+        evaluationsCount = resCount
+      }
+
+      if (results && results.length > 0) {
+        const scored = results.filter((r: any) => typeof r.overall_band === 'number' && r.overall_band > 0)
+        if (scored.length > 0) {
+          const avg = scored.reduce((sum: number, r: any) => sum + r.overall_band, 0) / scored.length
           avgBandScore = avg.toFixed(1)
         }
+      } else {
+        const { data: profiles } = await supabase.from('profiles').select('target_band')
+        if (profiles && profiles.length > 0) {
+          const valid = profiles.filter((p: any) => typeof p.target_band === 'number' && p.target_band > 0)
+          if (valid.length > 0) {
+            const avg = valid.reduce((sum: number, p: any) => sum + p.target_band, 0) / valid.length
+            avgBandScore = avg.toFixed(1)
+          }
+        }
       }
+    } catch (err) {
+      console.warn('[Platform stats] Error fetching live metrics:', err)
     }
-  } catch (err) {
-    console.warn('[Platform stats] Error fetching live metrics:', err)
   }
 
   return {
@@ -958,35 +966,37 @@ function getTaskKey(userId?: string) {
 
 export async function fetchTasks(userId?: string): Promise<StudyTask[]> {
   let targetUserId = userId && isValidUUID(userId) ? userId : null
-  try {
-    if (!targetUserId) {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (session?.user?.id && isValidUUID(session.user.id)) targetUserId = session.user.id
-    }
-
-    if (targetUserId) {
-      const { data, error } = await supabase
-        .from('study_tasks')
-        .select('*')
-        .eq('user_id', targetUserId)
-        .order('id', { ascending: true })
-
-      if (!error && Array.isArray(data)) {
-        const mapped: StudyTask[] = data.map((t: any) => ({
-          id: Number(t.id),
-          userId: t.user_id,
-          title: t.title,
-          due: t.due_date ?? t.due ?? 'TODAY',
-          complete: Boolean(t.is_completed ?? t.complete)
-        }))
-        if (typeof window !== 'undefined') {
-          window.localStorage.setItem(getTaskKey(targetUserId), JSON.stringify(mapped))
-        }
-        return mapped
+  if (isSupabaseConfigured()) {
+    try {
+      if (!targetUserId) {
+        const { data: { session } } = await supabase.auth.getSession()
+        if (session?.user?.id && isValidUUID(session.user.id)) targetUserId = session.user.id
       }
+
+      if (targetUserId) {
+        const { data, error } = await supabase
+          .from('study_tasks')
+          .select('*')
+          .eq('user_id', targetUserId)
+          .order('id', { ascending: true })
+
+        if (!error && Array.isArray(data)) {
+          const mapped: StudyTask[] = data.map((t: any) => ({
+            id: Number(t.id),
+            userId: t.user_id,
+            title: t.title,
+            due: t.due_date ?? t.due ?? 'TODAY',
+            complete: Boolean(t.is_completed ?? t.complete)
+          }))
+          if (typeof window !== 'undefined') {
+            window.localStorage.setItem(getTaskKey(targetUserId), JSON.stringify(mapped))
+          }
+          return mapped
+        }
+      }
+    } catch (err) {
+      console.warn('[Supabase study_tasks] Fetch note:', err)
     }
-  } catch (err) {
-    console.warn('[Supabase study_tasks] Fetch note:', err)
   }
 
   // Fallback to user-scoped localStorage cached tasks
@@ -1004,44 +1014,46 @@ export async function fetchTasks(userId?: string): Promise<StudyTask[]> {
 
 export async function createTask(title: string, due = 'TODAY', userId?: string): Promise<StudyTask> {
   let sessionUserId: string | null = userId && isValidUUID(userId) ? userId : null
-  try {
-    if (!sessionUserId) {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (session?.user?.id && isValidUUID(session.user.id)) sessionUserId = session.user.id
-    }
-
-    if (sessionUserId) {
-      const { data, error } = await supabase
-        .from('study_tasks')
-        .insert({
-          // Column names follow supabase/schema.sql (due_date, is_completed)
-          user_id: sessionUserId,
-          title,
-          due_date: due,
-          is_completed: false,
-        })
-        .select()
-        .single()
-
-      if (!error && data) {
-        const newTask: StudyTask = {
-          id: Number(data.id),
-          userId: data.user_id,
-          title: data.title,
-          due: data.due_date ?? data.due ?? due,
-          complete: false,
-        }
-        try {
-          const key = getTaskKey(sessionUserId)
-          const stored = window.localStorage.getItem(key)
-          const list: StudyTask[] = stored ? JSON.parse(stored) : []
-          window.localStorage.setItem(key, JSON.stringify([newTask, ...list]))
-        } catch { }
-        return newTask
+  if (isSupabaseConfigured()) {
+    try {
+      if (!sessionUserId) {
+        const { data: { session } } = await supabase.auth.getSession()
+        if (session?.user?.id && isValidUUID(session.user.id)) sessionUserId = session.user.id
       }
+
+      if (sessionUserId) {
+        const { data, error } = await supabase
+          .from('study_tasks')
+          .insert({
+            // Column names follow supabase/schema.sql (due_date, is_completed)
+            user_id: sessionUserId,
+            title,
+            due_date: due,
+            is_completed: false,
+          })
+          .select()
+          .single()
+
+        if (!error && data) {
+          const newTask: StudyTask = {
+            id: Number(data.id),
+            userId: data.user_id,
+            title: data.title,
+            due: data.due_date ?? data.due ?? due,
+            complete: false,
+          }
+          try {
+            const key = getTaskKey(sessionUserId)
+            const stored = window.localStorage.getItem(key)
+            const list: StudyTask[] = stored ? JSON.parse(stored) : []
+            window.localStorage.setItem(key, JSON.stringify([newTask, ...list]))
+          } catch { }
+          return newTask
+        }
+      }
+    } catch (err) {
+      console.warn('[Supabase study_tasks] Create note:', err)
     }
-  } catch (err) {
-    console.warn('[Supabase study_tasks] Create note:', err)
   }
 
   // User-scoped Local storage fallback
@@ -1056,9 +1068,11 @@ export async function createTask(title: string, due = 'TODAY', userId?: string):
 }
 
 export async function toggleTaskComplete(id: number, complete: boolean, userId?: string): Promise<StudyTask> {
-  try {
-    await supabase.from('study_tasks').update({ is_completed: complete }).eq('id', id)
-  } catch { }
+  if (isSupabaseConfigured()) {
+    try {
+      await supabase.from('study_tasks').update({ is_completed: complete }).eq('id', id)
+    } catch { }
+  }
 
   try {
     const targetKey = getTaskKey(userId)
@@ -1089,10 +1103,12 @@ export async function toggleTaskComplete(id: number, complete: boolean, userId?:
 }
 
 export async function deleteTaskApi(id: number, userId?: string): Promise<boolean> {
-  try {
-    const { error } = await supabase.from('study_tasks').delete().eq('id', id)
-    if (error) console.warn('[Supabase study_tasks] Delete note:', error)
-  } catch { }
+  if (isSupabaseConfigured()) {
+    try {
+      const { error } = await supabase.from('study_tasks').delete().eq('id', id)
+      if (error) console.warn('[Supabase study_tasks] Delete note:', error)
+    } catch { }
+  }
 
   try {
     const targetKey = getTaskKey(userId)
@@ -1133,45 +1149,47 @@ function getBookmarkKey(userId?: string) {
 export async function fetchUserBookmarks(userId?: string): Promise<number[]> {
   let targetUserId = userId && isValidUUID(userId) ? userId : null
 
-  try {
-    const { data: { session } } = await supabase.auth.getSession()
-    if (session?.user?.id && isValidUUID(session.user.id)) {
-      targetUserId = session.user.id
-    }
+  if (isSupabaseConfigured()) {
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session?.user?.id && isValidUUID(session.user.id)) {
+        targetUserId = session.user.id
+      }
 
-    // 1. Try dedicated Supabase table if present
-    if (targetUserId) {
-      try {
-        const { data, error } = await supabase
-          .from('resource_bookmarks')
-          .select('resource_id')
-          .eq('user_id', targetUserId)
+      // 1. Try dedicated Supabase table if present
+      if (targetUserId) {
+        try {
+          const { data, error } = await supabase
+            .from('resource_bookmarks')
+            .select('resource_id')
+            .eq('user_id', targetUserId)
 
-        if (!error && Array.isArray(data)) {
-          const list = data.map((r: any) => Number(r.resource_id)).filter(n => !isNaN(n))
+          if (!error && Array.isArray(data)) {
+            const list = data.map((r: any) => Number(r.resource_id)).filter(n => !isNaN(n))
+            if (typeof window !== 'undefined') {
+              window.localStorage.setItem(getBookmarkKey(targetUserId), JSON.stringify(list))
+              window.localStorage.setItem('vistora-saved-resources', JSON.stringify(list))
+            }
+            return list
+          }
+        } catch { }
+      }
+
+      // 2. Try Supabase Auth user metadata (database-backed)
+      if (session?.user) {
+        const meta = session.user.user_metadata || {}
+        if (Array.isArray(meta.bookmarked_resources)) {
+          const list = meta.bookmarked_resources.map(Number).filter((n: number) => !isNaN(n))
           if (typeof window !== 'undefined') {
-            window.localStorage.setItem(getBookmarkKey(targetUserId), JSON.stringify(list))
+            window.localStorage.setItem(getBookmarkKey(session.user.id), JSON.stringify(list))
             window.localStorage.setItem('vistora-saved-resources', JSON.stringify(list))
           }
           return list
         }
-      } catch { }
-    }
-
-    // 2. Try Supabase Auth user metadata (database-backed)
-    if (session?.user) {
-      const meta = session.user.user_metadata || {}
-      if (Array.isArray(meta.bookmarked_resources)) {
-        const list = meta.bookmarked_resources.map(Number).filter((n: number) => !isNaN(n))
-        if (typeof window !== 'undefined') {
-          window.localStorage.setItem(getBookmarkKey(session.user.id), JSON.stringify(list))
-          window.localStorage.setItem('vistora-saved-resources', JSON.stringify(list))
-        }
-        return list
       }
+    } catch (err) {
+      console.warn('[Supabase bookmarks] Fetch error:', err)
     }
-  } catch (err) {
-    console.warn('[Supabase bookmarks] Fetch error:', err)
   }
 
   // 3. Fallback to localStorage cache
@@ -1213,33 +1231,35 @@ export async function saveUserBookmarks(bookmarkIds: number[], userId?: string):
     } catch { }
   }
 
-  try {
-    const { data: { session } } = await supabase.auth.getSession()
-    if (session?.user?.id && isValidUUID(session.user.id)) {
-      targetUserId = session.user.id
-    }
+  if (isSupabaseConfigured()) {
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session?.user?.id && isValidUUID(session.user.id)) {
+        targetUserId = session.user.id
+      }
 
-    // 2. Try dedicated table if present
-    if (targetUserId) {
-      try {
-        await supabase.from('resource_bookmarks').delete().eq('user_id', targetUserId)
-        if (sanitized.length > 0) {
-          const rows = sanitized.map(id => ({ user_id: targetUserId, resource_id: id }))
-          await supabase.from('resource_bookmarks').insert(rows)
-        }
-      } catch { }
-    }
+      // 2. Try dedicated table if present
+      if (targetUserId) {
+        try {
+          await supabase.from('resource_bookmarks').delete().eq('user_id', targetUserId)
+          if (sanitized.length > 0) {
+            const rows = sanitized.map(id => ({ user_id: targetUserId, resource_id: id }))
+            await supabase.from('resource_bookmarks').insert(rows)
+          }
+        } catch { }
+      }
 
-    // 3. Persist to Supabase Auth user metadata (database-backed)
-    if (session?.user) {
-      await supabase.auth.updateUser({
-        data: {
-          bookmarked_resources: sanitized,
-        },
-      })
+      // 3. Persist to Supabase Auth user metadata (database-backed)
+      if (session?.user) {
+        await supabase.auth.updateUser({
+          data: {
+            bookmarked_resources: sanitized,
+          },
+        })
+      }
+    } catch (err) {
+      console.warn('[Supabase bookmarks] Save error:', err)
     }
-  } catch (err) {
-    console.warn('[Supabase bookmarks] Save error:', err)
   }
 }
 
@@ -1414,26 +1434,28 @@ export async function saveApplicationDocumentApi(
   const targetUserId = userId && isValidUUID(userId) ? userId : null
 
   // 1. Save to Supabase public.application_documents
-  try {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession()
-    const effUserId =
-      session?.user?.id && isValidUUID(session.user.id)
-        ? session.user.id
-        : targetUserId
-    if (effUserId) {
-      await supabase.from('application_documents').insert({
-        user_id: effUserId,
-        doc_type: doc.docType,
-        title: doc.title,
-        content: doc.content,
-        form_data: doc.formData || {},
-        updated_at: new Date().toISOString(),
-      })
+  if (isSupabaseConfigured()) {
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
+      const effUserId =
+        session?.user?.id && isValidUUID(session.user.id)
+          ? session.user.id
+          : targetUserId
+      if (effUserId) {
+        await supabase.from('application_documents').insert({
+          user_id: effUserId,
+          doc_type: doc.docType,
+          title: doc.title,
+          content: doc.content,
+          form_data: doc.formData || {},
+          updated_at: new Date().toISOString(),
+        })
+      }
+    } catch (err) {
+      console.warn('Supabase application_documents save deferred:', err)
     }
-  } catch (err) {
-    console.warn('Supabase application_documents save deferred:', err)
   }
 
   // 2. Save to local storage
@@ -1459,25 +1481,27 @@ export async function fetchUserApplicationDocumentsApi(
 ): Promise<any[]> {
   const targetUserId = userId && isValidUUID(userId) ? userId : null
 
-  try {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession()
-    const effUserId =
-      session?.user?.id && isValidUUID(session.user.id)
-        ? session.user.id
-        : targetUserId
-    if (effUserId) {
-      const { data, error } = await supabase
-        .from('application_documents')
-        .select('*')
-        .eq('user_id', effUserId)
-        .order('updated_at', { ascending: false })
-      if (!error && data && data.length > 0) {
-        return data
+  if (isSupabaseConfigured()) {
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
+      const effUserId =
+        session?.user?.id && isValidUUID(session.user.id)
+          ? session.user.id
+          : targetUserId
+      if (effUserId) {
+        const { data, error } = await supabase
+          .from('application_documents')
+          .select('*')
+          .eq('user_id', effUserId)
+          .order('updated_at', { ascending: false })
+        if (!error && data && data.length > 0) {
+          return data
+        }
       }
-    }
-  } catch {}
+    } catch {}
+  }
 
   if (typeof window !== 'undefined') {
     try {
@@ -2187,9 +2211,11 @@ export async function deleteForumThreadApi(
   }
 
   // 4. Also attempt direct Supabase delete as backup
-  try {
-    await supabase.from('forum_threads').delete().eq('id', threadId)
-  } catch {}
+  if (isSupabaseConfigured()) {
+    try {
+      await supabase.from('forum_threads').delete().eq('id', threadId)
+    } catch {}
+  }
 
   // 5. Broadcast to other open tabs / windows in real-time
   if (typeof window !== 'undefined') {
@@ -2229,9 +2255,11 @@ export async function deleteForumReplyApi(
   } catch { }
 
   // 2. Delete from Supabase
-  try {
-    await supabase.from('forum_replies').delete().eq('id', replyId)
-  } catch { }
+  if (isSupabaseConfigured()) {
+    try {
+      await supabase.from('forum_replies').delete().eq('id', replyId)
+    } catch { }
+  }
 
   return true
 }
@@ -2313,9 +2341,11 @@ export async function togglePinForumThreadApi(
     })
   } catch { }
 
-  try {
-    await supabase.from('forum_threads').update({ pinned: newPinnedState }).eq('id', threadId)
-  } catch { }
+  if (isSupabaseConfigured()) {
+    try {
+      await supabase.from('forum_threads').update({ pinned: newPinnedState }).eq('id', threadId)
+    } catch { }
+  }
 
   // 3. Broadcast to other open tabs / windows
   if (typeof window !== 'undefined') {

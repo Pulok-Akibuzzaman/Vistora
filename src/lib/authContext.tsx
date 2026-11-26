@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { loginUser, registerUser, updateUserProfile, type UserProfile, type RegisterPayload } from './api'
-import { supabase } from './supabaseClient'
+import { supabase, isSupabaseConfigured } from './supabaseClient'
 
 interface AuthContextType {
   user: UserProfile | null
@@ -43,6 +43,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Listen for Supabase auth state changes
   useEffect(() => {
+    if (!isSupabaseConfigured()) return
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session?.user) {
         const email = session.user.email || ''
@@ -84,44 +85,46 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (email: string, password: string) => {
     setIsLoading(true)
     let rejected: Error | null = null
-    try {
-      // 1. Try Supabase Auth
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password })
-      if (!error && data?.user) {
-        let profileData: any = null
-        try {
-          const { data: pData } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', data.user.id)
-            .single()
-          profileData = pData
-        } catch {}
+    if (isSupabaseConfigured()) {
+      try {
+        // 1. Try Supabase Auth
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+        if (!error && data?.user) {
+          let profileData: any = null
+          try {
+            const { data: pData } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', data.user.id)
+              .single()
+            profileData = pData
+          } catch {}
 
-        const profile: UserProfile = {
-          ...DEFAULT_USER,
-          id: data.user.id,
-          name: profileData?.full_name || data.user.user_metadata?.full_name || email.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
-          email: data.user.email || email,
-          targetBand: profileData?.target_band || 7.5,
-          institution: profileData?.institution || 'East West University',
-          country: profileData?.country || 'Bangladesh',
-          bio: profileData?.bio || '',
-          role: (profileData?.role?.toLowerCase() === 'admin' ? 'Admin' : 'Student') as any,
+          const profile: UserProfile = {
+            ...DEFAULT_USER,
+            id: data.user.id,
+            name: profileData?.full_name || data.user.user_metadata?.full_name || email.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+            email: data.user.email || email,
+            targetBand: profileData?.target_band || 7.5,
+            institution: profileData?.institution || 'East West University',
+            country: profileData?.country || 'Bangladesh',
+            bio: profileData?.bio || '',
+            role: (profileData?.role?.toLowerCase() === 'admin' ? 'Admin' : 'Student') as any,
+          }
+          setUser(profile)
+          window.localStorage.setItem('vistora-auth-user', JSON.stringify(profile))
+          // This early return skips the finally block below, so reset the flag here
+          setIsLoading(false)
+          return
         }
-        setUser(profile)
-        window.localStorage.setItem('vistora-auth-user', JSON.stringify(profile))
-        // This early return skips the finally block below, so reset the flag here
-        setIsLoading(false)
-        return
+        // A 4xx means Supabase was reached and refused these credentials (wrong password, unknown
+        // account, unconfirmed email). Only an unreachable Supabase may use the offline fallback.
+        if (error && typeof error.status === 'number' && error.status >= 400 && error.status < 500) {
+          rejected = new Error(error.message || 'Invalid email or password.')
+        }
+      } catch (e) {
+        console.warn('Supabase auth attempt:', e)
       }
-      // A 4xx means Supabase was reached and refused these credentials (wrong password, unknown
-      // account, unconfirmed email). Only an unreachable Supabase may use the offline fallback.
-      if (error && typeof error.status === 'number' && error.status >= 400 && error.status < 500) {
-        rejected = new Error(error.message || 'Invalid email or password.')
-      }
-    } catch (e) {
-      console.warn('Supabase auth attempt:', e)
     }
 
     if (rejected) {
@@ -161,56 +164,58 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       : { name: payloadOrName, email: email || '', password: password || '', role, country }
     let rejected: Error | null = null
 
-    try {
-      // 1. Try Supabase Auth
-      const { data, error } = await supabase.auth.signUp({
-        email: payload.email,
-        password: payload.password,
-        options: {
-          data: {
-            full_name: payload.name,
-            target_band: payload.targetBand || 7.5,
-          }
-        }
-      })
-      if (!error && data?.user) {
-        // The signup trigger creates the profile row with the default 7.5 target, and that row wins
-        // on the next session restore, so write the chosen goal to it while we have a session
-        if (data.session) {
-          try {
-            await supabase
-              .from('profiles')
-              .update({
-                target_band: payload.targetBand || 7.5,
-                ...(payload.country ? { country: payload.country } : {}),
-                updated_at: new Date().toISOString(),
-              })
-              .eq('id', data.user.id)
-          } catch (e) {
-            console.warn('Supabase profile goal sync:', e)
-          }
-        }
-
-        const profile: UserProfile = {
-          ...DEFAULT_USER,
-          id: data.user.id,
-          name: payload.name,
+    if (isSupabaseConfigured()) {
+      try {
+        // 1. Try Supabase Auth
+        const { data, error } = await supabase.auth.signUp({
           email: payload.email,
-          targetBand: payload.targetBand || 7.5,
-          country: payload.country || 'Bangladesh',
-          examModule: payload.examModule || 'Academic',
+          password: payload.password,
+          options: {
+            data: {
+              full_name: payload.name,
+              target_band: payload.targetBand || 7.5,
+            }
+          }
+        })
+        if (!error && data?.user) {
+          // The signup trigger creates the profile row with the default 7.5 target, and that row wins
+          // on the next session restore, so write the chosen goal to it while we have a session
+          if (data.session) {
+            try {
+              await supabase
+                .from('profiles')
+                .update({
+                  target_band: payload.targetBand || 7.5,
+                  ...(payload.country ? { country: payload.country } : {}),
+                  updated_at: new Date().toISOString(),
+                })
+                .eq('id', data.user.id)
+            } catch (e) {
+              console.warn('Supabase profile goal sync:', e)
+            }
+          }
+
+          const profile: UserProfile = {
+            ...DEFAULT_USER,
+            id: data.user.id,
+            name: payload.name,
+            email: payload.email,
+            targetBand: payload.targetBand || 7.5,
+            country: payload.country || 'Bangladesh',
+            examModule: payload.examModule || 'Academic',
+          }
+          setUser(profile)
+          window.localStorage.setItem('vistora-auth-user', JSON.stringify(profile))
+          setIsLoading(false)
+          return
         }
-        setUser(profile)
-        window.localStorage.setItem('vistora-auth-user', JSON.stringify(profile))
-        setIsLoading(false)
-        return
+        // Supabase was reached and refused the signup (email already registered, weak password, ...)
+        if (error && typeof error.status === 'number' && error.status >= 400 && error.status < 500) {
+          rejected = new Error(error.message || 'Could not create the account.')
+        }
+      } catch (e) {
+        console.warn('Supabase signup attempt:', e)
       }
-      // Supabase was reached and refused the signup (email already registered, weak password, ...)
-      if (error && typeof error.status === 'number' && error.status >= 400 && error.status < 500) {
-        rejected = new Error(error.message || 'Could not create the account.')
-      }
-    } catch (e) {
-      console.warn('Supabase signup attempt:', e)
     }
 
     if (rejected) {
@@ -252,22 +257,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     window.localStorage.setItem('vistora-auth-user', JSON.stringify(updated))
 
     // Direct persistence to Supabase public.profiles
-    try {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (session?.user?.id) {
-        const payload: Record<string, any> = {
-          updated_at: new Date().toISOString(),
-        }
-        if (data.name) payload.full_name = data.name
-        if (data.country) payload.country = data.country
-        if (typeof data.targetBand === 'number') payload.target_band = data.targetBand
-        if (data.institution) payload.institution = data.institution
-        if (data.bio !== undefined) payload.bio = data.bio
+    if (isSupabaseConfigured()) {
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        if (session?.user?.id) {
+          const payload: Record<string, any> = {
+            updated_at: new Date().toISOString(),
+          }
+          if (data.name) payload.full_name = data.name
+          if (data.country) payload.country = data.country
+          if (typeof data.targetBand === 'number') payload.target_band = data.targetBand
+          if (data.institution) payload.institution = data.institution
+          if (data.bio !== undefined) payload.bio = data.bio
 
-        await supabase.from('profiles').update(payload).eq('id', session.user.id)
+          await supabase.from('profiles').update(payload).eq('id', session.user.id)
+        }
+      } catch (e) {
+        console.warn('Supabase profile update warning:', e)
       }
-    } catch (e) {
-      console.warn('Supabase profile update warning:', e)
     }
 
     try {
@@ -280,7 +287,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = () => {
     window.localStorage.removeItem('vistora-auth-user')
     setUser(null)
-    supabase.auth.signOut().catch(() => {})
+    if (isSupabaseConfigured()) {
+      supabase.auth.signOut().catch(() => {})
+    }
   }
 
   return (

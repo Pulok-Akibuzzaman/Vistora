@@ -7,16 +7,23 @@
  * - DELETE: Delete thread or reply with persistent tombstone tracking
  */
 
-import { createClient } from '@supabase/supabase-js'
+import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 
-const SUPABASE_URL = process.env.VITE_SUPABASE_URL || 'https://rhxyoroqqpapzufekidn.supabase.co'
-const SERVICE_KEY =
-  process.env.SUPABASE_SERVICE_ROLE_KEY ||
-  'sb_secret_yMYd5uNVyF6aok7yorDhkg_blKjikGd'
+const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || ''
+const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || ''
 
-const supabaseAdmin = createClient(SUPABASE_URL, SERVICE_KEY, {
-  auth: { persistSession: false },
-})
+let cachedAdmin: SupabaseClient<any> | null = null
+
+function getSupabaseAdmin(): SupabaseClient<any> {
+  if (cachedAdmin) return cachedAdmin
+  if (!SUPABASE_URL || !SERVICE_KEY) {
+    throw new Error('Supabase server environment variables are not configured.')
+  }
+  cachedAdmin = createClient(SUPABASE_URL, SERVICE_KEY, {
+    auth: { persistSession: false },
+  })
+  return cachedAdmin
+}
 
 const INITIAL_SEED_THREADS = [
   {
@@ -82,6 +89,7 @@ const INITIAL_SEED_THREADS = [
 ]
 
 async function getAdminUserId(): Promise<string> {
+  const supabaseAdmin = getSupabaseAdmin()
   const { data } = await supabaseAdmin
     .from('profiles')
     .select('id')
@@ -98,6 +106,7 @@ async function getAdminUserId(): Promise<string> {
 
 async function getDeletedIds(): Promise<string[]> {
   try {
+    const supabaseAdmin = getSupabaseAdmin()
     const { data } = await supabaseAdmin.from('deleted_forum_threads').select('thread_id')
     if (data && data.length > 0) {
       return data.map((d: any) => String(d.thread_id))
@@ -105,6 +114,7 @@ async function getDeletedIds(): Promise<string[]> {
   } catch {}
 
   try {
+    const supabaseAdmin = getSupabaseAdmin()
     const { data } = await supabaseAdmin
       .from('profiles')
       .select('bio')
@@ -120,6 +130,7 @@ async function getDeletedIds(): Promise<string[]> {
 
 async function saveDeletedId(id: string | number): Promise<void> {
   const idStr = String(id)
+  const supabaseAdmin = getSupabaseAdmin()
   try {
     await supabaseAdmin
       .from('deleted_forum_threads')
@@ -156,6 +167,14 @@ export default async function handler(req: any, res: any) {
     return res.status(200).end()
   }
 
+  if (!SUPABASE_URL || !SERVICE_KEY) {
+    return res.status(500).json({
+      success: false,
+      error: 'Supabase server environment variables (SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY) are not configured.',
+    })
+  }
+
+  const supabaseAdmin = getSupabaseAdmin()
   const method = req.method
   const action = req.query.action || (req.body && req.body.action)
 

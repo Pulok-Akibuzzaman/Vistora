@@ -3,10 +3,6 @@
  * High-performance browser & server compatible client for puku-ai-2.8
  */
 
-export const PUKU_API_KEY =
-  (import.meta.env.VITE_PUKU_API_KEY as string) ||
-  'pk_live_GtUSwEfYOqXRuRF4gFzg4c7uMnuncHxP8u_7_8-pYSs'
-
 export const PUKU_BASE_URL =
   (import.meta.env.VITE_PUKU_BASE_URL as string) ||
   'https://api-cli.puku.sh'
@@ -45,6 +41,14 @@ export async function generatePukuCompletion(
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), timeoutMs)
 
+  const extractText = (data: any): string | null => {
+    if (data?.content && Array.isArray(data.content)) {
+      const textBlock = data.content.find((c: any) => c.type === 'text')
+      return textBlock ? textBlock.text : null
+    }
+    return null
+  }
+
   try {
     const payload: Record<string, any> = {
       model: PUKU_MODEL,
@@ -56,12 +60,44 @@ export async function generatePukuCompletion(
       payload.system = systemPrompt
     }
 
+    // 1. Prefer secure Vercel serverless proxy (/api/puku) so PUKU_API_KEY stays server-side
+    try {
+      const proxyRes = await fetch('/api/puku', {
+        method: 'POST',
+        signal: controller.signal,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+
+      if (proxyRes.ok) {
+        clearTimeout(timer)
+        const data = await proxyRes.json()
+        return extractText(data)
+      }
+
+      const errText = await proxyRes.text()
+      console.warn(`[Puku.sh Proxy] HTTP ${proxyRes.status}: ${errText.slice(0, 150)}`)
+    } catch (proxyErr: any) {
+      if (proxyErr?.name === 'AbortError') {
+        clearTimeout(timer)
+        return null
+      }
+      console.warn(`[Puku.sh Proxy] Unavailable, checking local config: ${proxyErr?.message || proxyErr}`)
+    }
+
+    // 2. Optional local-dev fallback if VITE_PUKU_API_KEY is explicitly configured in .env.local
+    const localApiKey = (import.meta.env.VITE_PUKU_API_KEY as string) || ''
+    if (!localApiKey) {
+      clearTimeout(timer)
+      return null
+    }
+
     const response = await fetch(`${PUKU_BASE_URL}/v1/messages`, {
       method: 'POST',
       signal: controller.signal,
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': PUKU_API_KEY,
+        'x-api-key': localApiKey,
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify(payload),
@@ -76,12 +112,7 @@ export async function generatePukuCompletion(
     }
 
     const data = await response.json()
-    if (data?.content && Array.isArray(data.content)) {
-      const textBlock = data.content.find((c: any) => c.type === 'text')
-      return textBlock ? textBlock.text : null
-    }
-
-    return null
+    return extractText(data)
   } catch (error: any) {
     clearTimeout(timer)
     console.warn(`[Puku.sh API] Request error: ${error?.message || error}`)
