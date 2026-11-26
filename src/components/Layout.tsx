@@ -157,8 +157,12 @@ export default function Layout() {
                       className="flex items-center gap-2 border border-transparent p-1 transition-colors hover:border-divider"
                       style={{ borderRadius: 4 }}
                     >
-                      <span className="w-8 h-8 bg-violet-dim border border-rose-line flex items-center justify-center text-accent-2 text-xs font-bold" style={{ borderRadius: 4 }}>
-                        {initials}
+                      <span className="w-8 h-8 rounded border border-rose-line overflow-hidden bg-violet-dim flex items-center justify-center text-accent-2 text-xs font-bold shrink-0" style={{ borderRadius: 4 }}>
+                        {user?.avatarUrl ? (
+                          <img src={user.avatarUrl} alt={user.name || 'User'} className="w-full h-full object-cover" />
+                        ) : (
+                          initials
+                        )}
                       </span>
                       <span className="hidden xl:block text-left">
                         <span className={`block text-[10px] font-semibold ${isDarkHeader ? 'text-white' : 'text-ink'}`}>{user?.name || 'My Account'}</span>
