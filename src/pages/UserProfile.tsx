@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Icon from '../components/Icon'
 import { NavLink } from 'react-router'
 import { useAuth } from '../lib/authContext'
 import { fetchResults, type StoredExamResult } from '../lib/api'
+import { supabase, isSupabaseConfigured } from '../lib/supabaseClient'
 
 export default function UserProfile() {
   const { user, updateProfile } = useAuth()
@@ -17,6 +18,9 @@ export default function UserProfile() {
     phone: user?.phone || '',
   })
   const [saving, setSaving] = useState(false)
+  const [uploadingAvatar, setUploadingAvatar] = useState(false)
+  const [avatarError, setAvatarError] = useState('')
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     fetchResults(user?.email, user?.id).then(setResults).catch(() => {})
@@ -43,6 +47,80 @@ export default function UserProfile() {
       setIsEditing(false)
     } finally {
       setSaving(false)
+    }
+  }
+
+  const handleAvatarFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !user) return
+
+    // 5MB limit
+    if (file.size > 5 * 1024 * 1024) {
+      setAvatarError('Image file size must be less than 5MB.')
+      return
+    }
+
+    setUploadingAvatar(true)
+    setAvatarError('')
+
+    try {
+      if (!isSupabaseConfigured()) {
+        // Offline / local preview fallback
+        const reader = new FileReader()
+        reader.onload = async () => {
+          if (typeof reader.result === 'string') {
+            await updateProfile({ avatarUrl: reader.result })
+          }
+        }
+        reader.readAsDataURL(file)
+        return
+      }
+
+      const fileExt = file.name.split('.').pop() || 'png'
+      const filePath = `${user.id}/avatar.${fileExt}`
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file, {
+          contentType: file.type || 'image/png',
+          upsert: true,
+        })
+
+      if (uploadError) {
+        throw new Error(uploadError.message || 'Failed to upload image.')
+      }
+
+      // Add a timestamp query parameter to bust browser cache
+      const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(filePath)
+      const freshUrl = `${urlData.publicUrl}?t=${Date.now()}`
+
+      await updateProfile({ avatarUrl: freshUrl })
+    } catch (err: any) {
+      setAvatarError(err?.message || 'Error uploading profile picture.')
+    } finally {
+      setUploadingAvatar(false)
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
+    }
+  }
+
+  const handleRemoveAvatar = async () => {
+    if (!user) return
+    setUploadingAvatar(true)
+    setAvatarError('')
+    try {
+      if (isSupabaseConfigured() && user.avatarUrl) {
+        // Attempt removing files in the user's folder
+        const exts = ['png', 'jpg', 'jpeg', 'webp', 'gif']
+        const paths = exts.map(ext => `${user.id}/avatar.${ext}`)
+        await supabase.storage.from('avatars').remove(paths)
+      }
+      await updateProfile({ avatarUrl: '' })
+    } catch (err: any) {
+      setAvatarError(err?.message || 'Failed to remove picture.')
+    } finally {
+      setUploadingAvatar(false)
     }
   }
 
@@ -73,9 +151,45 @@ export default function UserProfile() {
       {/* Profile header */}
       <div className="bg-surface border border-divider p-6 mb-4 corner-mark" style={{ borderRadius: 4 }}>
         <div className="flex flex-col sm:flex-row items-start gap-5">
-          <div className="w-16 h-16 bg-violet-dim border-2 border-rose-line flex items-center justify-center text-accent-2 text-xl font-bold" style={{ borderRadius: 5 }}>
-            {initials}
+          {/* Avatar Picture with Upload Control */}
+          <div className="relative group shrink-0">
+            <div
+              className="w-20 h-20 rounded-md border-2 border-divider overflow-hidden bg-violet-dim flex items-center justify-center text-accent-2 text-2xl font-bold shadow-xs"
+              style={{ borderRadius: 6 }}
+            >
+              {user?.avatarUrl ? (
+                <img
+                  src={user.avatarUrl}
+                  alt={user.name || 'User Avatar'}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <span>{initials}</span>
+              )}
+            </div>
+
+            {/* Hidden native file input */}
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleAvatarFileChange}
+              accept="image/png, image/jpeg, image/jpg, image/webp"
+              className="hidden"
+            />
+
+            {/* Overlay button */}
+            <button
+              type="button"
+              disabled={uploadingAvatar}
+              onClick={() => fileInputRef.current?.click()}
+              title="Upload new profile picture"
+              className="absolute inset-0 bg-black/60 text-white text-[10px] font-mono flex flex-col items-center justify-center rounded-md opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer disabled:opacity-75"
+            >
+              <Icon name="upload" />
+              <span>{uploadingAvatar ? 'Uploading...' : 'Change'}</span>
+            </button>
           </div>
+
           <div className="flex-1">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div>
@@ -85,7 +199,34 @@ export default function UserProfile() {
                   <span className="mono text-[10px] text-muted border border-divider px-2 py-0.5" style={{ borderRadius: 2 }}>{user?.country || 'Bangladesh'}</span>
                   <span className="mono text-[10px] text-muted border border-divider px-2 py-0.5" style={{ borderRadius: 2 }}>{user?.institution || 'East West University'}</span>
                   <span className="mono text-[10px] text-white bg-[#BE123C] px-2 py-0.5 uppercase tracking-wider" style={{ borderRadius: 2 }}>{user?.role || 'STUDENT'}</span>
+                  
+                  {/* Photo actions buttons */}
+                  <button
+                    type="button"
+                    disabled={uploadingAvatar}
+                    onClick={() => fileInputRef.current?.click()}
+                    className="mono text-[10px] text-accent hover:underline cursor-pointer flex items-center gap-1 ml-1"
+                  >
+                    <Icon name="upload" /> {user?.avatarUrl ? 'Change Photo' : 'Upload Photo'}
+                  </button>
+                  {user?.avatarUrl && (
+                    <button
+                      type="button"
+                      disabled={uploadingAvatar}
+                      onClick={handleRemoveAvatar}
+                      className="mono text-[10px] text-muted hover:text-[#DC2626] cursor-pointer flex items-center gap-1"
+                    >
+                      <Icon name="trash" /> Remove
+                    </button>
+                  )}
                 </div>
+
+                {avatarError && (
+                  <div className="mt-2 text-[11px] text-[#DC2626] font-mono">
+                    ⚠ {avatarError}
+                  </div>
+                )}
+
                 {user?.bio && (
                   <p className="mt-3 text-xs leading-5 text-ink-4 max-w-2xl">{user.bio}</p>
                 )}

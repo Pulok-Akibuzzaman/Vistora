@@ -394,3 +394,46 @@ DROP POLICY IF EXISTS "Admins can manage audio tracks" ON public.audio_tracks;
 CREATE POLICY "Admins can manage audio tracks" ON public.audio_tracks
   FOR ALL USING (public.is_admin())
   WITH CHECK (public.is_admin());
+
+-- -----------------------------------------------------------------------------
+-- 14. STORAGE BUCKET POLICIES (Avatars bucket for user profile pictures)
+-- -----------------------------------------------------------------------------
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('avatars', 'avatars', true)
+ON CONFLICT (id) DO UPDATE SET public = true;
+
+DROP POLICY IF EXISTS "Public avatars access" ON storage.objects;
+CREATE POLICY "Public avatars access"
+  ON storage.objects FOR SELECT
+  USING (bucket_id = 'avatars');
+
+DROP POLICY IF EXISTS "Users can upload own avatar" ON storage.objects;
+CREATE POLICY "Users can upload own avatar"
+  ON storage.objects FOR INSERT
+  TO authenticated
+  WITH CHECK (
+    bucket_id = 'avatars' AND
+    auth.uid() = (storage.foldername(name))[1]::uuid
+  );
+
+DROP POLICY IF EXISTS "Users can update own avatar" ON storage.objects;
+CREATE POLICY "Users can update own avatar"
+  ON storage.objects FOR UPDATE
+  TO authenticated
+  USING (
+    bucket_id = 'avatars' AND
+    auth.uid() = (storage.foldername(name))[1]::uuid
+  )
+  WITH CHECK (
+    bucket_id = 'avatars' AND
+    auth.uid() = (storage.foldername(name))[1]::uuid
+  );
+
+DROP POLICY IF EXISTS "Users can delete own avatar" ON storage.objects;
+CREATE POLICY "Users can delete own avatar"
+  ON storage.objects FOR DELETE
+  TO authenticated
+  USING (
+    bucket_id = 'avatars' AND
+    auth.uid() = (storage.foldername(name))[1]::uuid
+  );

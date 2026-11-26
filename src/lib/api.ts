@@ -52,6 +52,7 @@ export interface UserProfile {
   id: string
   name: string
   email: string
+  avatarUrl?: string
   country: string
   role: 'Student' | 'Instructor' | 'Admin'
   status: 'Active' | 'Invited' | 'Suspended'

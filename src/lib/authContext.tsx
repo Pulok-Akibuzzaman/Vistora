@@ -70,6 +70,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           id: session.user.id,
           email,
           name: profileData?.full_name || parsed.name || session.user.user_metadata?.full_name || email.split('@')[0],
+          avatarUrl: profileData?.avatar_url || parsed.avatarUrl || session.user.user_metadata?.avatar_url || '',
           targetBand: profileData?.target_band || parsed.targetBand || 7.5,
           institution: profileData?.institution || parsed.institution || 'East West University',
           country: profileData?.country || parsed.country || 'Bangladesh',
@@ -105,6 +106,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             id: data.user.id,
             name: profileData?.full_name || data.user.user_metadata?.full_name || email.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
             email: data.user.email || email,
+            avatarUrl: profileData?.avatar_url || data.user.user_metadata?.avatar_url || '',
             targetBand: profileData?.target_band || 7.5,
             institution: profileData?.institution || 'East West University',
             country: profileData?.country || 'Bangladesh',
@@ -265,6 +267,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             updated_at: new Date().toISOString(),
           }
           if (data.name) payload.full_name = data.name
+          if (data.avatarUrl !== undefined) payload.avatar_url = data.avatarUrl || null
           if (data.country) payload.country = data.country
           if (typeof data.targetBand === 'number') payload.target_band = data.targetBand
           if (data.institution) payload.institution = data.institution
