@@ -7,6 +7,7 @@
  *   1. Puku AI (PUKU_API_KEY)
  *   2. Groq fallback (GROQ_API_KEY)
  *   3. OpenRouter fallback (OPENROUTER_API_KEY)
+ *   4. Cloudflare Workers AI fallback (CLOUDFLARE_ACCOUNT_ID + CLOUDFLARE_API_TOKEN)
  */
 
 const PUKU_API_KEY = process.env.PUKU_API_KEY || ''
@@ -18,6 +19,10 @@ const GROQ_MODEL = process.env.GROQ_MODEL || 'llama-3.3-70b-versatile'
 
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || ''
 const OPENROUTER_MODEL = process.env.OPENROUTER_MODEL || 'openai/gpt-4o-mini'
+
+const CLOUDFLARE_ACCOUNT_ID = process.env.CLOUDFLARE_ACCOUNT_ID || ''
+const CLOUDFLARE_API_TOKEN = process.env.CLOUDFLARE_API_TOKEN || ''
+const CLOUDFLARE_MODEL = process.env.CLOUDFLARE_MODEL || '@cf/meta/llama-3.1-8b-instruct'
 
 type ChatMessage = { role: string; content: string }
 
@@ -71,7 +76,7 @@ async function callPuku(
         },
         body: JSON.stringify(payload),
       },
-      11000
+      10000
     )
 
     const text = await upstream.text()
@@ -106,13 +111,14 @@ async function callPuku(
 }
 
 async function callOpenAiCompatibleProvider(options: {
-  provider: 'groq' | 'openrouter'
+  provider: 'groq' | 'openrouter' | 'cloudflare'
   endpoint: string
   apiKey: string
   model: string
   messages: ChatMessage[]
   systemPrompt: string
   maxTokens: number
+  timeoutMs?: number
   extraHeaders?: Record<string, string>
 }): Promise<ProviderAttemptResult> {
   if (!options.apiKey) {
@@ -145,7 +151,7 @@ async function callOpenAiCompatibleProvider(options: {
           messages: chatMessages,
         }),
       },
-      10000
+      options.timeoutMs ?? 8000
     )
 
     const text = await upstream.text()
@@ -199,7 +205,12 @@ export default async function handler(req: any, res: any) {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  if (!PUKU_API_KEY && !GROQ_API_KEY && !OPENROUTER_API_KEY) {
+  if (
+    !PUKU_API_KEY &&
+    !GROQ_API_KEY &&
+    !OPENROUTER_API_KEY &&
+    !(CLOUDFLARE_ACCOUNT_ID && CLOUDFLARE_API_TOKEN)
+  ) {
     return res.status(503).json({
       error: 'No AI provider API key is configured on the server.',
     })
@@ -278,6 +289,22 @@ export default async function handler(req: any, res: any) {
         'HTTP-Referer': 'https://vistora-delta.vercel.app',
         'X-Title': 'Vistora IELTS Platform',
       },
+    })
+    if (lastFailure.ok) {
+      return res.status(200).json(lastFailure.payload)
+    }
+  }
+
+  // 4. Fallback 3: Cloudflare Workers AI
+  if (CLOUDFLARE_ACCOUNT_ID && CLOUDFLARE_API_TOKEN) {
+    lastFailure = await callOpenAiCompatibleProvider({
+      provider: 'cloudflare',
+      endpoint: `https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/ai/v1/chat/completions`,
+      apiKey: CLOUDFLARE_API_TOKEN,
+      model: CLOUDFLARE_MODEL,
+      messages,
+      systemPrompt,
+      maxTokens,
     })
     if (lastFailure.ok) {
       return res.status(200).json(lastFailure.payload)
