@@ -1422,96 +1422,274 @@ export async function generateDocumentApi(
   return { content, source: 'Vistora Academic Template Engine' }
 }
 
+export interface SavedApplicationDocument {
+  id: string
+  docType: 'cv' | 'sop' | 'ps' | 'cl'
+  title: string
+  content: string
+  formData: Record<string, any>
+  createdAt: string
+  updatedAt: string
+  syncedToSupabase: boolean
+}
+
+export interface SaveApplicationDocumentResult {
+  document: SavedApplicationDocument
+  syncedToSupabase: boolean
+  error?: string
+}
+
+const VALID_DOC_TYPES = new Set(['cv', 'sop', 'ps', 'cl'])
+
+function getApplicationDocsStorageKey(userId?: string | null): string {
+  const validUserId = userId && isValidUUID(userId) ? userId : null
+  return `vistora_saved_docs_${validUserId || 'guest'}`
+}
+
+function normalizeApplicationDocument(
+  raw: any,
+  syncedOverride?: boolean
+): SavedApplicationDocument {
+  const now = new Date().toISOString()
+  const rawType = raw?.docType ?? raw?.doc_type
+  const docType = VALID_DOC_TYPES.has(rawType) ? rawType : 'sop'
+  const id = String(raw?.id ?? Date.now())
+  const createdAt = String(raw?.createdAt ?? raw?.created_at ?? now)
+  const updatedAt = String(raw?.updatedAt ?? raw?.updated_at ?? createdAt)
+
+  return {
+    id,
+    docType,
+    title: String(raw?.title || 'Untitled Document'),
+    content: String(raw?.content || ''),
+    formData: (raw?.formData ?? raw?.form_data ?? {}) as Record<string, any>,
+    createdAt,
+    updatedAt,
+    syncedToSupabase:
+      typeof syncedOverride === 'boolean'
+        ? syncedOverride
+        : Boolean(raw?.syncedToSupabase ?? isValidUUID(id)),
+  }
+}
+
+function readLocalApplicationDocuments(
+  userId?: string | null
+): SavedApplicationDocument[] {
+  if (typeof window === 'undefined') return []
+  try {
+    const raw = window.localStorage.getItem(getApplicationDocsStorageKey(userId))
+    if (!raw) return []
+    const parsed = JSON.parse(raw)
+    if (!Array.isArray(parsed)) return []
+    return parsed.map(item => normalizeApplicationDocument(item))
+  } catch {
+    return []
+  }
+}
+
+function writeLocalApplicationDocuments(
+  docs: SavedApplicationDocument[],
+  userId?: string | null
+): void {
+  if (typeof window === 'undefined') return
+  try {
+    window.localStorage.setItem(
+      getApplicationDocsStorageKey(userId),
+      JSON.stringify(docs.slice(0, 30))
+    )
+  } catch {}
+}
+
+async function resolveSupabaseDocUserId(userId?: string): Promise<string | null> {
+  const fallbackUserId = userId && isValidUUID(userId) ? userId : null
+  if (!isSupabaseConfigured()) return fallbackUserId
+  try {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession()
+    if (session?.user?.id && isValidUUID(session.user.id)) {
+      return session.user.id
+    }
+  } catch {}
+  return fallbackUserId
+}
+
 export async function saveApplicationDocumentApi(
   doc: {
+    id?: string
     docType: 'cv' | 'sop' | 'ps' | 'cl'
     title: string
     content: string
-    formData?: any
+    formData?: Record<string, any>
   },
   userId?: string
-): Promise<boolean> {
+): Promise<SaveApplicationDocumentResult> {
   const targetUserId = userId && isValidUUID(userId) ? userId : null
+  const now = new Date().toISOString()
+  const title = doc.title.trim() || 'Untitled Document'
+  const formData = doc.formData || {}
+  const previousLocalId = doc.id
 
-  // 1. Save to Supabase public.application_documents
+  let savedDoc: SavedApplicationDocument = {
+    id: doc.id || `local-${Date.now()}`,
+    docType: doc.docType,
+    title,
+    content: doc.content,
+    formData,
+    createdAt: now,
+    updatedAt: now,
+    syncedToSupabase: false,
+  }
+  let syncError: string | undefined
+
+  // 1. Save or update in Supabase public.application_documents
   if (isSupabaseConfigured()) {
     try {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession()
-      const effUserId =
-        session?.user?.id && isValidUUID(session.user.id)
-          ? session.user.id
-          : targetUserId
-      if (effUserId) {
-        await supabase.from('application_documents').insert({
-          user_id: effUserId,
-          doc_type: doc.docType,
-          title: doc.title,
-          content: doc.content,
-          form_data: doc.formData || {},
-          updated_at: new Date().toISOString(),
-        })
+      const effUserId = await resolveSupabaseDocUserId(userId)
+      if (!effUserId) {
+        syncError = 'Sign in to your account to sync documents to the Supabase database.'
+      } else {
+        let updatedRow: any = null
+
+        if (doc.id && isValidUUID(doc.id)) {
+          const { data, error } = await supabase
+            .from('application_documents')
+            .update({
+              doc_type: doc.docType,
+              title,
+              content: doc.content,
+              form_data: formData,
+              updated_at: now,
+            })
+            .eq('id', doc.id)
+            .eq('user_id', effUserId)
+            .select()
+            .maybeSingle()
+
+          if (error) {
+            syncError = error.message
+          } else if (data) {
+            updatedRow = data
+          }
+        }
+
+        if (!updatedRow && !syncError) {
+          const { data, error } = await supabase
+            .from('application_documents')
+            .insert({
+              user_id: effUserId,
+              doc_type: doc.docType,
+              title,
+              content: doc.content,
+              form_data: formData,
+              updated_at: now,
+            })
+            .select()
+            .single()
+
+          if (error) {
+            syncError = error.message
+          } else if (data) {
+            updatedRow = data
+          }
+        }
+
+        if (updatedRow) {
+          savedDoc = normalizeApplicationDocument(updatedRow, true)
+        }
       }
-    } catch (err) {
+    } catch (err: any) {
+      syncError = err?.message || 'Supabase request failed.'
       console.warn('Supabase application_documents save deferred:', err)
     }
+  } else {
+    syncError = 'Supabase is not configured. Saved locally in browser storage.'
   }
 
-  // 2. Save to local storage
-  if (typeof window !== 'undefined') {
-    try {
-      const key = `vistora_saved_docs_${targetUserId || 'guest'}`
-      const raw = window.localStorage.getItem(key)
-      const existing = raw ? JSON.parse(raw) : []
-      existing.unshift({
-        ...doc,
-        id: Date.now(),
-        createdAt: new Date().toISOString(),
-      })
-      window.localStorage.setItem(key, JSON.stringify(existing.slice(0, 20)))
-    } catch {}
-  }
+  // 2. Keep local browser cache updated without duplicates
+  const existing = readLocalApplicationDocuments(targetUserId).filter(
+    item => item.id !== savedDoc.id && (!previousLocalId || item.id !== previousLocalId)
+  )
+  writeLocalApplicationDocuments([savedDoc, ...existing], targetUserId)
 
-  return true
+  return {
+    document: savedDoc,
+    syncedToSupabase: savedDoc.syncedToSupabase,
+    error: syncError,
+  }
 }
 
 export async function fetchUserApplicationDocumentsApi(
   userId?: string
-): Promise<any[]> {
+): Promise<SavedApplicationDocument[]> {
   const targetUserId = userId && isValidUUID(userId) ? userId : null
+  const localDocs = readLocalApplicationDocuments(targetUserId)
 
   if (isSupabaseConfigured()) {
     try {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession()
-      const effUserId =
-        session?.user?.id && isValidUUID(session.user.id)
-          ? session.user.id
-          : targetUserId
+      const effUserId = await resolveSupabaseDocUserId(userId)
       if (effUserId) {
         const { data, error } = await supabase
           .from('application_documents')
           .select('*')
           .eq('user_id', effUserId)
           .order('updated_at', { ascending: false })
-        if (!error && data && data.length > 0) {
-          return data
+
+        if (!error && Array.isArray(data)) {
+          const cloudDocs = data.map(row => normalizeApplicationDocument(row, true))
+          const cloudIds = new Set(cloudDocs.map(doc => doc.id))
+          const localOnlyDrafts = localDocs.filter(
+            doc => !doc.syncedToSupabase && !cloudIds.has(doc.id)
+          )
+          const merged = [...cloudDocs, ...localOnlyDrafts].sort(
+            (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+          )
+          writeLocalApplicationDocuments(merged, targetUserId)
+          return merged
         }
       }
-    } catch {}
+    } catch (err) {
+      console.warn('Failed to fetch Supabase application documents:', err)
+    }
   }
 
-  if (typeof window !== 'undefined') {
+  return localDocs.sort(
+    (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+  )
+}
+
+export async function deleteApplicationDocumentApi(
+  id: string,
+  userId?: string
+): Promise<{ deleted: boolean; error?: string }> {
+  const targetUserId = userId && isValidUUID(userId) ? userId : null
+
+  if (isSupabaseConfigured() && isValidUUID(id)) {
     try {
-      const key = `vistora_saved_docs_${targetUserId || 'guest'}`
-      const raw = window.localStorage.getItem(key)
-      if (raw) return JSON.parse(raw)
-    } catch {}
+      const effUserId = await resolveSupabaseDocUserId(userId)
+      if (!effUserId) {
+        return {
+          deleted: false,
+          error: 'Sign in to delete documents stored in Supabase.',
+        }
+      }
+      const { error } = await supabase
+        .from('application_documents')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', effUserId)
+
+      if (error) {
+        return { deleted: false, error: error.message }
+      }
+    } catch (err: any) {
+      return { deleted: false, error: err?.message || 'Failed to delete document.' }
+    }
   }
 
-  return []
+  const remaining = readLocalApplicationDocuments(targetUserId).filter(doc => doc.id !== id)
+  writeLocalApplicationDocuments(remaining, targetUserId)
+  return { deleted: true }
 }
 
 export interface SpeakingCriterionFeedback {

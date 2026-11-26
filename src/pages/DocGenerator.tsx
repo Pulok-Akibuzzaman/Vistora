@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import Icon from '../components/Icon'
 import {
   CS_SOP_ARCHIVE_URL,
@@ -6,7 +6,13 @@ import {
   SOP_TEMPLATES,
   type SopTemplate,
 } from '../data/sopTemplates'
-import { generateDocumentApi, saveApplicationDocumentApi } from '../lib/api'
+import {
+  deleteApplicationDocumentApi,
+  fetchUserApplicationDocumentsApi,
+  generateDocumentApi,
+  saveApplicationDocumentApi,
+  type SavedApplicationDocument,
+} from '../lib/api'
 import { useAuth } from '../lib/authContext'
 import { themeText } from '../lib/theme'
 
@@ -519,7 +525,7 @@ function printFormattedDocument(rawContent: string, docTitle: string, docType: D
 
 export default function DocGenerator() {
   const { user } = useAuth()
-  const [activeTab, setActiveTab] = useState<'generator' | 'sop-templates'>('generator')
+  const [activeTab, setActiveTab] = useState<'generator' | 'sop-templates' | 'saved'>('generator')
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>(SOP_TEMPLATES[0].id)
   const [subfieldFilter, setSubfieldFilter] = useState<string>('All')
   const [templateCopied, setTemplateCopied] = useState(false)
@@ -537,6 +543,35 @@ export default function DocGenerator() {
   const [copied, setCopied] = useState(false)
   const [docSource, setDocSource] = useState('DOCUMENT PREVIEW')
   const [error, setError] = useState('')
+  const [docTitle, setDocTitle] = useState('')
+  const [currentDocId, setCurrentDocId] = useState<string | null>(null)
+  const [savingDoc, setSavingDoc] = useState(false)
+  const [saveStatus, setSaveStatus] = useState<{
+    type: 'cloud' | 'local' | 'error'
+    message: string
+  } | null>(null)
+  const [savedDocs, setSavedDocs] = useState<SavedApplicationDocument[]>([])
+  const [loadingSavedDocs, setLoadingSavedDocs] = useState(false)
+  const [savedFilter, setSavedFilter] = useState<'all' | DocType>('all')
+  const [deletingDocId, setDeletingDocId] = useState<string | null>(null)
+  const [syncingDocId, setSyncingDocId] = useState<string | null>(null)
+  const [savedDocsError, setSavedDocsError] = useState('')
+
+  const refreshSavedDocs = useCallback(async () => {
+    setLoadingSavedDocs(true)
+    try {
+      const docs = await fetchUserApplicationDocumentsApi(user?.id)
+      setSavedDocs(docs)
+    } catch {
+      setSavedDocs([])
+    } finally {
+      setLoadingSavedDocs(false)
+    }
+  }, [user?.id])
+
+  useEffect(() => {
+    refreshSavedDocs()
+  }, [refreshSavedDocs])
 
   const subfields = ['All', ...Array.from(new Set(SOP_TEMPLATES.map(t => t.subfield)))]
   const filteredTemplates =
@@ -567,6 +602,101 @@ export default function DocGenerator() {
     }))
   }
 
+  const buildDefaultDocTitle = (type: DocType, targetForm: Record<string, string>) => {
+    const label = DOC_TYPES.find(d => d.id === type)?.label || type.toUpperCase()
+    const applicant = (targetForm.name || user?.name || 'Application').trim()
+    return `${label} - ${applicant}`
+  }
+
+  const upsertLocalSavedList = (saved: SavedApplicationDocument, previousId?: string | null) => {
+    setSavedDocs(prev => {
+      const filtered = prev.filter(
+        item => item.id !== saved.id && (!previousId || item.id !== previousId)
+      )
+      return [saved, ...filtered]
+    })
+  }
+
+  const persistDocument = async (params: {
+    docType: DocType
+    title: string
+    content: string
+    formData: Record<string, string>
+    asNewCopy?: boolean
+  }) => {
+    const previousId = params.asNewCopy ? null : currentDocId
+    const result = await saveApplicationDocumentApi(
+      {
+        id: previousId || undefined,
+        docType: params.docType,
+        title: params.title,
+        content: params.content,
+        formData: params.formData,
+      },
+      user?.id
+    )
+
+    setCurrentDocId(result.document.id)
+    setDocTitle(result.document.title)
+    upsertLocalSavedList(result.document, previousId)
+
+    if (result.syncedToSupabase) {
+      setSaveStatus({
+        type: 'cloud',
+        message: previousId
+          ? 'Document updated in your Supabase database.'
+          : 'Document saved to your Supabase database.',
+      })
+    } else {
+      setSaveStatus({
+        type: 'local',
+        message:
+          result.error ||
+          'Saved locally in browser storage. Sign in to sync with Supabase.',
+      })
+    }
+
+    return result
+  }
+
+  const handleSaveToDatabase = async (asNewCopy = false) => {
+    const trimmedContent = generatedText.trim()
+    if (!trimmedContent) {
+      setError('Generate or enter document content before saving.')
+      return
+    }
+    setSavingDoc(true)
+    setError('')
+    try {
+      const titleToSave = docTitle.trim() || buildDefaultDocTitle(docType, form)
+      await persistDocument({
+        docType,
+        title: titleToSave,
+        content: generatedText,
+        formData: form,
+        asNewCopy,
+      })
+    } catch (err: any) {
+      setSaveStatus({
+        type: 'error',
+        message: err?.message || 'Failed to save document.',
+      })
+    } finally {
+      setSavingDoc(false)
+    }
+  }
+
+  const handleStartBlankDraft = () => {
+    setIsGenerated(true)
+    setAiExpanded(false)
+    setGeneratedText('')
+    setCurrentDocId(null)
+    setDocTitle(buildDefaultDocTitle(docType, form))
+    setDocSource('MANUAL DRAFT')
+    setError('')
+    setSaveStatus(null)
+  }
+
   const handleGenerate = async () => {
     if (!isFormProperlyFilled) {
       setError('Please fill in all details on the left before generating.')
@@ -575,6 +705,7 @@ export default function DocGenerator() {
     setLoading(true)
     setError('')
     setCopied(false)
+    setSaveStatus(null)
     try {
       const payloadDetails = {
         name: form.name,
@@ -584,6 +715,7 @@ export default function DocGenerator() {
         degree: form.degree || form.background,
         ...form,
       }
+      const nextTitle = docTitle.trim() || buildDefaultDocTitle(docType, payloadDetails)
 
       // Try AI engine first
       try {
@@ -592,35 +724,37 @@ export default function DocGenerator() {
           country: payloadDetails.country,
         })
         const cleanContent = stripMarkdown(res.content || '')
-                if (cleanContent && cleanContent.length > 50) {
+        if (cleanContent && cleanContent.length > 50) {
           setGeneratedText(cleanContent)
           setDocSource(res.source || 'AI Engine (puku-ai-2.8)')
           setIsGenerated(true)
           setAiExpanded(true)
-          saveApplicationDocumentApi({
+          await persistDocument({
             docType,
-            title: `${DOC_TYPES.find(d => d.id === docType)?.label} - ${payloadDetails.name || 'Application'}`,
+            title: nextTitle,
             content: cleanContent,
             formData: form,
-          }, user?.id).catch(() => {})
+            asNewCopy: true,
+          })
           return
         }
       } catch (aiErr) {
         console.warn('AI expansion unavailable, compiling formatted template:', aiErr)
       }
 
-            // Compile formatted document
+      // Compile formatted document
       const formatted = compileLiveDraft(docType, form)
       setGeneratedText(formatted)
       setDocSource('FORMATTED DRAFT')
       setIsGenerated(true)
       setAiExpanded(false)
-      saveApplicationDocumentApi({
+      await persistDocument({
         docType,
-        title: `${DOC_TYPES.find(d => d.id === docType)?.label} - ${payloadDetails.name || 'Application'}`,
+        title: nextTitle,
         content: formatted,
         formData: form,
-      }, user?.id).catch(() => {})
+        asNewCopy: true,
+      })
     } catch (err: any) {
       setError(err?.message || 'Failed to generate document.')
     } finally {
@@ -646,12 +780,11 @@ export default function DocGenerator() {
     URL.revokeObjectURL(url)
   }
 
-  
   const handlePrintPdf = () => {
     if (!generatedText) return
     const docTypeName = DOC_TYPES.find(d => d.id === docType)?.label || 'Application Document'
     const applicantName = (form.name || user?.name || 'Applicant').trim()
-    const pageTitle = `${docTypeName} - ${applicantName}`
+    const pageTitle = docTitle.trim() || `${docTypeName} - ${applicantName}`
     printFormattedDocument(generatedText, pageTitle, docType)
   }
 
@@ -674,6 +807,9 @@ export default function DocGenerator() {
     setIsGenerated(false)
     setGeneratedText('')
     setAiExpanded(false)
+    setCurrentDocId(null)
+    setDocTitle('')
+    setSaveStatus(null)
     setDocSource('DOCUMENT PREVIEW')
     setError('')
     setActiveTab('generator')
@@ -693,11 +829,86 @@ export default function DocGenerator() {
     }))
     setDocType('sop')
     setGeneratedText(draft)
+    setCurrentDocId(null)
+    setDocTitle(`${tpl.title} — SOP Draft`)
     setDocSource(`SOP TEMPLATE · ${tpl.subfield.toUpperCase()}`)
     setIsGenerated(true)
     setAiExpanded(false)
     setError('')
+    setSaveStatus({
+      type: 'local',
+      message: 'Template draft loaded. Customize it and click "Save to Database" to save it to Supabase.',
+    })
     setActiveTab('generator')
+  }
+
+  const handleOpenSavedDoc = (saved: SavedApplicationDocument) => {
+    setDocType(saved.docType)
+    if (saved.formData && Object.keys(saved.formData).length > 0) {
+      setForms(prev => ({
+        ...prev,
+        [saved.docType]: {
+          ...prev[saved.docType],
+          ...saved.formData,
+        },
+      }))
+    }
+    setGeneratedText(saved.content)
+    setCurrentDocId(saved.id)
+    setDocTitle(saved.title)
+    setDocSource(saved.syncedToSupabase ? 'SUPABASE SAVED' : 'LOCAL SAVED DRAFT')
+    setIsGenerated(true)
+    setAiExpanded(false)
+    setError('')
+    setSaveStatus({
+      type: saved.syncedToSupabase ? 'cloud' : 'local',
+      message: saved.syncedToSupabase
+        ? 'Opened saved document from Supabase. Edit freely and click "Save to Database" to update it.'
+        : 'Opened local browser draft. Click "Save to Database" to sync it to Supabase.',
+    })
+    setActiveTab('generator')
+  }
+
+  const handleDeleteSavedDoc = async (id: string) => {
+    setDeletingDocId(id)
+    setSavedDocsError('')
+    try {
+      const res = await deleteApplicationDocumentApi(id, user?.id)
+      if (!res.deleted) {
+        setSavedDocsError(res.error || 'Could not delete document.')
+        return
+      }
+      setSavedDocs(prev => prev.filter(item => item.id !== id))
+      if (currentDocId === id) {
+        setCurrentDocId(null)
+        setSaveStatus(null)
+      }
+    } finally {
+      setDeletingDocId(null)
+    }
+  }
+
+  const handleSyncSavedDoc = async (saved: SavedApplicationDocument) => {
+    setSyncingDocId(saved.id)
+    setSavedDocsError('')
+    try {
+      const res = await saveApplicationDocumentApi(
+        {
+          id: saved.id,
+          docType: saved.docType,
+          title: saved.title,
+          content: saved.content,
+          formData: saved.formData,
+        },
+        user?.id
+      )
+      upsertLocalSavedList(res.document, saved.id)
+      if (!res.syncedToSupabase && res.error) {
+        setSavedDocsError(res.error)
+      }
+    } finally {
+      setSyncingDocId(null)
+    }
   }
 
   const copyTemplateText = async (text: string) => {
@@ -725,11 +936,10 @@ export default function DocGenerator() {
           role="tab"
           aria-selected={activeTab === 'generator'}
           onClick={() => setActiveTab('generator')}
-          className={`px-4 py-2 text-xs font-mono uppercase tracking-wider rounded transition-colors cursor-pointer flex items-center gap-2 ${
-            activeTab === 'generator'
+          className={`px-4 py-2 text-xs font-mono uppercase tracking-wider rounded transition-colors cursor-pointer flex items-center gap-2 ${activeTab === 'generator'
               ? 'bg-electric text-white font-bold'
               : 'bg-surface border border-divider text-graphite hover:text-ink'
-          }`}
+            }`}
         >
           <Icon name="pen" /> Document Generator
         </button>
@@ -738,13 +948,27 @@ export default function DocGenerator() {
           role="tab"
           aria-selected={activeTab === 'sop-templates'}
           onClick={() => setActiveTab('sop-templates')}
-          className={`px-4 py-2 text-xs font-mono uppercase tracking-wider rounded transition-colors cursor-pointer flex items-center gap-2 ${
-            activeTab === 'sop-templates'
+          className={`px-4 py-2 text-xs font-mono uppercase tracking-wider rounded transition-colors cursor-pointer flex items-center gap-2 ${activeTab === 'sop-templates'
               ? 'bg-electric text-white font-bold'
               : 'bg-surface border border-divider text-graphite hover:text-ink'
-          }`}
+            }`}
         >
           <Icon name="books" /> Templates for SOPs ({SOP_TEMPLATES.length})
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeTab === 'saved'}
+          onClick={() => {
+            setActiveTab('saved')
+            refreshSavedDocs()
+          }}
+          className={`px-4 py-2 text-xs font-mono uppercase tracking-wider rounded transition-colors cursor-pointer flex items-center gap-2 ${activeTab === 'saved'
+              ? 'bg-electric text-white font-bold'
+              : 'bg-surface border border-divider text-graphite hover:text-ink'
+            }`}
+        >
+          <Icon name="folder" /> Saved Documents ({savedDocs.length})
         </button>
       </div>
 
@@ -791,11 +1015,10 @@ export default function DocGenerator() {
                 key={sf}
                 type="button"
                 onClick={() => setSubfieldFilter(sf)}
-                className={`mono text-[11px] px-3 py-1.5 rounded border transition-colors cursor-pointer ${
-                  subfieldFilter === sf
+                className={`mono text-[11px] px-3 py-1.5 rounded border transition-colors cursor-pointer ${subfieldFilter === sf
                     ? 'border-line-ink bg-navy text-white font-bold'
                     : 'border-divider bg-surface text-graphite hover:border-line-strong'
-                }`}
+                  }`}
               >
                 {sf}
               </button>
@@ -816,11 +1039,10 @@ export default function DocGenerator() {
                       setSelectedTemplateId(tpl.id)
                       setTemplateCopied(false)
                     }}
-                    className={`w-full text-left p-4 border transition-all cursor-pointer ${
-                      isSelected
+                    className={`w-full text-left p-4 border transition-all cursor-pointer ${isSelected
                         ? 'border-[#DC2626] bg-electric-soft shadow-sm'
                         : 'border-divider bg-surface hover:border-line-strong'
-                    }`}
+                      }`}
                     style={{ borderRadius: 4 }}
                   >
                     <div className="flex items-center justify-between gap-2 mb-1.5">
@@ -932,6 +1154,190 @@ export default function DocGenerator() {
             </div>
           </div>
         </div>
+      ) : activeTab === 'saved' ? (
+        <div className="space-y-5 no-print">
+          <section className="corner-mark border border-divider bg-surface p-5 sm:p-6" style={{ borderRadius: 4 }}>
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <div className="label-tag mb-1">SUPABASE DOCUMENT LIBRARY · APPLICATION_DOCUMENTS</div>
+                <h2 className="text-lg font-bold text-ink plex">Your Saved SOPs, CVs &amp; Application Drafts</h2>
+                <p className="mt-1 text-xs leading-5 text-muted">
+                  Documents saved while signed in are stored securely in Vistora&apos;s Supabase database and stay available across sessions.
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={refreshSavedDocs}
+                  disabled={loadingSavedDocs}
+                  className="mono text-[10px] border border-divider bg-surface-2 px-3 py-2 text-ink hover:border-line-strong rounded cursor-pointer disabled:opacity-50"
+                >
+                  {loadingSavedDocs ? 'Refreshing...' : '↻ Refresh List'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('generator')}
+                  className="mono text-[10px] bg-electric text-white px-3 py-2 font-bold rounded hover:bg-[#B91C1C] cursor-pointer"
+                >
+                  + Create New Document
+                </button>
+              </div>
+            </div>
+
+            <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-divider-soft pt-4">
+              {(['all', 'sop', 'cv', 'ps', 'cl'] as const).map(filterKey => {
+                const label =
+                  filterKey === 'all'
+                    ? `All (${savedDocs.length})`
+                    : `${DOC_TYPES.find(d => d.id === filterKey)?.label || filterKey.toUpperCase()} (${savedDocs.filter(d => d.docType === filterKey).length})`
+                return (
+                  <button
+                    key={filterKey}
+                    type="button"
+                    onClick={() => setSavedFilter(filterKey)}
+                    className={`mono text-[10px] px-3 py-1.5 rounded border transition-colors cursor-pointer ${savedFilter === filterKey
+                        ? 'bg-navy text-white border-navy font-bold'
+                        : 'bg-paper text-graphite border-divider hover:border-line-strong'
+                      }`}
+                  >
+                    {label}
+                  </button>
+                )
+              })}
+            </div>
+          </section>
+
+          {savedDocsError && (
+            <div className="border-l-2 border-[#DC2626] bg-electric-soft p-3 text-xs text-accent">
+              {savedDocsError}
+            </div>
+          )}
+
+          {loadingSavedDocs ? (
+            <div className="bg-surface border border-divider rounded p-10 text-center text-xs text-muted">
+              Loading your saved documents from Supabase...
+            </div>
+          ) : (() => {
+            const visibleSaved =
+              savedFilter === 'all'
+                ? savedDocs
+                : savedDocs.filter(doc => doc.docType === savedFilter)
+
+            if (visibleSaved.length === 0) {
+              return (
+                <div className="bg-surface border border-divider rounded p-12 text-center">
+                  <div className="w-12 h-12 mx-auto rounded-full bg-surface-2 border border-divider flex items-center justify-center text-xl text-subtle mb-3">
+                    <Icon name="folder" />
+                  </div>
+                  <div className="text-sm font-semibold text-ink plex mb-1">No Saved Documents Yet</div>
+                  <p className="text-xs text-muted max-w-md mx-auto mb-4">
+                    Generate a document, load an SOP template, or write your own draft in the Document Generator and click &quot;Save to Database&quot; to store it here.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('generator')}
+                    className="mono text-[11px] bg-[#DC2626] text-white px-4 py-2 rounded font-semibold hover:bg-[#B91C1C] cursor-pointer"
+                  >
+                    Go to Document Generator
+                  </button>
+                </div>
+              )
+            }
+
+            return (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {visibleSaved.map(saved => {
+                  const typeLabel = DOC_TYPES.find(d => d.id === saved.docType)?.label || saved.docType.toUpperCase()
+                  const updatedLabel = new Date(saved.updatedAt).toLocaleString(undefined, {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })
+                  const wordCount = saved.content.trim()
+                    ? saved.content.trim().split(/\s+/).length
+                    : 0
+
+                  return (
+                    <article
+                      key={saved.id}
+                      className="bg-surface border border-divider rounded p-5 flex flex-col justify-between gap-4 hover:border-line-strong transition-colors"
+                    >
+                      <div>
+                        <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                          <div className="flex items-center gap-2">
+                            <span className="mono text-[9px] px-2 py-0.5 rounded bg-surface-2 border border-divider text-ink font-bold uppercase">
+                              {typeLabel}
+                            </span>
+                            {saved.syncedToSupabase ? (
+                              <span className="mono text-[9px] px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200 font-bold inline-flex items-center gap-1">
+                                <Icon name="check-circle" /> SUPABASE SYNCED
+                              </span>
+                            ) : (
+                              <span className="mono text-[9px] px-2 py-0.5 rounded bg-warning-soft border border-[#D97706] text-caution-strong font-bold">
+                                LOCAL DRAFT
+                              </span>
+                            )}
+                          </div>
+                          <span className="mono text-[10px] text-subtle">{wordCount} words</span>
+                        </div>
+
+                        <h3 className="text-base font-bold text-ink plex leading-snug mb-1">
+                          {saved.title}
+                        </h3>
+                        <div className="mono text-[10px] text-subtle mb-3">
+                          Updated {updatedLabel}
+                        </div>
+
+                        <p className="text-xs leading-relaxed text-graphite bg-paper border border-divider-soft rounded p-3 line-clamp-4 whitespace-pre-wrap">
+                          {saved.content}
+                        </p>
+                      </div>
+
+                      <div className="flex flex-wrap items-center justify-between gap-2 border-t border-divider-soft pt-3">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => handleOpenSavedDoc(saved)}
+                            className="mono text-[10px] bg-navy text-white px-3 py-1.5 rounded hover:bg-navy-mid transition-colors cursor-pointer inline-flex items-center gap-1.5"
+                          >
+                            <Icon name="pen" /> Open &amp; Edit
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => printFormattedDocument(saved.content, saved.title, saved.docType)}
+                            className="mono text-[10px] border border-divider text-muted px-2.5 py-1.5 rounded hover:border-line-strong hover:text-ink transition-colors cursor-pointer inline-flex items-center gap-1"
+                          >
+                            <Icon name="printer" /> Print / PDF
+                          </button>
+                          {!saved.syncedToSupabase && (
+                            <button
+                              type="button"
+                              onClick={() => handleSyncSavedDoc(saved)}
+                              disabled={syncingDocId === saved.id}
+                              className="mono text-[10px] bg-electric text-white px-2.5 py-1.5 rounded hover:bg-[#B91C1C] transition-colors cursor-pointer inline-flex items-center gap-1 disabled:opacity-50"
+                            >
+                              <Icon name="upload" /> {syncingDocId === saved.id ? 'Syncing...' : 'Sync to Supabase'}
+                            </button>
+                          )}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteSavedDoc(saved.id)}
+                          disabled={deletingDocId === saved.id}
+                          className="mono text-[10px] text-accent border border-divider px-2.5 py-1.5 rounded hover:bg-electric-soft transition-colors cursor-pointer inline-flex items-center gap-1 disabled:opacity-50"
+                        >
+                          <Icon name="trash" /> {deletingDocId === saved.id ? 'Deleting...' : 'Delete'}
+                        </button>
+                      </div>
+                    </article>
+                  )
+                })}
+              </div>
+            )
+          })()}
+        </div>
       ) : (
         <>
           {/* Doc type selector */}
@@ -950,230 +1356,294 @@ export default function DocGenerator() {
               </button>
             )}
           </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6 no-print">
-        {DOC_TYPES.map(d => (
-          <button
-            key={d.id}
-            type="button"
-            aria-pressed={docType === d.id}
-            onClick={() => {
-              setDocType(d.id)
-              setIsGenerated(false)
-              setGeneratedText('')
-              setAiExpanded(false)
-              setDocSource('DOCUMENT PREVIEW')
-              setError('')
-            }}
-            className={`group flex min-h-[204px] flex-col text-left p-5 border transition-all ${
-              docType === d.id
-                ? 'border-[#DC2626] bg-electric-soft shadow-sm'
-                : 'border-divider bg-surface hover:border-line-strong hover:shadow-sm'
-            }`}
-            style={{ borderRadius: 4 }}
-          >
-            <div className="flex items-start gap-3">
-              <span
-                className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-md ${
-                docType === d.id ? 'bg-[#DC2626] text-white' : 'bg-surface-2 text-subtle group-hover:bg-electric-soft group-hover:text-accent'
-                }`}
-                style={{ color: docType === d.id ? undefined : themeText('#64748B') }}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6 no-print">
+            {DOC_TYPES.map(d => (
+              <button
+                key={d.id}
+                type="button"
+                aria-pressed={docType === d.id}
+                onClick={() => {
+                  setDocType(d.id)
+                  setIsGenerated(false)
+                  setGeneratedText('')
+                  setAiExpanded(false)
+                  setCurrentDocId(null)
+                  setDocTitle('')
+                  setSaveStatus(null)
+                  setDocSource('DOCUMENT PREVIEW')
+                  setError('')
+                }}
+                className={`group flex min-h-[204px] flex-col text-left p-5 border transition-all ${docType === d.id
+                    ? 'border-[#DC2626] bg-electric-soft shadow-sm'
+                    : 'border-divider bg-surface hover:border-line-strong hover:shadow-sm'
+                  }`}
+                style={{ borderRadius: 4 }}
               >
-                <DocumentIcon type={d.icon} active={docType === d.id} />
-              </span>
-              <div className="min-w-0 flex-1 pt-1">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="text-base font-bold leading-5 text-ink plex">{d.label}</div>
-                  {docType === d.id && <span className="shrink-0 text-sm font-bold leading-5 text-accent" aria-hidden="true">✓</span>}
-                </div>
-              </div>
-            </div>
-            <div className="mt-4 text-xs leading-5 text-subtle">
-              {d.desc}
-            </div>
-            <div className={`mt-auto pt-5 text-[11px] font-semibold transition-colors ${
-              docType === d.id ? 'text-accent' : 'text-muted group-hover:text-accent'
-            }`}>
-              {docType === d.id ? 'Selected' : 'Use this template'} <span aria-hidden="true">→</span>
-            </div>
-          </button>
-        ))}
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-4">
-        {/* Form */}
-        <div className="bg-surface border border-divider no-print" style={{ borderRadius: 4 }}>
-          <div className="px-5 py-4 border-b border-divider-soft flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="w-1 h-4 bg-[#DC2626]" style={{ borderRadius: 1 }} />
-              <span className="text-sm font-semibold text-ink plex">Input Your Details</span>
-            </div>
-            <span className="mono text-[9px] text-muted border border-divider px-2 py-0.5 rounded">CUSTOMIZE</span>
-          </div>
-          <div className="p-5 space-y-4">
-            {fields.map(f => (
-              <div key={f.key}>
-                <label className="mono text-[10px] text-subtle tracking-widest block mb-1.5">{f.label.toUpperCase()}</label>
-                {f.type === 'textarea' ? (
-                  <textarea
-                    value={form[f.key] || ''}
-                    onChange={e => handleFieldChange(f.key, e.target.value)}
-                    placeholder={`Enter your ${f.label.toLowerCase()}...`}
-                    className="w-full border border-divider focus:border-[#DC2626] px-3 py-2 text-[12px] text-graphite outline-none resize-none transition-colors bg-paper"
-                    style={{ borderRadius: 3, minHeight: 72 }}
-                  />
-                ) : f.type === 'select' ? (
-                  <select
-                    value={form[f.key] || ''}
-                    onChange={e => handleFieldChange(f.key, e.target.value)}
-                    className="w-full border border-divider focus:border-[#DC2626] px-3 py-2 text-[12px] text-graphite outline-none bg-paper"
-                    style={{ borderRadius: 3 }}
+                <div className="flex items-start gap-3">
+                  <span
+                    className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-md ${docType === d.id ? 'bg-[#DC2626] text-white' : 'bg-surface-2 text-subtle group-hover:bg-electric-soft group-hover:text-accent'
+                      }`}
+                    style={{ color: docType === d.id ? undefined : themeText('#64748B') }}
                   >
-                    <option value="">Select...</option>
-                    {f.options?.map(o => (
-                      <option key={o} value={o}>
-                        {o}
-                      </option>
-                    ))}
-                  </select>
-                ) : (
-                  <input
-                    type="text"
-                    value={form[f.key] || ''}
-                    onChange={e => handleFieldChange(f.key, e.target.value)}
-                    placeholder={f.key === 'name' ? (user?.name ? `e.g. ${user.name}` : 'Enter your full name...') : `Enter ${f.label.toLowerCase()}...`}
-                    className="w-full border border-divider focus:border-[#DC2626] px-3 py-2 text-[12px] text-graphite outline-none bg-paper transition-colors"
-                    style={{ borderRadius: 3 }}
-                  />
-                )}
-              </div>
+                    <DocumentIcon type={d.icon} active={docType === d.id} />
+                  </span>
+                  <div className="min-w-0 flex-1 pt-1">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="text-base font-bold leading-5 text-ink plex">{d.label}</div>
+                      {docType === d.id && <span className="shrink-0 text-sm font-bold leading-5 text-accent" aria-hidden="true">✓</span>}
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-4 text-xs leading-5 text-subtle">
+                  {d.desc}
+                </div>
+                <div className={`mt-auto pt-5 text-[11px] font-semibold transition-colors ${docType === d.id ? 'text-accent' : 'text-muted group-hover:text-accent'
+                  }`}>
+                  {docType === d.id ? 'Selected' : 'Use this template'} <span aria-hidden="true">→</span>
+                </div>
+              </button>
             ))}
-
-            <button
-              type="button"
-              onClick={handleGenerate}
-              disabled={loading || !isFormProperlyFilled}
-              className={`w-full py-3 text-sm font-semibold text-white transition-colors cursor-pointer ${
-                loading || !isFormProperlyFilled ? 'bg-[#FCA5A5] cursor-not-allowed' : 'bg-[#DC2626] hover:bg-[#B91C1C]'
-              }`}
-              style={{ borderRadius: 4, fontFamily: 'IBM Plex Sans, sans-serif' }}
-            >
-              {loading ? (
-                <span className="flex items-center justify-center gap-2">
-                  <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-                  Generating Document...
-                </span>
-              ) : (
-                <><Icon name="zap" /> Generate Document</>
-              )}
-            </button>
-            <p className="text-[10px] leading-relaxed text-subtle">
-              Complete your details above, then click Generate to create your customized {DOC_TYPES.find(d => d.id === docType)?.label}.
-            </p>
           </div>
-        </div>
 
-        {/* Preview */}
-        <div className="bg-surface border border-divider flex flex-col" style={{ borderRadius: 4 }}>
-          <div className="px-5 py-4 border-b border-divider-soft flex flex-wrap items-center justify-between gap-2 flex-shrink-0 no-print">
-            <div className="flex items-center gap-2.5">
-              <span className="w-1 h-4 bg-[#BE123C]" style={{ borderRadius: 1 }} />
-              <span className="text-sm font-semibold text-ink plex">Document Preview</span>
-              {isGenerated ? (
-                <span className="mono text-[9px] px-2 py-0.5 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded font-bold">
-                  ● GENERATED
-                </span>
-              ) : isFormProperlyFilled ? (
-                <span className="mono text-[9px] px-2 py-0.5 bg-blue-50 text-blue-800 border border-blue-200 rounded font-semibold">
-                  READY TO GENERATE
-                </span>
-              ) : (
-                <span className="mono text-[9px] px-2 py-0.5 bg-surface-2 text-muted border border-divider rounded">
-                  AWAITING INPUT
-                </span>
-              )}
-            </div>
+          <div className="grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-4">
+            {/* Form */}
+            <div className="bg-surface border border-divider no-print" style={{ borderRadius: 4 }}>
+              <div className="px-5 py-4 border-b border-divider-soft flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="w-1 h-4 bg-[#DC2626]" style={{ borderRadius: 1 }} />
+                  <span className="text-sm font-semibold text-ink plex">Input Your Details</span>
+                </div>
+                <span className="mono text-[9px] text-muted border border-divider px-2 py-0.5 rounded">CUSTOMIZE</span>
+              </div>
+              <div className="p-5 space-y-4">
+                {fields.map(f => (
+                  <div key={f.key}>
+                    <label className="mono text-[10px] text-subtle tracking-widest block mb-1.5">{f.label.toUpperCase()}</label>
+                    {f.type === 'textarea' ? (
+                      <textarea
+                        value={form[f.key] || ''}
+                        onChange={e => handleFieldChange(f.key, e.target.value)}
+                        placeholder={`Enter your ${f.label.toLowerCase()}...`}
+                        className="w-full border border-divider focus:border-[#DC2626] px-3 py-2 text-[12px] text-graphite outline-none resize-none transition-colors bg-paper"
+                        style={{ borderRadius: 3, minHeight: 72 }}
+                      />
+                    ) : f.type === 'select' ? (
+                      <select
+                        value={form[f.key] || ''}
+                        onChange={e => handleFieldChange(f.key, e.target.value)}
+                        className="w-full border border-divider focus:border-[#DC2626] px-3 py-2 text-[12px] text-graphite outline-none bg-paper"
+                        style={{ borderRadius: 3 }}
+                      >
+                        <option value="">Select...</option>
+                        {f.options?.map(o => (
+                          <option key={o} value={o}>
+                            {o}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <input
+                        type="text"
+                        value={form[f.key] || ''}
+                        onChange={e => handleFieldChange(f.key, e.target.value)}
+                        placeholder={f.key === 'name' ? (user?.name ? `e.g. ${user.name}` : 'Enter your full name...') : `Enter ${f.label.toLowerCase()}...`}
+                        className="w-full border border-divider focus:border-[#DC2626] px-3 py-2 text-[12px] text-graphite outline-none bg-paper transition-colors"
+                        style={{ borderRadius: 3 }}
+                      />
+                    )}
+                  </div>
+                ))}
 
-            <div className="flex items-center gap-2">
-              <span className="mono text-[9px] px-2 py-1 bg-surface-2 text-ink border border-divider rounded">
-                <Icon name="zap" /> {isGenerated ? docSource : 'AWAITING GENERATION'}
-              </span>
-              {isGenerated && (
                 <button
                   type="button"
-                  onClick={cleanSymbolsNow}
-                  title="Strip asterisks, hashes, and markdown artifacts"
-                  className="mono text-[10px] text-muted border border-divider px-2.5 py-1.5 hover:border-line-strong hover:text-ink transition-colors rounded cursor-pointer"
+                  onClick={handleGenerate}
+                  disabled={loading || !isFormProperlyFilled}
+                  className={`w-full py-3 text-sm font-semibold text-white transition-colors cursor-pointer ${loading || !isFormProperlyFilled ? 'bg-[#FCA5A5] cursor-not-allowed' : 'bg-[#DC2626] hover:bg-[#B91C1C]'
+                    }`}
+                  style={{ borderRadius: 4, fontFamily: 'IBM Plex Sans, sans-serif' }}
                 >
-                  Clean Symbols
+                  {loading ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                      Generating Document...
+                    </span>
+                  ) : (
+                    <><Icon name="zap" /> Generate Document</>
+                  )}
                 </button>
-              )}
-              <button
-                type="button"
-                onClick={copyDocument}
-                disabled={!isGenerated || !generatedText}
-                className="mono text-[10px] text-muted border border-divider px-3 py-1.5 hover:border-line-strong transition-colors rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-              >
-                {copied ? '✓ Copied!' : 'Copy Text'}
-              </button>
-              <button
-                type="button"
-                onClick={downloadTxt}
-                disabled={!isGenerated || !generatedText}
-                className="mono text-[10px] text-white bg-[#DC2626] px-3 py-1.5 hover:bg-[#B91C1C] transition-colors rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-              >
-                Download .txt
-              </button>
-              <button
-                type="button"
-                onClick={handlePrintPdf}
-                disabled={!isGenerated || !generatedText}
-                title="Format and print or save document as PDF"
-                className="mono text-[10px] text-white bg-navy px-3 py-1.5 hover:bg-navy-mid transition-colors rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-              >
-                Print / PDF
-              </button>
-            </div>
-          </div>
-
-          <div className="flex-1 overflow-y-auto p-6 sm:p-8 bg-paper">
-            {error && (
-              <div className="mb-5 border-l-2 border-[#D97706] bg-warning-soft p-3 text-[11px] leading-relaxed text-caution-strong">
-                {error}
+                <p className="text-[10px] leading-relaxed text-subtle">
+                  Complete your details above, then click Generate to create your customized {DOC_TYPES.find(d => d.id === docType)?.label}.
+                </p>
               </div>
-            )}
-            <div className="bg-surface border border-divider-soft shadow-sm rounded-md p-6 sm:p-8 max-w-3xl mx-auto min-h-[520px] flex flex-col">
-              {!isGenerated || !generatedText ? (
-                <div className="flex-1 flex flex-col items-center justify-center text-center py-16 px-4">
-                  <div className="w-14 h-14 rounded-full bg-surface-2 border border-divider flex items-center justify-center text-2xl mb-3 text-subtle">
-                    <Icon name="file" />
-                  </div>
-                  <div className="text-base font-semibold text-ink plex mb-1">
-                    {isFormProperlyFilled ? 'Ready to Generate' : 'Input Details to Begin'}
-                  </div>
-                  <p className="text-xs text-subtle max-w-md leading-relaxed">
-                    {isFormProperlyFilled
-                      ? `Your details are ready. Click the "Generate Document" button on the left to generate your custom ${DOC_TYPES.find(d => d.id === docType)?.label}.`
-                      : `Enter your details in the form on the left. The document will only be generated once you click the Generate button.`}
-                  </p>
+            </div>
+
+            {/* Preview */}
+            <div className="bg-surface border border-divider flex flex-col" style={{ borderRadius: 4 }}>
+              <div className="px-5 py-4 border-b border-divider-soft flex flex-wrap items-center justify-between gap-2 flex-shrink-0 no-print">
+                <div className="flex items-center gap-2.5">
+                  <span className="w-1 h-4 bg-[#BE123C]" style={{ borderRadius: 1 }} />
+                  <span className="text-sm font-semibold text-ink plex">Document Preview</span>
+                  {isGenerated ? (
+                    <span className="mono text-[9px] px-2 py-0.5 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded font-bold">
+                      ● GENERATED
+                    </span>
+                  ) : isFormProperlyFilled ? (
+                    <span className="mono text-[9px] px-2 py-0.5 bg-blue-50 text-blue-800 border border-blue-200 rounded font-semibold">
+                      READY TO GENERATE
+                    </span>
+                  ) : (
+                    <span className="mono text-[9px] px-2 py-0.5 bg-surface-2 text-muted border border-divider rounded">
+                      AWAITING INPUT
+                    </span>
+                  )}
                 </div>
-              ) : (
-                <>
-                  <textarea
-                    value={generatedText}
-                    onChange={e => setGeneratedText(e.target.value)}
-                    className="w-full text-[13px] text-graphite leading-[1.85] outline-none border-none resize-y bg-transparent flex-1 print:hidden"
-                    style={{ fontFamily: 'Manrope, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', minHeight: 520 }}
-                    placeholder="Your generated document will appear here..."
-                  />
-                  <div className="hidden print:block text-ink whitespace-pre-wrap font-serif text-[11pt] leading-[1.6]">
-                    {generatedText}
+
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="mono text-[9px] px-2 py-1 bg-surface-2 text-ink border border-divider rounded">
+                    <Icon name="zap" /> {isGenerated ? docSource : 'AWAITING GENERATION'}
+                  </span>
+                  {isGenerated && (
+                    <button
+                      type="button"
+                      onClick={cleanSymbolsNow}
+                      title="Strip asterisks, hashes, and markdown artifacts"
+                      className="mono text-[10px] text-muted border border-divider px-2.5 py-1.5 hover:border-line-strong hover:text-ink transition-colors rounded cursor-pointer"
+                    >
+                      Clean Symbols
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => handleSaveToDatabase(false)}
+                    disabled={!isGenerated || !generatedText.trim() || savingDoc}
+                    title="Save or update this document in Supabase database"
+                    className="mono text-[10px] text-white bg-emerald-700 hover:bg-emerald-800 px-3 py-1.5 transition-colors rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer inline-flex items-center gap-1.5 font-semibold"
+                  >
+                    <Icon name="save" /> {savingDoc ? 'Saving...' : currentDocId ? 'Save Changes' : 'Save to Database'}
+                  </button>
+                  {isGenerated && currentDocId && (
+                    <button
+                      type="button"
+                      onClick={() => handleSaveToDatabase(true)}
+                      disabled={!generatedText.trim() || savingDoc}
+                      title="Save as a separate copy in Supabase"
+                      className="mono text-[10px] text-muted border border-divider px-2.5 py-1.5 hover:border-line-strong hover:text-ink transition-colors rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                    >
+                      Save Copy
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={copyDocument}
+                    disabled={!isGenerated || !generatedText.trim()}
+                    className="mono text-[10px] text-muted border border-divider px-3 py-1.5 hover:border-line-strong transition-colors rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                  >
+                    {copied ? '✓ Copied!' : 'Copy Text'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={downloadTxt}
+                    disabled={!isGenerated || !generatedText.trim()}
+                    className="mono text-[10px] text-white bg-[#DC2626] px-3 py-1.5 hover:bg-[#B91C1C] transition-colors rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                  >
+                    Download .txt
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handlePrintPdf}
+                    disabled={!isGenerated || !generatedText.trim()}
+                    title="Format and print or save document as PDF"
+                    className="mono text-[10px] text-white bg-navy px-3 py-1.5 hover:bg-navy-mid transition-colors rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                  >
+                    Print / PDF
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-6 sm:p-8 bg-paper">
+                {error && (
+                  <div className="mb-4 border-l-2 border-[#D97706] bg-warning-soft p-3 text-[11px] leading-relaxed text-caution-strong no-print">
+                    {error}
                   </div>
-                </>
-              )}
+                )}
+                {saveStatus && (
+                  <div
+                    className={`mb-4 border-l-2 p-3 text-[11px] leading-relaxed flex flex-wrap items-center justify-between gap-2 no-print ${saveStatus.type === 'cloud'
+                        ? 'border-emerald-600 bg-emerald-50 text-emerald-800'
+                        : saveStatus.type === 'error'
+                          ? 'border-[#DC2626] bg-electric-soft text-accent'
+                          : 'border-[#D97706] bg-warning-soft text-caution-strong'
+                      }`}
+                  >
+                    <span>{saveStatus.message}</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setActiveTab('saved')
+                        refreshSavedDocs()
+                      }}
+                      className="mono text-[10px] underline font-semibold cursor-pointer"
+                    >
+                      View Saved ({savedDocs.length}) →
+                    </button>
+                  </div>
+                )}
+                <div className="bg-surface border border-divider-soft shadow-sm rounded-md p-6 sm:p-8 max-w-3xl mx-auto min-h-[520px] flex flex-col">
+                  {!isGenerated ? (
+                    <div className="flex-1 flex flex-col items-center justify-center text-center py-16 px-4">
+                      <div className="w-14 h-14 rounded-full bg-surface-2 border border-divider flex items-center justify-center text-2xl mb-3 text-subtle">
+                        <Icon name="file" />
+                      </div>
+                      <div className="text-base font-semibold text-ink plex mb-1">
+                        {isFormProperlyFilled ? 'Ready to Generate' : 'Input Details to Begin'}
+                      </div>
+                      <p className="text-xs text-subtle max-w-md leading-relaxed mb-4">
+                        {isFormProperlyFilled
+                          ? `Your details are ready. Click the "Generate Document" button on the left to generate your custom ${DOC_TYPES.find(d => d.id === docType)?.label}.`
+                          : `Enter your details in the form on the left. The document will only be generated once you click the Generate button.`}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={handleStartBlankDraft}
+                        className="mono text-[10px] text-muted border border-divider px-3 py-1.5 rounded hover:border-line-strong hover:text-ink transition-colors cursor-pointer"
+                      >
+                        Or Write / Paste {DOC_TYPES.find(d => d.id === docType)?.label} Manually →
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="mb-4 pb-3 border-b border-divider-soft flex flex-col sm:flex-row sm:items-center gap-2 no-print">
+                        <label
+                          htmlFor="doc-title-input"
+                          className="mono text-[10px] text-subtle tracking-widest uppercase shrink-0"
+                        >
+                          Document Title
+                        </label>
+                        <input
+                          id="doc-title-input"
+                          type="text"
+                          value={docTitle}
+                          onChange={e => setDocTitle(e.target.value)}
+                          placeholder={buildDefaultDocTitle(docType, form)}
+                          className="flex-1 border border-divider focus:border-[#DC2626] px-3 py-1.5 text-xs text-ink bg-paper rounded outline-none"
+                        />
+                      </div>
+                      <textarea
+                        value={generatedText}
+                        onChange={e => setGeneratedText(e.target.value)}
+                        className="w-full text-[13px] text-graphite leading-[1.85] outline-none border-none resize-y bg-transparent flex-1 print:hidden"
+                        style={{ fontFamily: 'Manrope, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', minHeight: 520 }}
+                        placeholder="Write or paste your SOP / document content here, then click Save to Database..."
+                      />
+                      <div className="hidden print:block text-ink whitespace-pre-wrap font-serif text-[11pt] leading-[1.6]">
+                        {generatedText}
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
         </>
       )}
     </div>
