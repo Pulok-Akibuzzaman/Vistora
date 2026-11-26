@@ -88,7 +88,11 @@ const INITIAL_SEED_THREADS = [
   },
 ]
 
-async function getAdminUserId(): Promise<string> {
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+const asValidUuid = (val: unknown): string | null =>
+  typeof val === 'string' && UUID_REGEX.test(val) ? val : null
+
+async function getAdminUserId(): Promise<string | null> {
   const supabaseAdmin = getSupabaseAdmin()
   const { data } = await supabaseAdmin
     .from('profiles')
@@ -101,7 +105,7 @@ async function getAdminUserId(): Promise<string> {
     .from('profiles')
     .select('id')
     .limit(1)
-  return anyUser && anyUser[0]?.id ? anyUser[0].id : 'ea7f0a40-6f53-4f38-a9fc-fc6c5964de5f'
+  return anyUser && anyUser[0]?.id ? anyUser[0].id : null
 }
 
 async function getDeletedIds(): Promise<string[]> {
@@ -361,7 +365,7 @@ export default async function handler(req: any, res: any) {
     // 3b. Add Reply
     if (action === 'reply') {
       const { threadId, content, authorId } = body
-      const effectiveAuthorId = authorId || (await getAdminUserId())
+      const effectiveAuthorId = asValidUuid(authorId) || (await getAdminUserId())
 
       const { data: reply, error } = await supabaseAdmin
         .from('forum_replies')
@@ -401,16 +405,17 @@ export default async function handler(req: any, res: any) {
     // 3c. Vote
     if (action === 'vote') {
       const { threadId, userId, direction } = body
-      if (direction === 'up' && userId) {
+      const validUserId = asValidUuid(userId)
+      if (direction === 'up' && validUserId) {
         await supabaseAdmin
           .from('forum_upvotes')
-          .insert({ thread_id: threadId, user_id: userId })
-      } else if (userId) {
+          .insert({ thread_id: threadId, user_id: validUserId })
+      } else if (validUserId) {
         await supabaseAdmin
           .from('forum_upvotes')
           .delete()
           .eq('thread_id', threadId)
-          .eq('user_id', userId)
+          .eq('user_id', validUserId)
       }
       return res.status(200).json({ success: true })
     }
@@ -421,7 +426,7 @@ export default async function handler(req: any, res: any) {
       return res.status(400).json({ success: false, error: 'Title and content are required' })
     }
 
-    let effectiveAuthorId = authorId
+    let effectiveAuthorId = asValidUuid(authorId)
     if (!effectiveAuthorId) {
       effectiveAuthorId = await getAdminUserId()
     }
@@ -449,10 +454,11 @@ export default async function handler(req: any, res: any) {
     }
 
     // The response reports one upvote from the author, so record it or it is gone on the next fetch
-    if (authorId) {
+    const validAuthorId = asValidUuid(authorId)
+    if (validAuthorId) {
       await supabaseAdmin
         .from('forum_upvotes')
-        .insert({ thread_id: newRow.id, user_id: authorId })
+        .insert({ thread_id: newRow.id, user_id: validAuthorId })
     }
 
     const a = newRow.author || {}
