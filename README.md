@@ -1,6 +1,6 @@
 # 🎓 Vistora — Computer-Delivered IELTS Preparation & AI Platform
 
-[![Live Platform](https://img.shields.io/badge/Live%20Demo-vistora--delta.vercel.app-2563eb?style=flat&logo=vercel)](https://vistora-delta.vercel.app)
+[![Live Platform](https://img.shields.io/badge/Live%20Demo-vistora--beta.vercel.app-2563eb?style=flat&logo=vercel)](https://vistora-beta.vercel.app/)
 [![GitHub Repository](https://img.shields.io/badge/GitHub-Pulok--Akibuzzaman%2FVistora-181717?style=flat&logo=github)](https://github.com/Pulok-Akibuzzaman/Vistora)
 [![Course](https://img.shields.io/badge/Course-CSE412-dc2626)](https://github.com/Pulok-Akibuzzaman/Vistora)
 [![Frontend](https://img.shields.io/badge/Frontend-React%2019%20%2B%20TypeScript-61dafb?logo=react)](https://react.dev)
@@ -8,7 +8,7 @@
 [![Backend](https://img.shields.io/badge/Backend-Supabase%20Cloud-3ecf8e?logo=supabase)](https://supabase.com)
 [![Styling](https://img.shields.io/badge/Styling-Tailwind%20CSS-38bdf8?logo=tailwindcss)](https://tailwindcss.com)
 
-> **Live Platform:** [https://vistora-delta.vercel.app](https://vistora-delta.vercel.app)  
+> **Live Platform:** [Vistora — Computer-Delivered IELTS Preparation](https://vistora-beta.vercel.app/)  
 > **Official Repository:** [https://github.com/Pulok-Akibuzzaman/Vistora](https://github.com/Pulok-Akibuzzaman/Vistora)  
 > **Academic Institution:** East West University (EWU), Dhaka, Bangladesh  
 > **Department:** Department of Computer Science & Engineering (CSE)  

@@ -286,7 +286,7 @@ export default async function handler(req: any, res: any) {
       systemPrompt,
       maxTokens,
       extraHeaders: {
-        'HTTP-Referer': 'https://vistora-delta.vercel.app',
+        'HTTP-Referer': 'https://vistora-beta.vercel.app',
         'X-Title': 'Vistora IELTS Platform',
       },
     })
