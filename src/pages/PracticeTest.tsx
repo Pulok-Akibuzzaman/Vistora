@@ -2403,8 +2403,8 @@ function SpeakingExam({ currentPart, setCurrentPart, timeLeft, part, onRecording
               value={transcripts[activePart] || ''}
               onChange={e => setTranscript(activePart, e.target.value)}
               placeholder={recording ? 'Listening... Speak into your microphone...' : 'Candidate speech transcript will appear here. You can also edit or paste words if needed.'}
-              rows={4}
-              className="mt-2 w-full rounded border border-navy-light bg-surface px-3 py-2 font-plex text-xs text-ink placeholder:text-graphite-light focus:border-electric focus:outline-none focus:ring-1 focus:ring-electric"
+              rows={8}
+              className="mt-2 min-h-[180px] w-full resize-y rounded border border-navy-light bg-surface px-3 py-2.5 font-plex text-[13px] leading-relaxed text-ink placeholder:text-graphite-light focus:border-electric focus:outline-none focus:ring-1 focus:ring-electric"
             />
 
             {interimText && (
